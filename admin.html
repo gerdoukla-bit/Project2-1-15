@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wijha — Command Centre</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=IBM+Plex+Mono:wght@400;500&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f2ee;--surface:#fff;--line:#e2ddd3;--ink:#1b1b1f;--muted:#6b6a72;--dim:#9a979f;--amber:#e0961d;--amber-ink:#8a5a05;--amber-soft:#fff4dd;--green:#1f8a5b;--green-soft:#e6f5ec;--red:#c23b3b;--red-soft:#fdeaea;--blue:#3b6ea8;--blue-soft:#e8f0fa;--dark:#1f1e22;--ar:'Cairo',sans-serif;--sans:'DM Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--ar);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit} input,select,textarea{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+.mono{font-family:var(--mono);font-size:12px;direction:ltr;unicode-bidi:isolate}
+.hidden{display:none!important}
+.dim{color:var(--dim)}
+/* shell */
+.shell{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+.side{background:var(--dark);color:#e9e5dc;padding:18px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px}
+.brand{font-size:20px;font-weight:800;padding:6px 10px 14px}.brand span{color:var(--amber);font-family:var(--sans);font-size:12px}
+.nav a{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:9px;font-weight:700;color:#c9c4b8}
+.nav a.on,.nav a:hover{background:#2e2d33;color:#fff}
+.nav .n{font-family:var(--mono);font-size:11px;background:#3a393f;padding:1px 7px;border-radius:999px}
+.nav .n.hot{background:var(--amber);color:#1b1b1f}
+.who{margin-top:auto;font-size:12px;color:#9b978f;padding:10px 12px;border-top:1px solid #35343a}
+.who b{display:block;color:#fff}
+.main{padding:22px 26px 80px;min-width:0}
+h1{font-size:22px;font-weight:800;margin-bottom:4px} h2{font-size:15px;font-weight:800;margin:18px 0 10px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+/* controls */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:9px;font-weight:700;font-size:13px;white-space:nowrap;border:1px solid var(--line);background:var(--surface)}
+.btn:hover{border-color:var(--ink)} .btn.pri{background:var(--amber);border-color:var(--amber)} .btn.pri:hover{background:#c8850f}
+.btn.danger{color:var(--red);border-color:var(--red-soft);background:var(--red-soft)} .btn.ok{color:var(--green);background:var(--green-soft);border-color:transparent}
+.btn.sm{padding:4px 9px;font-size:12px} .btn:disabled{opacity:.5;cursor:default}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+.bar input,.bar select{border:1px solid var(--line);border-radius:9px;padding:8px 11px;background:var(--surface);font-size:13px;outline:none}
+.bar input:focus{border-color:var(--amber)} .bar .grow{flex:1;min-width:200px}
+.pill{display:inline-block;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.pill.ok{background:var(--green-soft);color:var(--green);border-color:transparent}.pill.warn{background:var(--amber-soft);color:var(--amber-ink);border-color:transparent}
+.pill.bad{background:var(--red-soft);color:var(--red);border-color:transparent}.pill.info{background:var(--blue-soft);color:var(--blue);border-color:transparent}
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:18px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi b{font-size:24px;font-weight:800;font-family:var(--sans);display:block;line-height:1.1}.kpi small{color:var(--muted);font-size:12px}
+.kpi.warn{border-color:var(--amber)} .kpi.bad{border-color:var(--red)}
+/* table */
+.tw{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}
+th{text-align:start;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--surface)}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0} tbody tr:hover{background:#faf7f0}
+td small{display:block;color:var(--muted);font-size:11px} td .acts{display:flex;gap:4px;justify-content:flex-end}
+.num{font-family:var(--mono);font-size:12px;direction:ltr;text-align:end}
+tr.sel{background:var(--amber-soft)}
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(27,27,31,.5);display:grid;place-items:center;z-index:50;padding:20px}
+.md{background:var(--surface);border-radius:16px;width:min(880px,100%);max-height:92vh;overflow:auto;box-shadow:0 30px 80px -30px rgba(0,0,0,.6)}
+.md .hd{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)}
+.md .hd b{font-size:16px} .md .bd{padding:18px 20px} .md .ft{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--surface)}
+.form{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px 12px}
+.form label{display:block;font-size:11.5px;font-weight:700;color:var(--muted)}
+.form input,.form select,.form textarea{display:block;width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:4px;font-size:13px;background:var(--bg);outline:none}
+.form input:focus,.form select:focus,.form textarea:focus{border-color:var(--amber);background:var(--surface)}
+.form .w2{grid-column:span 2} .form .w3{grid-column:1/-1} .form textarea{min-height:70px;resize:vertical}
+.form .sec{grid-column:1/-1;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber-ink);font-family:var(--mono);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.err{background:var(--red-soft);color:var(--red);padding:10px 12px;border-radius:9px;font-size:13px;margin-top:10px;white-space:pre-wrap;font-family:var(--mono);direction:ltr;text-align:start}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+/* login */
+.login{max-width:420px;margin:80px auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:26px}
+.login input{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin:6px 0 12px;font-size:14px;direction:ltr}
+/* chat */
+.chatgrid{display:grid;grid-template-columns:320px 1fr;gap:12px;height:calc(100vh - 160px)}
+.tlist{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:auto}
+.titem{padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;justify-content:space-between;gap:8px}
+.titem.on{background:var(--amber-soft)} .titem b{display:block;font-size:13px} .titem small{display:block;color:var(--muted);font-size:11px}
+.cwin{background:var(--surface);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column}
+.cbody{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
+.msg{max-width:74%;padding:8px 12px;border-radius:12px;font-size:13px}
+.msg.client{background:var(--surface);border:1px solid var(--line);align-self:flex-start}.msg.company{background:var(--amber-soft);align-self:flex-end}.msg.admin{background:var(--blue-soft);align-self:flex-end}
+.msg.blocked{opacity:.6;border:1px dashed var(--red)} .msg time{display:block;font-size:10px;color:var(--dim);font-family:var(--mono);margin-top:2px}
+.cfoot{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)} .cfoot input{flex:1;border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+.toast{position:fixed;bottom:22px;inset-inline-end:22px;background:var(--dark);color:#fff;padding:11px 16px;border-radius:10px;font-weight:700;z-index:99;max-width:360px;font-size:13px}
+.toast.bad{background:var(--red)}
+.tabs{display:flex;gap:6px;margin-bottom:12px}.tabs button{padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:12.5px;color:var(--muted)}.tabs button.on{background:var(--amber-soft);border-color:var(--amber);color:var(--amber-ink)}
+.chip{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--line);font-size:11px;margin:2px 2px 0 0}
+pre.json{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px;font-size:11px;direction:ltr;text-align:start;overflow:auto;max-height:260px}
+@media(max-width:900px){.shell{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap}.who{margin:0;border:0}.chatgrid{grid-template-columns:1fr;height:auto}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+/* ── shared country data: ISO2, Arabic, English, dial code ── */
+const COUNTRIES=[
+['EG','مصر','Egypt','+20'],['SA','السعودية','Saudi Arabia','+966'],['AE','الإمارات','UAE','+971'],
+['KW','الكويت','Kuwait','+965'],['QA','قطر','Qatar','+974'],['BH','البحرين','Bahrain','+973'],
+['OM','عُمان','Oman','+968'],['JO','الأردن','Jordan','+962'],['LB','لبنان','Lebanon','+961'],
+['SY','سوريا','Syria','+963'],['IQ','العراق','Iraq','+964'],['PS','فلسطين','Palestine','+970'],
+['YE','اليمن','Yemen','+967'],['SD','السودان','Sudan','+249'],['LY','ليبيا','Libya','+218'],
+['TN','تونس','Tunisia','+216'],['DZ','الجزائر','Algeria','+213'],['MA','المغرب','Morocco','+212'],
+['TR','تركيا','Türkiye','+90'],['GB','بريطانيا','United Kingdom','+44'],['US','الولايات المتحدة','United States','+1'],
+['CA','كندا','Canada','+1'],['AU','أستراليا','Australia','+61'],['NZ','نيوزيلندا','New Zealand','+64'],
+['DE','ألمانيا','Germany','+49'],['FR','فرنسا','France','+33'],['IT','إيطاليا','Italy','+39'],
+['ES','إسبانيا','Spain','+34'],['PT','البرتغال','Portugal','+351'],['NL','هولندا','Netherlands','+31'],
+['BE','بلجيكا','Belgium','+32'],['CH','سويسرا','Switzerland','+41'],['AT','النمسا','Austria','+43'],
+['GR','اليونان','Greece','+30'],['SE','السويد','Sweden','+46'],['NO','النرويج','Norway','+47'],
+['DK','الدنمارك','Denmark','+45'],['FI','فنلندا','Finland','+358'],['IS','آيسلندا','Iceland','+354'],
+['IE','أيرلندا','Ireland','+353'],['PL','بولندا','Poland','+48'],['CZ','التشيك','Czechia','+420'],
+['HU','المجر','Hungary','+36'],['RO','رومانيا','Romania','+40'],['RU','روسيا','Russia','+7'],
+['UA','أوكرانيا','Ukraine','+380'],['CN','الصين','China','+86'],['JP','اليابان','Japan','+81'],
+['KR','كوريا الجنوبية','South Korea','+82'],['IN','الهند','India','+91'],['PK','باكستان','Pakistan','+92'],
+['BD','بنجلاديش','Bangladesh','+880'],['ID','إندونيسيا','Indonesia','+62'],['MY','ماليزيا','Malaysia','+60'],
+['SG','سنغافورة','Singapore','+65'],['TH','تايلاند','Thailand','+66'],['PH','الفلبين','Philippines','+63'],
+['VN','فيتنام','Vietnam','+84'],['AZ','أذربيجان','Azerbaijan','+994'],['GE','جورجيا','Georgia','+995'],
+['KZ','كازاخستان','Kazakhstan','+7'],['ZA','جنوب أفريقيا','South Africa','+27'],['KE','كينيا','Kenya','+254'],
+['NG','نيجيريا','Nigeria','+234'],['ET','إثيوبيا','Ethiopia','+251'],['TZ','تنزانيا','Tanzania','+255'],
+['BR','البرازيل','Brazil','+55'],['AR','الأرجنتين','Argentina','+54'],['MX','المكسيك','Mexico','+52'],
+['CL','تشيلي','Chile','+56'],['MV','المالديف','Maldives','+960'],['LK','سريلانكا','Sri Lanka','+94'],
+['NP','نيبال','Nepal','+977'],['CY','قبرص','Cyprus','+357'],['MT','مالطا','Malta','+356']];
+/* visa "countries" include the Schengen area as one entry, because that is how travellers hold it */
+const VISA_TARGETS=[['SCH','شنغن (أوروبا)','Schengen (Europe)'],['GB','بريطانيا','United Kingdom'],
+['US','الولايات المتحدة','United States'],['CA','كندا','Canada'],['AU','أستراليا','Australia'],
+['NZ','نيوزيلندا','New Zealand'],['JP','اليابان','Japan'],['KR','كوريا الجنوبية','South Korea'],
+['CN','الصين','China'],['IN','الهند','India'],['TR','تركيا','Türkiye'],['RU','روسيا','Russia'],
+['SA','السعودية','Saudi Arabia'],['AE','الإمارات','UAE'],['QA','قطر','Qatar'],['KW','الكويت','Kuwait'],
+['BH','البحرين','Bahrain'],['OM','عُمان','Oman'],['JO','الأردن','Jordan'],['MA','المغرب','Morocco'],
+['ZA','جنوب أفريقيا','South Africa'],['BR','البرازيل','Brazil'],['MX','المكسيك','Mexico'],
+['SG','سنغافورة','Singapore'],['MY','ماليزيا','Malaysia'],['TH','تايلاند','Thailand'],
+['ID','إندونيسيا','Indonesia'],['AZ','أذربيجان','Azerbaijan'],['GE','جورجيا','Georgia'],
+['OTHER','أخرى','Other']];
+const AGE_RANGES=[['18-24','١٨ – ٢٤','18 – 24'],['25-34','٢٥ – ٣٤','25 – 34'],['35-44','٣٥ – ٤٤','35 – 44'],
+['45-54','٤٥ – ٥٤','45 – 54'],['55-64','٥٥ – ٦٤','55 – 64'],['65+','٦٥ فأكثر','65+']];
+const cName=(c,L)=>{const r=COUNTRIES.find(x=>x[0]===c)||VISA_TARGETS.find(x=>x[0]===c);return r?(L==='ar'?r[1]:r[2]):(c||'—')};
+
+/* ═══════════ state ═══════════ */
+const ADMIN_ROLES=['admin','wijha_admin'], CO_ROLES=['company','company_admin','company_staff'];
+const isAdminRole=r=>ADMIN_ROLES.includes(r), isCoRole=r=>CO_ROLES.includes(r);
+const myRole=()=>(S.roles||[]).find(r=>r.key===S.me?.wijha_role_key);
+const perm=a=>{const r=myRole(); if(!r) return isAdminRole(S.me?.role)?'full':'view'; return (r.permissions||{})[a]||'none'};
+const can=(a,lvl='view')=>{const p=perm(a); return p==='full'||(p==='edit'&&lvl!=='full')||(p==='view'&&lvl==='view')};
+const S={url:localStorage.getItem('wijha_url')||'',key:localStorage.getItem('wijha_key')||'',
+ tok:JSON.parse(localStorage.getItem('wijha_admin_tok')||'null'),me:null,view:'overview',
+ offers:[],companies:[],profiles:[],imports:[],threads:[],events:[],terms:[],filter:{q:'',cat:'',status:'',co:'',svc:''},sel:new Set(),thread:null,msgs:[]};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nf=n=>n==null?'—':Number(n).toLocaleString('en-US');
+const FX={EGP:1,EUR:57.5,USD:48.6,GBP:66,SAR:13.4};
+const CATL={tours:'رحلة خارجية',hajj:'حج',umrah:'عمرة'};
+const root=document.getElementById('root');
+function toast(m,bad){const d=document.createElement('div');d.className='toast'+(bad?' bad':'');d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3600)}
+
+/* ═══════════ API (plain fetch, JWT bearer) ═══════════ */
+const H=()=>({apikey:S.key,'Content-Type':'application/json',Authorization:'Bearer '+(S.tok?.access_token||S.key)});
+async function api(path,opt={}){
+ const r=await fetch(S.url+'/rest/v1/'+path,{...opt,headers:{...H(),...(opt.headers||{})}});
+ if(r.status===401&&S.tok?.refresh_token&&!opt._retried){ await refresh(); return api(path,{...opt,_retried:true}); }
+ const t=await r.text(); let b; try{b=t?JSON.parse(t):null}catch{b=t}
+ if(!r.ok) throw new Error(typeof b==='object'&&b?(b.message||b.hint||JSON.stringify(b)):(t||('HTTP '+r.status)));
+ return b;
+}
+const get=p=>api(p);
+const post=(p,body,prefer='return=representation')=>api(p,{method:'POST',body:JSON.stringify(body),headers:{Prefer:prefer}});
+const patch=(p,body)=>api(p,{method:'PATCH',body:JSON.stringify(body),headers:{Prefer:'return=representation'}});
+async function del(p){
+ const r = await api(p,{method:'DELETE',headers:{Prefer:'return=representation'}});
+ if (Array.isArray(r) && r.length===0)
+   throw new Error('لم يُحذف شيء — على الأرجح لا تملك صلاحية حذف هذا العنصر (تحقّق من صلاحيات RLS لحسابك).');
+ return r;
+}
+const rpc=(fn,args)=>api('rpc/'+fn,{method:'POST',body:JSON.stringify(args||{})});
+async function login(email,password){
+ const r=await fetch(S.url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:S.key,'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+ const b=await r.json(); if(!r.ok) throw new Error(b.error_description||b.msg||b.error||'login failed');
+ S.tok=b; localStorage.setItem('wijha_admin_tok',JSON.stringify(b));
+}
+async function refresh(){
+ const r=await fetch(S.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:S.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:S.tok.refresh_token})});
+ const b=await r.json(); if(!r.ok){logout();throw new Error('session expired')} S.tok=b; localStorage.setItem('wijha_admin_tok',JSON.stringify(b));
+}
+function logout(){S.tok=null;S.me=null;localStorage.removeItem('wijha_admin_tok');render()}
+
+/* ═══════════ boot ═══════════ */
+async function boot(){
+ if(!S.url||!S.key||!S.tok){render();return}
+ try{ const p=await get('profiles?select=*&id=eq.'+S.tok.user.id); S.me=p[0]||null;
+  if(!S.me||!(isAdminRole(S.me.role)||isCoRole(S.me.role))){ render(`<div class="login"><h1>ليس حساب مدير أو شركة</h1><p class="sub">هذا الحساب (${esc(S.tok.user.email)}) دوره <b>${esc(S.me?.role||'—')}</b>. شغّل في SQL:</p><pre class="json">update profiles set role='admin' where email='${esc(S.tok.user.email)}';</pre><button class="btn" onclick="logout()">خروج</button></div>`); return; }
+  await loadAll(); render();
+ }catch(e){ toast(e.message,true); render(); }
+}
+async function loadAll(){
+ const R=await Promise.all([
+  get('admin_offers?select=*&order=updated_at.desc.nullslast').catch(()=>get('offers?select=*&order=updated_at.desc.nullslast')),
+  get('companies?select=*&order=name_ar'),
+  get('profiles?select=*&order=created_at.desc'),
+  get('wijha_imports?select=*&order=created_at.desc').catch(()=>[]),
+  get('wijha_threads?select=*&order=last_message_at.desc').catch(()=>[]),
+  get('offer_events?select=kind,offer_id,company_id,at&order=at.desc&limit=2000').catch(()=>[]),
+  get('search_terms?select=term,at&order=at.desc&limit=1000').catch(()=>[]),
+  get('wijha_roles?select=*&order=scope,rank').catch(()=>[]),
+  get('wijha_employment?select=*&order=started_on.desc').catch(()=>[]),
+  get('wijha_supplier_items?select=*&order=created_at.desc').catch(()=>[]),
+  get('wijha_emails?select=*&order=created_at.desc&limit=100').catch(()=>[])]);
+ const [o,c,p,i,t,ev,st]=R;
+ Object.assign(S,{offers:o,companies:c,profiles:p,imports:i,threads:t,events:ev,terms:st,
+   roles:R[7]||[],employment:R[8]||[],suppliers:R[9]||[],emails:R[10]||[]});
+}
+const co=id=>S.companies.find(c=>c.id===id);
+const coN=id=>co(id)?.name_ar||co(id)?.name_en||'—';
+const egp=o=>{const v=o.price_quad??o.price_double??o.price_triple??o.price_single;return v==null?null:Math.round(v*(FX[o.currency]||1))+Number(o.egp_addon||0)};
+
+/* ═══════════ render ═══════════ */
+function render(custom){
+ if(custom){root.innerHTML=custom;return}
+ if(!S.url||!S.key){root.innerHTML=`<div class="login"><h1>الاتصال</h1><p class="sub">رابط المشروع ومفتاح anon public — نفس القيم المستخدمة في الموقع.</p>
+  <input id="u" placeholder="https://xxxx.supabase.co" value="${esc(S.url)}"><input id="k" placeholder="anon key" value="${esc(S.key)}">
+  <button class="btn pri" onclick="S.url=u.value.trim().replace(/\\/$/,'');S.key=k.value.trim();localStorage.setItem('wijha_url',S.url);localStorage.setItem('wijha_key',S.key);render()">حفظ</button></div>`;return}
+ if(!S.tok||!S.me){root.innerHTML=`<div class="login"><h1>مركز قيادة وجهة</h1><p class="sub">دخول المدير — البريد وكلمة المرور من Supabase → Authentication → Users.</p>
+  <input id="e" type="email" placeholder="admin@wijha.app"><input id="p" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+  <button class="btn pri" onclick="doLogin()">دخول</button> <button class="btn" onclick="S.url='';render()">تغيير المشروع</button><div id="lerr"></div>
+  <p class="note">لا يوجد مدير بعد؟ أنشئ المستخدم في Supabase ثم شغّل <span class="mono">update profiles set role='admin' where email='…';</span></p></div>`;return}
+ const unread=S.threads.reduce((a,t)=>a+(t.company_unread||0),0), pend=S.companies.filter(c=>!c.etaa_verified||String(c.status).match(/pend|review|new|wait/i)).length, queued=S.imports.filter(i=>['queued','review','fetching'].includes(i.status)).length;
+ const isAdmin=isAdminRole(S.me.role);
+ /* the menu is built from the signed-in role's permissions, so each role
+    genuinely sees a different console rather than the same one greyed out */
+ const ALL=[
+  ['overview','نظرة عامة','', 'offers'],
+  ['offers', isAdmin?'الرحلات':'رحلاتي', S.offers.length, 'offers'],
+  ['intake','إضافة عرض', queued, 'offers'],
+  ['companies', isAdmin?'الشركات':'بيانات الشركة', isAdmin?(pend?pend+' ⚠':S.companies.length):'', 'companies'],
+  ['team', isAdmin?'الفريق والصلاحيات':'فريق الشركة', isAdmin?(S.profiles||[]).length:'', 'team'],
+  ['suppliers','مكتبة الموردين',(S.suppliers||[]).length, 'suppliers'],
+  ['emails','البريد',(S.emails||[]).filter(e=>e.status==='queued').length, 'emails'],
+  ['users','العملاء',(S.profiles||[]).filter(p=>p.role==='client').length, 'clients'],
+  ['chats','المحادثات', unread, 'chats'],
+  ['insights','الطلب والبحث','', 'finance']];
+ let nav=ALL.filter(([k,l,n,area])=>{
+   if(k==='overview') return isAdmin;
+   if(k==='intake')   return can('offers','edit');
+   if(k==='team')     return can('team','view');
+   return can(area,'view');
+ }).map(([k,l,n])=>[k,l,n]);
+ if(!nav.length) nav=[['offers','رحلاتي',S.offers.length]];
+ if(!isAdmin&&!nav.some(n=>n[0]===S.view)) S.view='offers';
+ root.innerHTML=`<div class="shell"><aside class="side"><div class="brand">وجهة <span>${isAdminRole(S.me.role)?'COMMAND CENTRE':'COMPANY CONSOLE'}</span></div>
+  <nav class="nav">${nav.map(([k,l,n])=>`<a href="#" class="${S.view===k?'on':''}" onclick="S.view='${k}';S.sel.clear();render();return false">${l}${n!==''?`<span class="n ${(k==='chats'&&unread)||(k==='companies'&&pend)||(k==='imports'&&queued)?'hot':''}">${n}</span>`:''}</a>`).join('')}</nav>
+  <div class="who"><b>${esc(S.me.name||S.me.email)}</b>
+  <span class="pill" style="background:#3a393f;color:#e9e5dc;border:0">${esc(myRole()?.name_ar||S.me.role)}</span>
+  ${myRole()?`<div style="font-size:10.5px;line-height:1.5;margin:6px 0;color:#9b978f">${esc(myRole().description_ar||'')}</div>`:''}
+  ${esc(coN(S.me.company_id)||'وجهة')} · <button onclick="loadAll().then(render)" style="text-decoration:underline">تحديث</button> · <button onclick="logout()" style="text-decoration:underline">خروج</button><br><a href="./index.html" target="_blank" rel="noopener" style="text-decoration:underline">فتح الموقع ↗</a></div></aside>
+  <main class="main">${({overview,offers:offersV,companies:companiesV,users:usersV,intake:intakeV,chats:chatsV,insights,team:teamV,suppliers:suppliersV,emails:emailsV})[S.view]()}</main></div>`;
+ if(S.view==='chats'&&S.thread) loadMsgs();
+}
+async function doLogin(){try{await login(e.value.trim(),p.value);await boot()}catch(er){document.getElementById('lerr').innerHTML='<div class="err">'+esc(er.message)+'</div>'}}
+
+/* ═══════════ OVERVIEW ═══════════ */
+function overview(){
+ const by={}; S.offers.forEach(o=>{const k=o.category+'|'+o.status;by[k]=(by[k]||0)+1});
+ const cats=['tours','hajj','umrah']; const statuses=[...new Set(S.offers.map(o=>o.status))];
+ const pubStatus=statuses.sort((a,b)=>S.offers.filter(o=>o.status===b&&o.category!=='tours').length-S.offers.filter(o=>o.status===a&&o.category!=='tours').length)[0];
+ const toursNotPub=S.offers.filter(o=>o.category==='tours'&&o.status!==pubStatus).length;
+ const noProg=S.offers.filter(o=>o.stage_count==0).length, noPrice=S.offers.filter(o=>egp(o)==null).length;
+ const weekEv=S.events.filter(e=>new Date(e.at)>Date.now()-7*864e5);
+ return `<h1>نظرة عامة</h1><p class="sub">ما هو موجود فعلاً في قاعدة البيانات — بكل الحالات، وليس فقط المنشور.</p>
+ <div class="kpis">
+  <div class="kpi"><b>${S.offers.length}</b><small>إجمالي العروض</small></div>
+  ${cats.map(c=>`<div class="kpi"><b>${S.offers.filter(o=>o.category===c).length}</b><small>${CATL[c]}</small></div>`).join('')}
+  <div class="kpi"><b>${S.companies.length}</b><small>شركة</small></div>
+  <div class="kpi"><b>${S.profiles.length}</b><small>مستخدم (${S.profiles.filter(p=>p.role==='client').length} عميل / ${S.profiles.filter(p=>p.role==='company').length} شركة)</small></div>
+  <div class="kpi ${toursNotPub?'bad':''}"><b>${toursNotPub}</b><small>رحلة خارجية غير منشورة</small></div>
+  <div class="kpi ${noProg?'warn':''}"><b>${noProg}</b><small>عرض بدون برنامج</small></div>
+  <div class="kpi ${noPrice?'warn':''}"><b>${noPrice}</b><small>عرض بدون سعر</small></div>
+  <div class="kpi"><b>${weekEv.filter(e=>e.kind==='enquiry').length}</b><small>استفسار آخر ٧ أيام</small></div>
+ </div>
+ <h2>الحالة × النوع</h2><div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th>${statuses.map(s=>`<th>${esc(s)}</th>`).join('')}<th></th></tr></thead><tbody>
+ ${cats.map(c=>`<tr><td><b>${CATL[c]}</b></td>${statuses.map(s=>`<td class="num">${by[c+'|'+s]||0}</td>`).join('')}
+   <td class="acts">${S.offers.some(o=>o.category===c&&o.status!==pubStatus)?`<button class="btn sm ok" onclick="bulkStatus('${c}','${esc(pubStatus)}')">نشر الكل كـ ${esc(pubStatus)}</button>`:''}</td></tr>`).join('')}
+ </tbody></table></div>
+ <p class="note">الحالة المعتبرة "منشورة" هنا هي <b>${esc(pubStatus)}</b> — الأكثر استخداماً بين عروض الحج والعمرة. الموقع يعرض فقط ما يحمل هذه الحالة.</p>
+ ${toursNotPub?`<div class="err" style="direction:rtl;text-align:start;font-family:var(--ar)">⚠️ ${toursNotPub} رحلة خارجية بحالة مختلفة — لهذا لا تظهر على الموقع. اضغط "نشر الكل" أعلاه.</div>`:''}
+ <h2>آخر التحديثات</h2><div class="tw"><table><thead><tr><th>الرحلة</th><th>الشركة</th><th>الحالة</th><th>EGP</th><th>آخر تعديل</th></tr></thead><tbody>
+ ${S.offers.slice(0,8).map(o=>`<tr onclick="editOffer('${o.id}')" style="cursor:pointer"><td><b>${esc(o.title_ar)}</b><small>${CATL[o.category]} · ${esc(o.sub_category||'')}</small></td><td>${esc(coN(o.company_id))}</td><td><span class="pill ${o.status===pubStatus?'ok':'warn'}">${esc(o.status)}</span></td><td class="num">${nf(egp(o))}</td><td class="num">${(o.updated_at||o.created_at||'').slice(0,10)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+async function publishAllNonInternal(){
+ const n = S.offers.filter(o=>!o.internal_only).length;
+ if(!confirm(`نشر ${n} رحلة (كل ما هو غير معلّم "استخدام داخلي فقط")؟`))return;
+ try{
+  const pub = S.offers.find(o=>o.status)?.status || 'published';
+  await patch('offers?internal_only=eq.false', {status:pub, visibility:'public', review_state:'approved', published_at:new Date().toISOString()});
+  await patch('offers?internal_only=is.null', {status:pub, visibility:'public', review_state:'approved', published_at:new Date().toISOString()});
+  toast('تم نشر الرحلات'); await loadAll(); render();
+ }catch(e){toast(e.message,true)}
+}
+async function bulkStatus(cat,status){
+ if(!confirm(`تغيير حالة كل عروض "${CATL[cat]}" إلى ${status}؟`))return;
+ try{ await patch(`offers?category=eq.${cat}`,{status,published_at:new Date().toISOString()}); toast('تم'); await loadAll(); render(); }catch(e){toast(e.message,true)}
+}
+
+/* ═══════════ OFFERS ═══════════ */
+function offersV(){
+ const f=S.filter; const statuses=[...new Set(S.offers.map(o=>o.status))];
+ let rows=S.offers.filter(o=>(!f.cat||o.category===f.cat)&&(!f.status||o.status===f.status)&&(!f.co||o.company_id===f.co)&&(!f.q||(o.title_ar+' '+(o.title_en||'')+' '+(o.dest_ar||'')+' '+coN(o.company_id)).toLowerCase().includes(f.q.toLowerCase())));
+ return `<h1>الرحلات <span class="pill">${rows.length}</span></h1>
+ <div class="bar"><input class="grow" placeholder="بحث…" value="${esc(f.q)}" oninput="S.filter.q=this.value;render()">
+  <select onchange="S.filter.cat=this.value;render()"><option value="">كل الأنواع</option>${['tours','hajj','umrah'].map(c=>`<option value="${c}" ${f.cat===c?'selected':''}>${CATL[c]}</option>`).join('')}</select>
+  <select onchange="S.filter.status=this.value;render()"><option value="">كل الحالات</option>${statuses.map(s=>`<option ${f.status===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
+  <select onchange="S.filter.co=this.value;render()"><option value="">كل الشركات</option>${S.companies.map(c=>`<option value="${c.id}" ${f.co===c.id?'selected':''}>${esc(c.name_ar)}</option>`).join('')}</select>
+  <button class="btn pri" onclick="editOffer(null)">+ رحلة جديدة</button>
+  ${isAdminRole(S.me.role)?`<button class="btn ok" onclick="publishAllNonInternal()">نشر كل الرحلات غير الداخلية</button>`:''}
+  ${S.sel.size?`<button class="btn" onclick="bulkSel('status')">حالة (${S.sel.size})</button><button class="btn danger" onclick="bulkSel('delete')">حذف (${S.sel.size})</button>`:''}</div>
+ <div class="tw"><table><thead><tr><th><input type="checkbox" onchange="rows_toggle(this.checked)"></th><th>الرقم المرجعي</th><th>الرحلة</th><th>الشركة</th><th>النوع</th><th>التواريخ</th><th>ينتهي</th><th>EGP</th><th>الظهور</th><th>برنامج</th><th>المراجعة</th><th></th></tr></thead><tbody>
+ ${rows.map(o=>`<tr class="${S.sel.has(o.id)?'sel':''}"><td><input type="checkbox" ${S.sel.has(o.id)?'checked':''} onchange="S.sel[this.checked?'add':'delete']('${o.id}');render()"></td>
+  <td><span class="mono" style="font-weight:700;color:var(--amber-ink)">${esc(o.ref_code||'—')}</span></td>
+  <td><b>${esc(o.title_ar)}</b><small>${esc(o.dest_ar||o.title_en||'')}</small>${o.source_kind?`<small class="dim">المصدر: ${esc(o.source_kind)}</small>`:''}</td><td>${esc(coN(o.company_id))}</td>
+  <td>${CATL[o.category]}<small>${esc(o.sub_category||'')}</small></td><td>${esc(o.dates_text_ar||o.starts_on||'—')}<small>${o.days?o.days+' يوم':''}</small></td>
+  <td class="num">${o.expires_on?`<span class="pill ${new Date(o.expires_on)<new Date()?'bad':'ok'}">${o.expires_on}</span>`:'<span class="pill warn">بدون</span>'}</td>
+  <td class="num">${nf(egp(o))}<small class="dim">${o.currency!=='EGP'?nf(o.price_quad??o.price_double)+' '+o.currency:''}</small></td>
+  <td>${({public:'<span class="pill ok">عام</span>',link:'<span class="pill info">برابط فقط</span>',internal:'<span class="pill">داخلي</span>'})[o.visibility||'public']}</td>
+  <td class="num">${o.stage_count} <span class="dim">/ ${o.item_count} / ${o.hotel_count}</span>${o.detail_level==='outline'?'<small>outline</small>':''}</td>
+  <td><span class="pill ${o.review_state==='approved'?'ok':o.review_state==='rejected'?'bad':'warn'}">${({draft:'مسودة',pending:'بانتظار المراجعة',approved:'معتمد',rejected:'مرفوض'})[o.review_state||'approved']}</span>${o.review_note?`<small>${esc(o.review_note)}</small>`:''}</td>
+  <td class="acts"><button class="btn sm" onclick="editOffer('${o.id}')">تعديل</button>
+   ${o.internal_only||o.visibility==='internal'?`<button class="btn sm" onclick="toast('هذه الرحلة داخلية — لا تظهر على الموقع العام',true)">معاينة (داخلية)</button>`:`<a class="btn sm" href="./index.html#/trip/${o.id}" target="_blank">معاينة ↗</a>`}
+   ${isAdminRole(S.me.role)&&o.review_state==='pending'?`<button class="btn sm ok" onclick="reviewOffer('${o.id}','approved')">اعتماد</button><button class="btn sm danger" onclick="reviewOffer('${o.id}','rejected')">رفض</button>`:''}
+   <button class="btn sm danger" onclick="delOffer('${o.id}')">حذف</button></td></tr>`).join('')||'<tr><td colspan="12" class="dim">لا نتائج</td></tr>'}</tbody></table></div>
+ <p class="note">برنامج = مراحل / بنود / فنادق. "outline" = بيانات رأسية فقط، البرنامج اليومي لم يُدخل بعد.</p>`;
+}
+function rows_toggle(on){const f=S.filter;S.offers.filter(o=>(!f.cat||o.category===f.cat)&&(!f.status||o.status===f.status)&&(!f.co||o.company_id===f.co)).forEach(o=>on?S.sel.add(o.id):S.sel.delete(o.id));render()}
+async function bulkSel(what){
+ const ids=[...S.sel]; if(!ids.length)return;
+ if(what==='delete'){ if(!confirm(`حذف ${ids.length} رحلة نهائياً مع كل المراحل والبنود والفنادق؟`))return;
+  try{ await del(`offers?id=in.(${ids.join(',')})`); toast('تم الحذف'); S.sel.clear(); await loadAll(); render(); }catch(e){toast(e.message,true)} return; }
+ const st=prompt('الحالة الجديدة:', [...new Set(S.offers.map(o=>o.status))].join(' | ')); if(!st)return;
+ try{ await patch(`offers?id=in.(${ids.join(',')})`,{status:st.trim()}); toast('تم'); S.sel.clear(); await loadAll(); render(); }catch(e){toast(e.message,true)}
+}
+async function delOffer(id){ const o=S.offers.find(x=>x.id===id); if(!confirm(`حذف "${o.title_ar}" نهائياً؟`))return;
+ try{ await del('offers?id=eq.'+id); toast('تم الحذف'); await loadAll(); render(); }
+ catch(e){ toast(e.message, true); console.error('delOffer failed for', id, ':', e.message); } }
+
+/* ── offer editor: header fields + stages + items + hotels + notes ── */
+const OFFER_FIELDS=[
+ ['sec','الأساسيات'],['ref_code','الرقم المرجعي (تلقائي)','text'],['company_id','الشركة','company'],
+ ['visibility','الظهور','select',['public','link','internal']],['expires_on','ينتهي العرض في (إلزامي، قبل السفر)','date'],['category','النوع','select',['tours','hajj','umrah']],['sub_category','الفئة الفرعية','text'],['status','الحالة','text'],
+ ['title_ar','العنوان (عربي)','text','w2'],['title_en','Title (EN)','text','w2'],['dest_ar','الوجهة (عربي)','text'],['dest_en','Destination (EN)','text'],['region_ar','المنطقة','text'],['region_en','Region','text'],
+ ['brief_ar','نبذة (عربي)','textarea','w3'],['brief_en','Brief (EN)','textarea','w3'],
+ ['sec','التواريخ والمدة'],['dates_text_ar','نص التواريخ (عربي)','text'],['dates_text_en','Dates text (EN)','text'],['starts_on','يبدأ','date'],['ends_on','ينتهي','date'],['days','أيام','number'],['nights','ليالٍ','number'],['season','الموسم','text'],['registration_deadline','آخر موعد للتسجيل','date'],
+ ['sec','الأسعار — الأصلية بالعملة المعلنة'],['currency','العملة','select',['EGP','EUR','USD','GBP','SAR']],['price_quad','رباعية','number'],['price_triple','ثلاثية','number'],['price_double','ثنائية','number'],['price_single','فردية','number'],['price_child_bed','طفل بسرير','number'],['price_child_nobed','طفل بدون سرير','number'],['egp_addon','جزء محلي بالجنيه','number'],['deposit','عربون','number'],['hajj','ferry_fee','رسوم المعدية (الحج البري)','number'],['price_valid_until','السعر ساري حتى','date'],
+ ['sec','التفاصيل'],['flights_included','الطيران مشمول','bool'],['hajj','arrival_city','مدينة الوصول','text'],['seats_total','إجمالي المقاعد','number'],['seats_taken','المحجوز','number'],['detail_level','مستوى التفاصيل','select',['full','outline']],['art_key','صورة بديلة تلقائية (تُستخدم فقط لو لا توجد صورة غلاف)','select',['fjord','aurora','medcity','alpine','metro','baltic','tropic','cruise','castle','haram','madinah','plane'],'w2'],['cover_url','رابط صورة الغلاف','text','w2'],
+ ['hajj','meals_ar','الوجبات','text'],['hajj','mina_ar','الإقامة في منى','text'],['flight_out_ar','رحلة الذهاب','text','w2'],['flight_back_ar','رحلة العودة','text','w2'],['note_ar','ملاحظة','textarea','w3'],['source_url','رابط المصدر','text','w2'],['source_type','نوع المصدر','text']];
+let ED=null;
+async function editOffer(id){
+ const o=id?S.offers.find(x=>x.id===id):null;
+ let full={},stages=[],items=[],hotels=[],notes=[];
+ if(id){ try{ [full,stages,items,hotels,notes]=await Promise.all([get('offers?select=*&id=eq.'+id).then(r=>r[0]),get('offer_stages?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_items?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_hotels?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_notes?select=*&offer_id=eq.'+id+'&order=sort_order')]); }catch(e){toast(e.message,true);return} }
+ ED={id,full:full||{},stages,items,hotels,notes,tab:'main'};
+ if(!id){
+  const d=new Date(); d.setDate(d.getDate()+60);
+  ED.full={category:'tours',currency:'EGP',status:S.offers.find(x=>x.category!=='tours')?.status||'published',
+    detail_level:'outline',flights_included:false,visibility:'public',expires_on:d.toISOString().slice(0,10),
+    company_id:isAdminRole(S.me.role)?S.companies[0]?.id:S.me.company_id};
+ }
+ drawEditor();
+}
+function fld(k,label,type,extra){
+ const v=ED.full[k]; const cls=extra&&typeof extra==='string'?extra:'';
+ if(k==='ref_code') return `<div class="${cls}"><label>${label}<input value="${esc(v||'سيُنشأ تلقائياً عند الحفظ')}" disabled style="font-family:var(--mono);color:var(--muted)"></label></div>`;
+ if(type==='company') return `<div class="${cls}"><label>${label}<select data-k="${k}" ${!isAdminRole(S.me.role)?'disabled':''}>${(isAdminRole(S.me.role)?S.companies:S.companies.filter(c=>c.id===S.me.company_id)).map(c=>`<option value="${c.id}" ${v===c.id?'selected':''}>${esc(c.name_ar)}</option>`).join('')}</select></label></div>`;
+ if(type==='select') return `<div class="${cls}"><label>${label}<select data-k="${k}">${extra.map(x=>`<option ${v===x?'selected':''}>${x}</option>`).join('')}</select></label></div>`;
+ if(type==='bool') return `<div class="${cls}"><label>${label}<select data-k="${k}" data-bool="1"><option value="true" ${v?'selected':''}>نعم</option><option value="false" ${!v?'selected':''}>لا</option></select></label></div>`;
+ if(type==='textarea') return `<div class="${cls}"><label>${label}<textarea data-k="${k}">${esc(v??'')}</textarea></label></div>`;
+ return `<div class="${cls}"><label>${label}<input data-k="${k}" type="${type}" value="${esc(v??'')}"></label></div>`;
+}
+function drawEditor(){
+ const tabs=[['main','البيانات'],['stages',`المراحل (${ED.stages.length})`],['items',`يشمل / لا يشمل (${ED.items.length})`],['hotels',`الفنادق (${ED.hotels.length})`],['notes',`تأشيرة وملاحظات (${ED.notes.length})`]];
+ const isRites = ['hajj','umrah'].includes(ED.full.category);
+ const body= ED.tab==='main' ? `<div class="form">${OFFER_FIELDS
+   .filter(f=>f[0]!=='hajj'||isRites)
+   .map(f=>{ const g = f[0]==='hajj' ? f.slice(1) : f;
+     return g[0]==='sec'?`<div class="sec">${g[1]}</div>`:fld(g[0],g[1],g[2],g[3]) }).join('')}
+   <div class="sec">صورة الغلاف</div>
+   <div class="w3"><label>ارفع صورة من جهازك<input type="file" id="coverFile" accept="image/*" onchange="uploadCover(this.files[0])"></label>
+     ${ED.full.cover_url?`<img src="${esc(ED.full.cover_url)}" style="max-height:120px;border-radius:10px;margin-top:8px">`:''}
+     <p class="note">أو الصق رابطاً في الحقل أعلاه. الصور تُحفظ في مخزن عام مخصّص للعروض.</p></div>
+   </div>`
+  : ED.tab==='stages' ? `<div class="bar"><button class="btn sm" onclick="ED.stages.push({title_ar:'',day_label:'',description_ar:'',sort_order:ED.stages.length,_new:1});drawEditor()">+ مرحلة</button><span class="note">كل مرحلة = يوم أو محطة. الوصف يُعرض تحت عنوان رئيسي واحد؛ التقسيم لفترات (صباحاً/مساءً) يتم من استيراد النشرة.</span></div>
+     ${ED.stages.map((s,i)=>`<div class="form" style="border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px"><div><label>#<input type="number" value="${s.sort_order??i}" oninput="ED.stages[${i}].sort_order=+this.value"></label></div><div class="w2"><label>العنوان<input value="${esc(s.title_ar)}" oninput="ED.stages[${i}].title_ar=this.value"></label></div><div><label>تسمية اليوم<input value="${esc(s.day_label||'')}" oninput="ED.stages[${i}].day_label=this.value"></label></div><div class="w3"><label>الوصف<textarea oninput="ED.stages[${i}].description_ar=this.value">${esc(s.description_ar||'')}</textarea></label></div><div class="w2"><label>رابط صورة<input value="${esc(s.photo_url||'')}" oninput="ED.stages[${i}].photo_url=this.value"></label></div><div><button class="btn sm danger" onclick="ED.stages[${i}]._del=1;ED.stages.splice(${i},1);drawEditor()">حذف</button></div></div>`).join('')}`
+  : ED.tab==='items' ? `<div class="bar"><button class="btn sm" onclick="ED.items.push({kind:'include',item_cat:'sight',text_ar:'',sort_order:ED.items.length,_new:1});drawEditor()">+ يشمل</button><button class="btn sm" onclick="ED.items.push({kind:'exclude',item_cat:'personal',text_ar:'',sort_order:ED.items.length,_new:1});drawEditor()">+ لا يشمل</button><button class="btn sm" onclick="ED.items.push({kind:'addon',item_cat:'optional',text_ar:'',price_text:'',sort_order:ED.items.length,_new:1});drawEditor()">+ إضافة اختيارية</button></div>
+     <div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th><th>الفئة</th><th>النص</th><th>سعر</th><th></th></tr></thead><tbody>${ED.items.map((it,i)=>`<tr><td><select onchange="ED.items[${i}].kind=this.value">${['include','exclude','addon'].map(k=>`<option ${it.kind===k?'selected':''}>${k}</option>`).join('')}</select></td><td><select onchange="ED.items[${i}].item_cat=this.value">${['transfer','flight','sight','activity','meal','hotel','free','shop','rites','optional','guide','visa','tax','personal'].map(k=>`<option ${it.item_cat===k?'selected':''}>${k}</option>`).join('')}</select></td><td><input style="width:100%" value="${esc(it.text_ar)}" oninput="ED.items[${i}].text_ar=this.value"></td><td><input style="width:90px" value="${esc(it.price_text||'')}" oninput="ED.items[${i}].price_text=this.value"></td><td><button class="btn sm danger" onclick="ED.items.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`
+  : ED.tab==='hotels' ? `<div class="bar"><button class="btn sm" onclick="ED.hotels.push({city_ar:'',hotel_name:'',nights:null,date_range:'',sort_order:ED.hotels.length,_new:1});drawEditor()">+ فندق</button></div>
+     <div class="tw"><table style="min-width:0"><thead><tr><th>المدينة</th><th>الفندق</th><th>ليالٍ</th><th>الفترة</th><th>hotel_id</th><th></th></tr></thead><tbody>${ED.hotels.map((h,i)=>`<tr><td><input value="${esc(h.city_ar)}" oninput="ED.hotels[${i}].city_ar=this.value"></td><td><input style="width:100%" value="${esc(h.hotel_name)}" oninput="ED.hotels[${i}].hotel_name=this.value"></td><td><input type="number" style="width:60px" value="${h.nights??''}" oninput="ED.hotels[${i}].nights=+this.value||null"></td><td><input value="${esc(h.date_range||'')}" oninput="ED.hotels[${i}].date_range=this.value"></td><td><input class="mono" style="width:110px" value="${esc(h.hotel_id||'')}" oninput="ED.hotels[${i}].hotel_id=this.value||null" placeholder="h_makkah"></td><td><button class="btn sm danger" onclick="ED.hotels.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`
+  : `<div class="bar"><button class="btn sm" onclick="ED.notes.push({kind:'visa_doc',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ مستند تأشيرة</button><button class="btn sm" onclick="ED.notes.push({kind:'note',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ ملاحظة</button><button class="btn sm" onclick="ED.notes.push({kind:'cancel',label_ar:'',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ شرط إلغاء</button></div>
+     <div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th><th>العنوان/المهلة</th><th>النص/الغرامة</th><th></th></tr></thead><tbody>${ED.notes.map((n,i)=>`<tr><td><select onchange="ED.notes[${i}].kind=this.value">${['visa_doc','note','cancel','payment'].map(k=>`<option ${n.kind===k?'selected':''}>${k}</option>`).join('')}</select></td><td><input value="${esc(n.label_ar||'')}" oninput="ED.notes[${i}].label_ar=this.value"></td><td><input style="width:100%" value="${esc(n.text_ar)}" oninput="ED.notes[${i}].text_ar=this.value"></td><td><button class="btn sm danger" onclick="ED.notes.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`;
+ let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
+ ov.innerHTML=`<div class="md"><div class="hd"><b>${ED.id?'تعديل الرحلة':'رحلة جديدة'}</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
+  <div class="bd"><div class="tabs">${tabs.map(([k,l])=>`<button class="${ED.tab===k?'on':''}" onclick="readMain();ED.tab='${k}';drawEditor()">${l}</button>`).join('')}</div>${body}<div id="ederr"></div></div>
+  <div class="ft">${ED.id?`<a class="btn" href="./index.html#/trip/${ED.id}" target="_blank">معاينة ↗</a>`:''}<button class="btn pri" onclick="saveOffer()">حفظ</button></div></div>`;
+}
+async function uploadCover(file){
+ if(!file)return;
+ try{ const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+  const path=`covers/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const r=await fetch(S.url+'/storage/v1/object/offer-photos/'+path,{method:'POST',
+   headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':file.type},body:file});
+  if(!r.ok) throw new Error((await r.text()).slice(0,140));
+  ED.full.cover_url = S.url+'/storage/v1/object/public/offer-photos/'+path;
+  toast('تم رفع الصورة'); drawEditor();
+ }catch(e){toast(e.message,true)}
+}
+function readMain(){ if(ED.tab!=='main')return; if(!isAdminRole(S.me.role)) ED.full.company_id=S.me.company_id; document.querySelectorAll('#ov [data-k]').forEach(el=>{ const k=el.dataset.k; if(el.disabled)return; let v=el.value;
+ if(el.dataset.bool) v=v==='true'; else if(el.type==='number') v=v===''?null:Number(v); else if(v==='') v=null; ED.full[k]=v; }); }
+function closeEd(){document.getElementById('ov')?.remove();ED=null}
+async function saveOffer(){
+ readMain(); const f={...ED.full}; delete f.id; delete f.created_at; delete f.updated_at; delete f.ref_code;
+ if(!f.expires_on){ document.getElementById('ederr').innerHTML='<div class="err">تاريخ انتهاء العرض إلزامي — لا يمكن الحفظ بدونه</div>'; return; }
+ if(f.starts_on && f.expires_on > f.starts_on){ document.getElementById('ederr').innerHTML='<div class="err">تاريخ الانتهاء يجب أن يكون قبل تاريخ السفر</div>'; return; }
+ try{
+  let id=ED.id;
+  const admin=isAdminRole(S.me.role);
+  if(!admin){ f.review_state='pending'; f.review_note=null; }
+  if(id) await patch('offers?id=eq.'+id,f); else { const r=await post('offers',f); id=r[0].id; }
+  if(!admin){ try{ await post('wijha_offer_revisions',{offer_id:id,changed_by:S.me.id,company_id:S.me.company_id,after_data:f,state:'pending',note:'تعديل من الشركة'},'return=minimal') }catch(e){} }
+  // children: replace-all strategy (simple and safe for an admin tool)
+  for(const [tb,rows,map] of [['offer_stages',ED.stages,s=>({offer_id:id,sort_order:s.sort_order??0,title_ar:s.title_ar||'—',day_label:s.day_label||null,description_ar:s.description_ar||null,photo_url:s.photo_url||null})],
+    ['offer_items',ED.items,it=>({offer_id:id,kind:it.kind,item_cat:it.item_cat||null,text_ar:it.text_ar||'—',price_text:it.price_text||null,sort_order:it.sort_order??0})],
+    ['offer_hotels',ED.hotels,h=>({offer_id:id,sort_order:h.sort_order??0,city_ar:h.city_ar||'—',hotel_name:h.hotel_name||'—',nights:h.nights||null,date_range:h.date_range||null,hotel_id:h.hotel_id||null})],
+    ['offer_notes',ED.notes,n=>({offer_id:id,kind:n.kind,label_ar:n.label_ar||null,text_ar:n.text_ar||null,sort_order:n.sort_order??0})]]){
+   if(ED.id) await del(`${tb}?offer_id=eq.${id}`);
+   if(rows.length) await post(tb,rows.map(map),'return=minimal');
+  }
+  toast(isAdminRole(S.me.role)?'تم الحفظ':'تم الحفظ — بانتظار مراجعة فريق وجهة'); closeEd(); await loadAll(); render();
+ }catch(e){ document.getElementById('ederr').innerHTML='<div class="err">'+esc(e.message)+'</div>' }
+}
+async function reviewOffer(id,state){
+ const note = state==='rejected' ? prompt('سبب الرفض (يظهر للشركة):') : null;
+ if(state==='rejected' && note===null) return;
+ try{ await patch('offers?id=eq.'+id,{review_state:state,review_note:note});
+  await patch(`wijha_offer_revisions?offer_id=eq.${id}&state=eq.pending`,{state,reviewed_by:S.me.id,reviewed_at:new Date().toISOString()}).catch(()=>{});
+  toast(state==='approved'?'تم الاعتماد':'تم الرفض'); await loadAll(); render(); }catch(e){toast(e.message,true)}
+}
+
+/* ═══════════ COMPANIES ═══════════ */
+/* ── company form: REGISTRATION (what the company answers) + ADMIN (internal) ── */
+const AR_LETTERS=['أ','ب','ج','د','هـ'];
+const REVIEW=[['pending','قيد المراجعة'],['approved','معتمدة'],['rejected','مرفوضة']];
+let EC=null, EC_FILE=null;
+
+function coForm(){
+ const f=EC.full, isAdmin=isAdminRole(S.me.role);
+ const t=(k,l,type,ph,cls)=>`<div class="${cls||''}"><label>${l}<input data-k="${k}" type="${type||'text'}" placeholder="${ph||''}" value="${esc(f[k]??'')}"></label></div>`;
+ const yesno=`<div><label>عضوية IATA<select data-k="iata_member" data-bool="1" onchange="EC.full.iata_member=this.value==='true';drawCo()">
+   <option value="false" ${f.iata_member?'':'selected'}>لا</option><option value="true" ${f.iata_member?'selected':''}>نعم</option></select></label></div>`;
+ const iataExtra = f.iata_member ? `
+   ${t('license_no','رقم الترخيص','text','ETAA-A-0000')}
+   <div><label>الفئة<select data-k="license_category">
+     <option value="">—</option>${AR_LETTERS.map(x=>`<option ${f.license_category===x?'selected':''}>${x}</option>`).join('')}</select></label></div>` : '';
+ const doc = `<div class="w3"><label>السجل التجاري ${f.commercial_registry_url?`<span class="pill ok">مرفوع</span> <button class="btn sm" onclick="openDoc('${esc(f.commercial_registry_url)}')">عرض</button>`:''}
+   <input type="file" id="crFile" accept="application/pdf,image/*" onchange="EC_FILE=this.files[0]"></label>
+   <p class="note">PDF أو صورة، حتى ١٠ ميجابايت. يُحفظ في مخزن خاص ولا يظهر للعملاء.</p></div>`;
+ const adminSec = isAdmin ? `
+   <div class="sec">الإدارة — داخلي، لا يظهر للشركة</div>
+   <div><label>الحالة<select data-k="wijha_review">${REVIEW.map(([v,l])=>`<option value="${v}" ${(f.wijha_review||'pending')===v?'selected':''}>${l}</option>`).join('')}</select></label></div>
+   <div class="w2"><label>ملاحظات المراجعة<input data-k="wijha_review_note" value="${esc(f.wijha_review_note??'')}" placeholder="سبب الرفض أو ملاحظة داخلية"></label></div>
+   <div class="sec">روابط</div>
+   ${t('google_maps_url','رابط خرائط جوجل','text','https://maps.app.goo.gl/…','w2')}
+   ${t('facebook_url','فيسبوك','text','https://facebook.com/…')}
+   ${t('instagram_url','إنستجرام','text','https://instagram.com/…')}
+   ${t('website','الموقع الإلكتروني','text','https://example.com','w2')}
+   <div class="sec">اختياري</div>
+   ${t('name_en','الاسم بالإنجليزية')}${t('slug','slug')}${t('governorate','المحافظة')}
+   ${t('whatsapp','واتساب')}${t('hotline','الخط الساخن')}${t('google_place_id','Google Place ID')}
+   <div class="w3"><label>عن الشركة (عربي)<textarea data-k="about_ar">${esc(f.about_ar??'')}</textarea></label></div>` : '';
+ return `<div class="form">
+   <div class="sec">بيانات التسجيل</div>
+   ${t('name_ar','اسم الشركة','text','','w2')}
+   ${t('email','البريد الإلكتروني','email','name@example.com')}
+   ${t('phone','رقم الهاتف','tel','01xxxxxxxxx')}
+   ${yesno}${iataExtra}${doc}${adminSec}
+ </div><div id="ederr"></div>`;
+}
+function editCo(id){
+ EC={id, full:id?{...(S.companies.find(c=>c.id===id)||{})}:{wijha_review:'pending',iata_member:false}};
+ EC_FILE=null; drawCo();
+}
+function drawCo(){
+ readCo();
+ let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
+ ov.innerHTML=`<div class="md"><div class="hd"><b>${EC.id?'تعديل الشركة':'شركة جديدة'}</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
+  <div class="bd">${coForm()}</div>
+  <div class="ft">${EC.id&&isAdminRole(S.me.role)?`<button class="btn ok" onclick="quickReview('approved')">اعتماد</button><button class="btn danger" onclick="quickReview('rejected')">رفض</button>`:''}
+   <button class="btn pri" onclick="saveCo()">حفظ</button></div></div>`;
+}
+function readCo(){ document.querySelectorAll('#ov [data-k]').forEach(el=>{ let v=el.value;
+  if(el.dataset.bool) v = v==='true'; else if(el.type==='number') v = v===''?null:Number(v); else if(v==='') v=null;
+  EC.full[el.dataset.k]=v; }); }
+function quickReview(st){ readCo(); EC.full.wijha_review=st; saveCo(); }
+async function uploadDoc(){
+ if(!EC_FILE) return null;
+ const ext=(EC_FILE.name.split('.').pop()||'bin').toLowerCase();
+ const path=`registry/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+ const r=await fetch(S.url+'/storage/v1/object/company-docs/'+path,{method:'POST',
+   headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':EC_FILE.type||'application/octet-stream'},
+   body:EC_FILE});
+ if(!r.ok) throw new Error('رفع الملف فشل: '+(await r.text()).slice(0,160));
+ return path;
+}
+async function openDoc(path){
+ try{ const r=await fetch(S.url+'/storage/v1/object/sign/company-docs/'+path,{method:'POST',
+   headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':'application/json'},
+   body:JSON.stringify({expiresIn:600})});
+  const b=await r.json(); if(!r.ok) throw new Error(b.message||'no access');
+  window.open(S.url+'/storage/v1'+b.signedURL,'_blank');
+ }catch(e){toast(e.message,true)}
+}
+async function saveCo(){
+ readCo(); const f={...EC.full}; delete f.id; delete f.created_at; delete f.updated_at;
+ try{
+  if(EC_FILE) f.commercial_registry_url=await uploadDoc();
+  if(!f.name_ar) throw new Error('اسم الشركة مطلوب');
+  if(!f.slug) f.slug=(f.name_en||f.name_ar).toLowerCase().replace(/[^a-z0-9\u0600-\u06FF]+/g,'-').replace(/^-|-$/g,'')||('co-'+Date.now());
+  if(isAdminRole(S.me.role)&&f.wijha_review){
+    f.wijha_reviewed_at=new Date().toISOString(); f.wijha_reviewed_by=S.me.id;
+    f.etaa_verified = f.wijha_review==='approved';
+  }
+  if(EC.id) await patch('companies?id=eq.'+EC.id,f); else await post('companies',f);
+  toast('تم الحفظ'); closeEd(); EC_FILE=null; await loadAll(); render();
+ }catch(e){ const el=document.getElementById('ederr'); if(el) el.innerHTML='<div class="err">'+esc(e.message)+'</div>'; else toast(e.message,true); }
+}
+
+function companiesV(){
+ const isAdmin=isAdminRole(S.me.role); const rank=c=>({pending:0,rejected:1,approved:2})[c.wijha_review||'pending'];
+ const list=(isAdmin?S.companies:S.companies.filter(c=>c.id===S.me.company_id)).slice().sort((a,b)=>rank(a)-rank(b));
+ return `<h1>${isAdmin?'الشركات':'بيانات الشركة'} <span class="pill">${list.length}</span></h1><div class="bar">${isAdmin?'<button class="btn pri" onclick="editCo(null)">+ شركة جديدة</button>':''}</div>
+ <div class="tw"><table><thead><tr><th>الشركة</th><th>الترخيص / الهاتف</th><th>حالة المراجعة</th><th>رحلات</th><th>أعضاء</th><th>جوجل</th><th>سوشيال</th><th>مصدر</th><th></th></tr></thead><tbody>
+ ${list.map(c=>{const n=S.offers.filter(o=>o.company_id===c.id).length, m=S.profiles.filter(p=>p.company_id===c.id).length, soc=['facebook_url','instagram_url','tiktok_url','youtube_url','x_url','linkedin_url'].filter(k=>c[k]).length;
+  return `<tr><td><b>${esc(c.name_ar)}</b><small>${esc(c.name_en||'')} · <span class="mono">${esc(c.slug)}</span></small></td><td class="mono">${esc(c.license_no||'—')}${c.license_category?` · فئة ${esc(c.license_category)}`:''}<small>${esc(c.phone||c.hotline||'')}</small><small>${esc(c.email||'')}</small></td>
+  <td><span class="pill ${c.wijha_review==='approved'?'ok':c.wijha_review==='rejected'?'bad':'warn'}">${({pending:'قيد المراجعة',approved:'معتمدة',rejected:'مرفوضة'})[c.wijha_review||'pending']}</span>${c.wijha_review_note?`<small>${esc(c.wijha_review_note)}</small>`:''}${c.iata_member?'<small>IATA</small>':''}</td><td class="num">${n}</td><td class="num">${m}</td>
+  <td>${c.google_maps_url?`<a href="${esc(c.google_maps_url)}" target="_blank" class="pill info">★ ${c.google_rating??'—'} (${c.google_reviews??0})</a>`:'<span class="dim">—</span>'}</td><td class="num">${soc||'—'}</td>
+  <td>${c.source_url?`<a href="${esc(c.source_url)}" target="_blank" class="pill info">↗</a>`:'—'}</td>
+  <td class="acts">${isAdmin&&c.wijha_review!=='approved'?`<button class="btn sm ok" onclick="approveCo('${c.id}')">اعتماد</button>`:''}${isAdmin&&c.wijha_review!=='rejected'?`<button class="btn sm danger" onclick="rejectCo('${c.id}')">رفض</button>`:''}${c.commercial_registry_url?`<button class="btn sm" onclick="openDoc('${esc(c.commercial_registry_url)}')">السجل</button>`:''}<button class="btn sm" onclick="editCo('${c.id}')">تعديل</button>${c.source_url?`<button class="btn sm" onclick="queueImport('${c.id}','${esc(c.source_url)}','company')">استيراد من الرابط</button>`:''}${isAdmin?`<button class="btn sm danger" onclick="delCo('${c.id}')">حذف</button>`:''}</td></tr>`}).join('')}</tbody></table></div>
+ <p class="note">المراجعات من جوجل: خزّن Place ID ورابط الخريطة هنا؛ سحب المراجعات تلقائياً يحتاج مفتاح Google Places API مقيّداً بنطاق الموقع (انظر README).</p>`;
+}
+async function approveCo(id){ try{ await patch('companies?id=eq.'+id,{wijha_review:'approved',etaa_verified:true,wijha_reviewed_at:new Date().toISOString(),wijha_reviewed_by:S.me.id}); toast('تم الاعتماد'); await loadAll(); render(); }catch(e){toast(e.message,true)} }
+async function rejectCo(id){ const n=prompt('سبب الرفض (يظهر للشركة):'); if(n===null)return; try{ await patch('companies?id=eq.'+id,{wijha_review:'rejected',etaa_verified:false,wijha_review_note:n,wijha_reviewed_at:new Date().toISOString(),wijha_reviewed_by:S.me.id}); toast('تم الرفض'); await loadAll(); render(); }catch(e){toast(e.message,true)} }
+async function delCo(id){ const n=S.offers.filter(o=>o.company_id===id).length; if(!confirm(`حذف الشركة و ${n} رحلة تابعة لها؟`))return; try{ await del('offers?company_id=eq.'+id); await del('companies?id=eq.'+id); toast('تم'); await loadAll(); render(); }catch(e){toast(e.message,true)} }
+
+/* ═══════════ USERS ═══════════ */
+function usersV(){
+ return `<h1>المستخدمون <span class="pill">${S.profiles.length}</span></h1><p class="sub">العملاء والشركات المسجّلون عبر الموقع. تغيير الدور أو ربط موظف بشركة يتم من هنا.</p>
+ <div class="tw"><table><thead><tr><th>الاسم</th><th>البريد</th><th>الهاتف</th><th>العمر</th><th>الجنسية</th><th>تأشيرات سارية</th><th>الدور</th><th>الشركة</th><th>سُجّل</th><th></th></tr></thead><tbody>
+ ${S.profiles.map(p=>`<tr><td><b>${esc(p.name||'—')}</b></td><td class="mono">${esc(p.email||'')}</td><td class="mono">${esc(p.phone||'—')}</td><td>${esc(p.age_range||'—')}</td><td>${esc(cName(p.nationality,'ar'))}</td>
+  <td>${(p.travel_visas||[]).length?(p.travel_visas).map(v=>{const exp=v.expiry&&new Date(v.expiry)<new Date();return `<span class="chip" style="${exp?'color:var(--red)':''}">${esc(cName(v.country,'ar'))} · ${esc(v.expiry||'')}${exp?' ⚠':''}</span>`}).join(''):'<span class="dim">—</span>'}</td>
+  <td><select onchange="setRole('${p.id}',this.value)">${['client','company_staff','company_admin','company','admin','wijha_admin'].map(r=>`<option ${p.role===r?'selected':''}>${r}</option>`).join('')}</select></td>
+  <td><select onchange="setCoOf('${p.id}',this.value)"><option value="">—</option>${S.companies.map(c=>`<option value="${c.id}" ${p.company_id===c.id?'selected':''}>${esc(c.name_ar)}</option>`).join('')}</select></td>
+  <td class="num">${(p.created_at||'').slice(0,10)}</td>
+  <td class="acts"><button class="btn sm" onclick="editUser('${p.id}')">تعديل</button></td></tr>`).join('')}</tbody></table></div>
+ <p class="note">حذف حساب نهائياً يتم من Supabase → Authentication → Users (يحذف الملف الشخصي والمحادثات تلقائياً).</p>`;
+}
+async function setRole(id,role){try{await patch('profiles?id=eq.'+id,{role});toast('تم')}catch(e){toast(e.message,true)}}
+async function setCoOf(id,cid){try{await patch('profiles?id=eq.'+id,{company_id:cid||null,role:cid?'company':undefined});toast('تم');await loadAll();render()}catch(e){toast(e.message,true)}}
+function editUser(id){ const p=S.profiles.find(x=>x.id===id); let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
+ ov.innerHTML=`<div class="md" style="max-width:560px"><div class="hd"><b>تعديل المستخدم</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div><div class="bd"><div class="form">
+ <div class="w2"><label>الاسم<input data-k="name" value="${esc(p.name||'')}"></label></div><div><label>الهاتف<input data-k="phone" value="${esc(p.phone||'')}"></label></div><div><label>المدينة<input data-k="city" value="${esc(p.city||'')}"></label></div>
+ <div><label>الفئة العمرية<select data-k="age_range"><option value="">—</option>${AGE_RANGES.map(a=>`<option value="${a[0]}" ${p.age_range===a[0]?'selected':''}>${a[1]}</option>`).join('')}</select></label></div>
+ <div><label>الجنسية<select data-k="nationality"><option value="">—</option>${COUNTRIES.map(c=>`<option value="${c[0]}" ${p.nationality===c[0]?'selected':''}>${c[1]}</option>`).join('')}</select></label></div>
+ <div class="w3"><label>التأشيرات السارية (دولة:تاريخ، مفصولة بفواصل)<input data-k="travel_visas" value="${esc((p.travel_visas||[]).map(v=>v.country+':'+v.expiry).join(', '))}" placeholder="SCH:2027-04-30, GB:2026-12-01"></label></div>
+ <div class="w2"><label>الاهتمامات (مفصولة بفواصل)<input data-k="interests" value="${esc((p.interests||[]).join(', '))}"></label></div></div><div id="ederr"></div></div>
+ <div class="ft"><button class="btn pri" onclick="saveUser('${id}')">حفظ</button></div></div>`; }
+async function saveUser(id){ const f={}; document.querySelectorAll('#ov [data-k]').forEach(el=>{f[el.dataset.k]=el.value||null}); if(f.interests) f.interests=f.interests.split(',').map(s=>s.trim()).filter(Boolean);
+ if(typeof f.travel_visas==='string'){ f.travel_visas=f.travel_visas.split(',').map(x=>x.trim()).filter(Boolean)
+   .map(x=>{const [c,d]=x.split(':');return {country:(c||'').trim(),expiry:(d||'').trim()}}).filter(x=>x.country&&x.expiry);
+   f.has_visa=f.travel_visas.length>0; }
+ try{ await patch('profiles?id=eq.'+id,f); toast('تم'); closeEd(); await loadAll(); render(); }catch(e){document.getElementById('ederr').innerHTML='<div class="err">'+esc(e.message)+'</div>'} }
+
+
+async function queueImport(cid,url,kind){
+ if(!url||!/^https?:\/\//.test(url)){toast('رابط غير صحيح',true);return}
+ try{ await post('wijha_imports',{company_id:cid,url,kind,submitted_by:S.me.id},'return=minimal');
+  toast('أُضيف للطابور'); await loadAll(); S.view='intake'; render(); }catch(e){toast(e.message,true)}
+}
+async function setImport(id,st){ if(!st)return; try{ await patch('wijha_imports?id=eq.'+id,{status:st,updated_at:new Date().toISOString()}); await loadAll(); render(); }catch(e){toast(e.message,true)} }
+async function delImport(id){ if(!confirm('حذف هذا العنصر من الطابور؟'))return; try{ await del('wijha_imports?id=eq.'+id); await loadAll(); render(); }catch(e){toast(e.message,true)} }
+
+/* ── review an intake row: side-by-side original + a real editable draft.
+      Works with or without automatic extraction — if payload is empty the
+      fields are just blank and you fill them from what you can see on the left. ── */
+let IR=null;
+function reviewIntake(id){
+ const i=(S.imports||[]).find(x=>x.id===id); if(!i)return;
+ const p=i.payload||{};
+ IR={id,full:{
+   company_id:i.company_id, category:p.category||'tours', sub_category:p.sub_category||'',
+   title_ar:p.title_ar||i.title_hint||'', title_en:p.title_en||'',
+   dest_ar:p.dest_ar||'', dest_en:p.dest_en||'',
+   dates_text_ar:p.dates_text_ar||'', days:p.days||'', nights:p.nights||'',
+   currency:p.currency||'EGP', price_double:p.price_double||'', price_quad:p.price_quad||'',
+   egp_addon:p.egp_addon||0, brief_ar:p.brief_ar||''
+ }};
+ drawReview(i);
+}
+function drawReview(i){
+ let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
+ const f=IR.full;
+ const inp=(k,l,ty,cls)=>`<div class="${cls||''}"><label>${l}<input data-k="${k}" type="${ty||'text'}" value="${esc(f[k]??'')}"></label></div>`;
+ ov.innerHTML=`<div class="md" style="max-width:1000px"><div class="hd"><b>مراجعة عنصر من الطابور</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
+ <div class="bd" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  <div>
+   <h3>المصدر الأصلي</h3>
+   ${i.url?`<p class="note">رابط: <a href="${esc(i.url)}" target="_blank">${esc(i.url)}</a></p>`:''}
+   ${i.file_path?`<button class="btn sm" onclick="openIntakeFile('${esc(i.file_path)}')">📎 فتح الملف المرفوع</button>`:''}
+   ${i.raw_text?`<pre class="json" style="direction:rtl;text-align:start;white-space:pre-wrap;font-family:var(--ar);max-height:420px">${esc(i.raw_text)}</pre>`:''}
+   ${!i.url&&!i.file_path&&!i.raw_text?'<p class="note">لا يوجد نص أو ملف أو رابط محفوظ لهذا العنصر.</p>':''}
+   ${i.payload?`<h4 style="margin-top:12px">ما استُخرج تلقائياً</h4><pre class="json">${esc(JSON.stringify(i.payload,null,2))}</pre>`:`<div class="note-box" style="margin-top:12px">لم يُستخرج شيء تلقائياً بعد — انسخ التفاصيل من العمود المقابل يدوياً إلى الحقول على اليمين.</div>`}
+  </div>
+  <div>
+   <h3>مسودة الرحلة — عدّلها ثم أنشئها</h3>
+   <div class="form">
+    <div><label>الشركة<select data-k="company_id">${S.companies.map(c=>`<option value="${c.id}" ${f.company_id===c.id?'selected':''}>${esc(c.name_ar)}</option>`).join('')}</select></label></div>
+    <div><label>النوع<select data-k="category">${['tours','hajj','umrah'].map(c=>`<option value="${c}" ${f.category===c?'selected':''}>${c}</option>`).join('')}</select></label></div>
+    ${inp('title_ar','العنوان (عربي) *','text','w2')}
+    ${inp('title_en','Title (EN)')}
+    ${inp('dest_ar','الوجهة (عربي)')}${inp('dest_en','Destination (EN)')}
+    ${inp('dates_text_ar','نص التواريخ')}${inp('days','أيام','number')}${inp('nights','ليالٍ','number')}
+    <div><label>العملة<select data-k="currency">${['EGP','EUR','USD','GBP','SAR'].map(c=>`<option ${f.currency===c?'selected':''}>${c}</option>`).join('')}</select></label></div>
+    ${inp('price_double','سعر الثنائية','number')}${inp('price_quad','سعر الرباعية','number')}${inp('egp_addon','جزء محلي EGP','number')}
+    <div class="w3"><label>نبذة<textarea data-k="brief_ar">${esc(f.brief_ar)}</textarea></label></div>
+   </div>
+   <p class="note">تُنشأ الرحلة بحالة "outline" — أكمل البرنامج اليومي والفنادق من محرر الرحلة الكامل بعدها.</p>
+   <div id="ederr"></div>
+  </div>
+ </div>
+ <div class="ft"><button class="btn" onclick="markIntakeFailed('${i.id}')">تعذّرت القراءة</button><button class="btn pri" onclick="createOfferFromIntake('${i.id}')">أنشئ الرحلة من هذه المسودة</button></div></div>`;
+}
+async function createOfferFromIntake(importId){
+ document.querySelectorAll('#ov [data-k]').forEach(el=>{ let v=el.value;
+   if(el.type==='number') v=v===''?null:Number(v); IR.full[el.dataset.k]=v; });
+ const f=IR.full;
+ if(!f.title_ar){ document.getElementById('ederr').innerHTML='<div class="err">العنوان مطلوب</div>'; return; }
+ try{
+  const pubStatus=S.offers.find(x=>x.category!=='tours')?.status||'published';
+  const row={company_id:f.company_id, category:f.category, sub_category:f.sub_category||null,
+   title_ar:f.title_ar, title_en:f.title_en||null, dest_ar:f.dest_ar||null, dest_en:f.dest_en||null,
+   dates_text_ar:f.dates_text_ar||null, days:f.days||null, nights:f.nights||null,
+   currency:f.currency||'EGP', price_double:f.price_double||null, price_quad:f.price_quad||null,
+   egp_addon:f.egp_addon||0, brief_ar:f.brief_ar||null,
+   detail_level:'outline', status:pubStatus, intake_id:importId};
+  const i=(S.imports||[]).find(x=>x.id===importId);
+  if(i){ row.source_kind = i.file_path?'pdf':i.url?'url':'text'; row.source_file=i.file_path||null;
+         row.source_text=i.raw_text||null; row.source_url=i.url||null; }
+  const r=await post('offers',row);
+  await patch('wijha_imports?id=eq.'+importId,{status:'imported',result_offer_id:r[0].id});
+  toast('أُنشئت الرحلة — أكمل البرنامج والفنادق الآن'); closeEd(); await loadAll(); editOffer(r[0].id);
+ }catch(e){ document.getElementById('ederr').innerHTML='<div class="err">'+esc(e.message)+'</div>' }
+}
+async function markIntakeFailed(id){ const why=prompt('سبب التعذّر (اختياري):')||null;
+ try{ await patch('wijha_imports?id=eq.'+id,{status:'failed',error:why}); toast('تم التحديث'); closeEd(); await loadAll(); render(); }catch(e){toast(e.message,true)} }
+
+/* ═══════════ INTAKE — zero-tech offer creation ═══════════ */
+
+let INTAKE={files:[]};
+function intakeV(){
+ const isAdmin=isAdminRole(S.me.role);
+ const cid=isAdmin?(S.companies[0]?.id||''):S.me.company_id;
+ const q=(S.imports||[]);
+ return `<h1>إضافة عرض</h1>
+ <p class="sub">املأ أي واحد من الثلاثة — أو أكثر من واحد معاً. الصق النص، وارفع الملف، وضع الرابط، ثم أرسل.</p>
+ <div class="tw" style="padding:16px">
+  <div class="form">
+   <div><label>الشركة<select id="inCo" ${isAdmin?'':'disabled'}>${(isAdmin?S.companies:S.companies.filter(c=>c.id===cid)).map(c=>`<option value="${c.id}">${esc(c.name_ar)}</option>`).join('')}</select></label></div>
+   <div><label>اسم مبدئي (اختياري)<input id="inTitle" placeholder="مثال: النرويج سبتمبر"></label></div>
+   <div class="sec">١ — الصق النص</div>
+   <div class="w3"><label>نص العرض كما وصلك — واتساب، بريد، منشور<textarea id="inText" style="min-height:170px" placeholder="برنامج النرويج ٨ أيام / ٧ ليالٍ&#10;٤ – ١١ سبتمبر ٢٠٢٦&#10;السعر: ١٩٩٠ يورو للفرد في الغرفة الثنائية&#10;يشمل: الإقامة، الانتقالات، مرشد عربي&#10;لا يشمل: تذكرة الطيران، التأشيرة"></textarea></label></div>
+   <div class="sec">٢ — ارفع ملفاً</div>
+   <div class="w2"><label>PDF أو صورة أو Excel<input type="file" id="inFile" accept="application/pdf,image/*,.xlsx,.csv,.txt" multiple onchange="INTAKE.files=[...this.files];document.getElementById('fileList').textContent=INTAKE.files.map(f=>f.name).join(' · ')"></label>
+     <div id="fileList" class="note"></div></div>
+   <div><label>نوع المصدر<select id="inKind"><option value="pdf">PDF</option><option value="image">صورة</option><option value="text">نص</option><option value="url">رابط</option></select></label></div>
+   <div class="sec">٣ — أو ضع رابطاً</div>
+   <div class="w3"><label>رابط صفحة العرض<input id="inUrl" placeholder="https://example.com/trip-page"></label></div>
+   <div class="w3"><label>ملاحظة للمُعالِج<input id="inNote" placeholder="مثال: خذ الأسعار من الجدول الثاني فقط"></label></div>
+  </div>
+  <div class="bar" style="margin-top:12px"><button class="btn pri" onclick="submitIntake()">أرسل للمعالجة</button>
+   <button class="btn" onclick="editOffer(null)">أو املأ النموذج الكامل يدوياً</button></div>
+  <div id="inErr"></div>
+ </div>
+ <div class="kpi warn" style="margin:14px 0"><b>الاستخراج التلقائي غير مُفعَّل بعد</b>
+  <small>المتصفح لا يستطيع قراءة PDF ولا جلب صفحة من موقع آخر. ما يُرفع الآن يُحفظ في الطابور بأمان مع ملفه ونصه، وتتم قراءته يدوياً حتى تُفعَّل الدالة الخلفية. لهذا لم يُستخرج شيء من ملفَي الـ PDF والصورة اللذين رفعتهما.</small></div>
+ <h2>الطابور</h2>
+ <div class="tw"><table><thead><tr><th>المصدر</th><th>الشركة</th><th>النوع</th><th>الحالة</th><th>أُضيف</th><th></th></tr></thead><tbody>
+ ${q.map(i=>`<tr><td>${i.url?`<a href="${esc(i.url)}" target="_blank" class="mono">${esc(i.url.slice(0,52))}</a>`:''}
+  ${i.file_path?`<button class="btn sm" onclick="openIntakeFile('${esc(i.file_path)}')">📎 ${esc(i.file_path.split('/').pop())}</button>`:''}
+  ${i.raw_text?`<div class="dim" style="font-size:11px;max-width:320px">${esc((i.raw_text||'').slice(0,110))}…</div>`:''}
+  ${i.title_hint?`<small>${esc(i.title_hint)}</small>`:''}${i.error?`<small style="color:var(--red)">${esc(i.error)}</small>`:''}</td>
+  <td>${esc(coN(i.company_id))}</td><td>${esc(i.kind)}</td>
+  <td><span class="pill ${i.status==='imported'?'ok':i.status==='failed'||i.status==='rejected'?'bad':'warn'}">${esc(i.status)}</span></td>
+  <td class="num">${(i.created_at||'').slice(0,10)}</td>
+  <td class="acts">${i.result_offer_id?`<button class="btn sm ok" onclick="editOffer('${i.result_offer_id}')">فتح الرحلة</button>`:`<button class="btn sm pri" onclick="reviewIntake('${i.id}')">راجع وأنشئ الرحلة</button>`}<button class="btn sm danger" onclick="delImport('${i.id}')">×</button></td></tr>`).join('')||'<tr><td colspan="6" class="dim">الطابور فارغ</td></tr>'}
+ </tbody></table></div>`;
+}
+async function openIntakeFile(path){
+ try{ const r=await fetch(S.url+'/storage/v1/object/sign/offer-intake/'+path,{method:'POST',
+  headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':'application/json'},body:JSON.stringify({expiresIn:600})});
+  const b=await r.json(); if(!r.ok) throw new Error(b.message||'no access');
+  window.open(S.url+'/storage/v1'+b.signedURL,'_blank'); }catch(e){toast(e.message,true)}
+}
+async function submitIntake(){
+ const cid=document.getElementById('inCo')?.value, note=document.getElementById('inNote')?.value||null;
+ const title=document.getElementById('inTitle')?.value||null;
+ const tx=(document.getElementById('inText')?.value||'').trim();
+ const url=(document.getElementById('inUrl')?.value||'').trim();
+ const files=INTAKE.files||[];
+ try{
+  if(!tx && !url && !files.length) throw new Error('املأ واحداً على الأقل: نص، أو ملف، أو رابط');
+  if(url && !/^https?:\/\//.test(url)) throw new Error('الرابط غير صحيح');
+  const paths=[]; for(const f of files) paths.push(await uploadIntake(f));
+  const kind = files.length ? (document.getElementById('inKind')?.value||'pdf') : (url?'url':'text');
+  await post('wijha_imports',{company_id:cid,submitted_by:S.me.id,kind,note,title_hint:title,status:'queued',
+    raw_text:tx||null, url:url||null, file_path:paths[0]||null},'return=minimal');
+  for(const p of paths.slice(1))
+    await post('wijha_imports',{company_id:cid,submitted_by:S.me.id,kind,note,title_hint:title,status:'queued',file_path:p},'return=minimal');
+  toast('أُضيف للطابور'); INTAKE.files=[]; await loadAll(); render();
+ }catch(e){ document.getElementById('inErr').innerHTML='<div class="err">'+esc(e.message)+'</div>' }
+}
+async function uploadIntake(file){
+ const ext=(file.name.split('.').pop()||'bin').toLowerCase();
+ const path=`intake/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+ const r=await fetch(S.url+'/storage/v1/object/offer-intake/'+path,{method:'POST',
+  headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':file.type||'application/octet-stream'},body:file});
+ if(!r.ok) throw new Error('رفع الملف فشل: '+(await r.text()).slice(0,140));
+ return path;
+}
+
+/* ═══════════ TEAM & PERMISSIONS ═══════════ */
+function teamV(){
+ const isAdmin=isAdminRole(S.me.role);
+ const scope=isAdmin?null:'company';
+ const roles=(S.roles||[]).filter(r=>!scope||r.scope===scope);
+ const staff=(S.profiles||[]).filter(p=>p.role!=='client'&&(isAdmin||p.company_id===S.me.company_id));
+ return `<h1>${isAdmin?'الفريق والصلاحيات':'فريق الشركة'} <span class="pill">${staff.length}</span></h1>
+ <p class="sub">الموظف يحتفظ بحساب واحد مدى الحياة. عند انتقاله لشركة أخرى نغلق فترة العمل الحالية ونفتح غيرها، ويبقى السجل كاملاً.</p>
+ <div class="bar"><input id="tmEmail" placeholder="بريد الموظف" style="min-width:220px">
+  <select id="tmRole">${roles.map(r=>`<option value="${r.key}">${esc(r.name_ar)} (${r.scope==='wijha'?'وجهة':'شركة'})</option>`).join('')}</select>
+  ${isAdmin?`<select id="tmCo"><option value="">— وجهة (بدون شركة) —</option>${S.companies.map(c=>`<option value="${c.id}">${esc(c.name_ar)}</option>`).join('')}</select>`:''}
+  <input id="tmTitle" placeholder="المسمى الوظيفي" style="width:150px">
+  <button class="btn pri" onclick="addTeam()">إضافة / تعيين</button></div><div id="tmErr"></div>
+ <div class="tw"><table><thead><tr><th>الموظف</th><th>الشركة الحالية</th><th>الدور</th><th>المسمى</th><th>سجل التوظيف</th><th>نشط</th><th></th></tr></thead><tbody>
+ ${staff.map(p=>{const r=(S.roles||[]).find(x=>x.key===p.wijha_role_key);
+   const hist=(S.employment||[]).filter(e=>e.profile_id===p.id).sort((a,b)=>(b.started_on||'').localeCompare(a.started_on||''));
+   return `<tr><td><b>${esc(p.name||'—')}</b><small class="mono">${esc(p.email||'')}</small></td>
+   <td>${esc(coN(p.company_id))}</td>
+   <td><select onchange="setRoleKey('${p.id}',this.value)">${roles.map(x=>`<option value="${x.key}" ${p.wijha_role_key===x.key?'selected':''}>${esc(x.name_ar)}</option>`).join('')}</select>
+     ${r?`<small>${esc((r.description_ar||'').slice(0,70))}…</small>`:''}</td>
+   <td>${esc(p.job_title||'—')}</td>
+   <td>${hist.length?hist.map(h=>`<div style="font-size:11px">${esc(coN(h.company_id))} · <span class="mono">${(h.started_on||'').slice(0,7)} → ${h.ended_on?(h.ended_on).slice(0,7):'الآن'}</span></div>`).join(''):'<span class="dim">—</span>'}</td>
+   <td>${p.is_active===false?'<span class="pill bad">موقوف</span>':'<span class="pill ok">نشط</span>'}</td>
+   <td class="acts"><button class="btn sm" onclick="moveEmp('${p.id}')">نقل لشركة</button><button class="btn sm" onclick="toggleActive('${p.id}',${p.is_active===false})">${p.is_active===false?'تفعيل':'إيقاف'}</button></td></tr>`}).join('')||'<tr><td colspan="7" class="dim">لا موظفين</td></tr>'}
+ </tbody></table></div>
+ <h2>الأدوار وما يراه كل دور</h2>
+ <div class="tw"><table><thead><tr><th>الدور</th><th>النطاق</th><th>الوصف</th><th>الصلاحيات</th></tr></thead><tbody>
+ ${roles.map(r=>`<tr><td><b>${esc(r.name_ar)}</b><small class="mono">${esc(r.key)}</small></td><td>${r.scope==='wijha'?'وجهة':'شركة'}</td>
+  <td style="max-width:340px">${esc(r.description_ar||'')}</td>
+  <td>${Object.entries(r.permissions||{}).map(([k,v])=>`<span class="chip" style="${v==='full'?'background:var(--green-soft);color:var(--green)':v==='edit'?'background:var(--amber-soft);color:var(--amber-ink)':v==='view'?'':'opacity:.4'}">${k}: ${v}</span>`).join('')}</td></tr>`).join('')}
+ </tbody></table></div>`;
+}
+async function addTeam(){
+ const email=(document.getElementById('tmEmail')?.value||'').trim().toLowerCase();
+ const role=document.getElementById('tmRole')?.value;
+ const cid=isAdminRole(S.me.role)?(document.getElementById('tmCo')?.value||null):S.me.company_id;
+ const title=document.getElementById('tmTitle')?.value||null;
+ if(!email) return toast('أدخل بريد الموظف',true);
+ try{
+  const found=await get('profiles?select=id,email&email=eq.'+encodeURIComponent(email));
+  if(!found.length) throw new Error('لا يوجد حساب بهذا البريد. اطلب من الموظف التسجيل من الموقع أولاً، ثم عيّنه هنا.');
+  await rpc('wijha_move_employee',{p_profile:found[0].id,p_company:cid,p_role:role,p_title:title,p_note:'تعيين من لوحة الفريق'});
+  toast('تم التعيين'); await loadAll(); render();
+ }catch(e){ document.getElementById('tmErr').innerHTML='<div class="err">'+esc(e.message)+'</div>' }
+}
+async function setRoleKey(id,key){ try{ await patch('profiles?id=eq.'+id,{wijha_role_key:key}); toast('تم'); await loadAll(); }catch(e){toast(e.message,true)} }
+async function toggleActive(id,on){ try{ await patch('profiles?id=eq.'+id,{is_active:on}); await loadAll(); render(); }catch(e){toast(e.message,true)} }
+async function moveEmp(id){
+ const names=S.companies.map((c,i)=>`${i+1}. ${c.name_ar}`).join('\n');
+ const pick=prompt('انقل الموظف إلى:\n'+names+'\n\nاكتب الرقم، أو 0 لفصله عن كل الشركات:');
+ if(pick===null) return;
+ const n=parseInt(pick,10); const cid=n===0?null:S.companies[n-1]?.id;
+ if(n!==0&&!cid) return toast('رقم غير صحيح',true);
+ const note=prompt('ملاحظة على النقل (اختياري):')||null;
+ try{ await rpc('wijha_move_employee',{p_profile:id,p_company:cid,p_role:null,p_title:null,p_note:note});
+  toast('تم النقل — السجل محفوظ'); await loadAll(); render(); }catch(e){toast(e.message,true)}
+}
+
+/* ═══════════ SUPPLIER LIBRARY ═══════════ */
+const SVC=[['hotel','فندق'],['transport','نقل'],['activity','نشاط'],['meal','وجبة'],['guide','مرشد'],['flight','طيران'],['visa','تأشيرة'],['insurance','تأمين'],['other','أخرى']];
+const UNITS=[['per_person','للفرد'],['per_night','لليلة'],['per_room','للغرفة'],['per_vehicle','للسيارة'],['per_group','للمجموعة'],['per_trip','للرحلة']];
+function suppliersV(){
+ const isAdmin=isAdminRole(S.me.role);
+ const items=(S.suppliers||[]).filter(x=>isAdmin||x.company_id===S.me.company_id);
+ const soon=items.filter(x=>x.valid_to&&new Date(x.valid_to)<new Date(Date.now()+30*864e5));
+ return `<h1>مكتبة الموردين <span class="pill">${items.length}</span></h1>
+ <p class="sub">أسعار الفنادق والنقل والأنشطة كما وصلتك من الموردين. داخلية بالكامل — لا تظهر للعملاء. تُستخدم كقطع لبناء عرض كامل.</p>
+ ${soon.length?`<div class="kpi bad" style="margin-bottom:12px"><b>${soon.length}</b><small>سعر ينتهي خلال ٣٠ يوماً — راجع المورد قبل استخدامه</small></div>`:''}
+ <div class="bar"><button class="btn pri" onclick="editSup(null)">+ سعر جديد</button>
+  <button class="btn" onclick="priceCheckEmail()">✉ طلب تحديث أسعار من مورد</button>
+  <select onchange="S.filter.svc=this.value;render()"><option value="">كل الخدمات</option>${SVC.map(([k,l])=>`<option value="${k}" ${S.filter.svc===k?'selected':''}>${l}</option>`).join('')}</select></div>
+ <div class="tw"><table><thead><tr><th>الخدمة</th><th>المورد</th><th>البند</th><th>المدينة</th><th>الوحدة</th><th>التكلفة</th><th>البيع</th><th>الصلاحية</th><th></th></tr></thead><tbody>
+ ${items.filter(x=>!S.filter.svc||x.service_type===S.filter.svc).map(x=>{const exp=x.valid_to&&new Date(x.valid_to)<new Date();
+  return `<tr><td>${(SVC.find(s=>s[0]===x.service_type)||[])[1]||x.service_type}</td><td>${esc(x.supplier_name||'—')}</td>
+  <td><b>${esc(x.title_ar)}</b>${x.notes_ar?`<small>${esc(x.notes_ar.slice(0,60))}</small>`:''}</td><td>${esc(x.city_ar||'—')}</td>
+  <td>${(UNITS.find(u=>u[0]===x.unit)||[])[1]||x.unit}</td>
+  <td class="num">${nf(x.cost)} ${esc(x.currency)}</td><td class="num">${nf(x.sell)} ${esc(x.currency)}</td>
+  <td class="num ${exp?'':''}">${x.valid_to?`<span class="pill ${exp?'bad':'ok'}">${x.valid_to}</span>`:'—'}</td>
+  <td class="acts"><button class="btn sm" onclick="editSup('${x.id}')">تعديل</button><button class="btn sm danger" onclick="delSup('${x.id}')">×</button></td></tr>`}).join('')||'<tr><td colspan="9" class="dim">المكتبة فارغة — أضف أول سعر</td></tr>'}
+ </tbody></table></div>
+ <p class="note">الخطوة التالية: شاشة بناء العرض — تسحب هذه البنود إلى أيام برحلة بتاريخ هجري وميلادي وتوقيت، ويُحسب الإجمالي والهامش تلقائياً.</p>`;
+}
+let ES=null;
+function editSup(id){
+ const x=id?(S.suppliers||[]).find(v=>v.id===id):null;
+ ES={id,full:x?{...x}:{service_type:'hotel',unit:'per_person',currency:'EGP',company_id:isAdminRole(S.me.role)?(S.companies[0]?.id):S.me.company_id,is_active:true}};
+ let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
+ const f=ES.full; const t=(k,l,ty,cls)=>`<div class="${cls||''}"><label>${l}<input data-k="${k}" type="${ty||'text'}" value="${esc(f[k]??'')}"></label></div>`;
+ ov.innerHTML=`<div class="md"><div class="hd"><b>${id?'تعديل سعر مورد':'سعر مورد جديد'}</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
+ <div class="bd"><div class="form">
+  <div><label>نوع الخدمة<select data-k="service_type">${SVC.map(([k,l])=>`<option value="${k}" ${f.service_type===k?'selected':''}>${l}</option>`).join('')}</select></label></div>
+  ${t('supplier_name','اسم المورد')}${t('title_ar','اسم البند','text','w2')}
+  ${t('city_ar','المدينة')}<div><label>الوحدة<select data-k="unit">${UNITS.map(([k,l])=>`<option value="${k}" ${f.unit===k?'selected':''}>${l}</option>`).join('')}</select></label></div>
+  <div><label>العملة<select data-k="currency">${['EGP','USD','EUR','SAR','GBP'].map(c=>`<option ${f.currency===c?'selected':''}>${c}</option>`).join('')}</select></label></div>
+  ${t('cost','التكلفة من المورد','number')}${t('sell','سعر البيع المقترح','number')}${t('capacity','السعة','number')}
+  ${t('valid_from','ساري من','date')}${t('valid_to','ساري حتى','date')}
+  <div class="sec">بيانات المورد للتواصل</div>
+  ${t('contact_name','مسؤول التواصل')}${t('contact_email','بريد المورد','email')}${t('contact_phone','هاتف المورد','tel')}
+  <div><label>تصنيف البند<select data-k="item_cat">${['transfer','flight','sight','activity','meal','hotel','free','shop','rites','optional','guide','visa','tax','personal'].map(c=>`<option ${f.item_cat===c?'selected':''}>${c}</option>`).join('')}</select></label></div>
+  <div class="w3"><label>ملاحظات<textarea data-k="notes_ar">${esc(f.notes_ar??'')}</textarea></label></div>
+ </div><div id="ederr"></div></div><div class="ft"><button class="btn pri" onclick="saveSup()">حفظ</button></div></div>`;
+}
+async function saveSup(){
+ const f={...ES.full}; document.querySelectorAll('#ov [data-k]').forEach(el=>{let v=el.value;
+  if(el.type==='number') v=v===''?null:Number(v); else if(v==='') v=null; f[el.dataset.k]=v});
+ delete f.id; delete f.created_at; delete f.updated_at;
+ try{ if(!f.title_ar) throw new Error('اسم البند مطلوب');
+  if(ES.id) await patch('wijha_supplier_items?id=eq.'+ES.id,f); else await post('wijha_supplier_items',f);
+  toast('تم الحفظ'); closeEd(); await loadAll(); render(); }catch(e){document.getElementById('ederr').innerHTML='<div class="err">'+esc(e.message)+'</div>'}
+}
+async function delSup(id){ if(!confirm('حذف هذا السعر؟'))return; try{ await del('wijha_supplier_items?id=eq.'+id); await loadAll(); render(); }catch(e){toast(e.message,true)} }
+function priceCheckEmail(){
+ const sup=[...new Set((S.suppliers||[]).map(x=>x.contact_email).filter(Boolean))];
+ if(!sup.length) return toast('لا يوجد بريد مورد محفوظ — أضفه في بيانات المورد',true);
+ composeEmail({template:'supplier_price_check',to:sup[0],
+  subject:'تأكيد أسعار قبل إصدار العرض',
+  body:'تحية طيبة،\n\nنرجو تأكيد سريان الأسعار التالية قبل إصدار العرض للعميل:\n\n'+
+   (S.suppliers||[]).filter(x=>x.contact_email===sup[0]).map(x=>`• ${x.title_ar} — ${x.cost} ${x.currency} ${(UNITS.find(u=>u[0]===x.unit)||[])[1]||''}${x.valid_to?` (مسجّل ساري حتى ${x.valid_to})`:''}`).join('\n')+
+   '\n\nوإفادتنا بأي تعديل أو مدة صلاحية جديدة.\n\nشكراً لتعاونكم.'});
+}
+
+/* ═══════════ EMAILS ═══════════ */
+function emailsV(){
+ const box=(S.emails||[]);
+ return `<h1>البريد <span class="pill">${box.length}</span></h1>
+ <p class="sub">أرسل التقرير اليومي أو رسالة مخصّصة إلى مسؤول شركة أو موظف بعينه. كل رسالة تُحفظ في السجل.</p>
+ <div class="bar">
+  <button class="btn pri" onclick="composeEmail({template:'daily_digest'})">✉ التقرير اليومي</button>
+  <button class="btn" onclick="composeEmail({template:'enquiry'})">✉ إشعار استفسار</button>
+  <button class="btn" onclick="composeEmail({template:'custom'})">✉ رسالة مخصّصة</button>
+  <button class="btn" onclick="openTemplates()">معاينة القوالب ↗</button></div>
+ <div class="tw"><table><thead><tr><th>إلى</th><th>الموضوع</th><th>القالب</th><th>الحالة</th><th>التاريخ</th><th></th></tr></thead><tbody>
+ ${box.map(e=>`<tr><td><b>${esc(e.to_name||'')}</b><small class="mono">${esc(e.to_email)}</small></td><td>${esc(e.subject)}</td>
+  <td>${esc(e.template)}</td><td><span class="pill ${e.status==='sent'?'ok':e.status==='failed'?'bad':'warn'}">${esc(e.status)}</span>${e.error?`<small>${esc(e.error)}</small>`:''}</td>
+  <td class="num">${(e.created_at||'').slice(0,16).replace('T',' ')}</td>
+  <td class="acts"><button class="btn sm" onclick="viewEmail('${e.id}')">عرض</button>${e.status==='queued'?`<button class="btn sm ok" onclick="markSent('${e.id}')">تم الإرسال</button>`:''}</td></tr>`).join('')||'<tr><td colspan="6" class="dim">لا رسائل بعد</td></tr>'}
+ </tbody></table></div>
+ <p class="note">الإرسال الفعلي يحتاج مزوّد بريد (Resend أو SendGrid) عبر دالة خلفية. حتى ذلك، السجل يعمل كطابور: انسخ الرسالة وأرسلها، ثم علّمها "تم الإرسال".</p>`;
+}
+function openTemplates(){
+ let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
+ ov.innerHTML=`<div class="md"><div class="hd"><b>قوالب البريد</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
+ <div class="bd"><p class="note">هذه القوالب مدمجة هنا. استخدم زر «رسالة جديدة» لإرسال أي منها إلى مسؤول شركة أو موظف.</p>
+  ${[['daily_digest','التقرير اليومي','يُرسل ٩ صباحاً: المشاهدات والاستفسارات والحفظ، أعلى الرحلات أداءً، كلمات البحث التي وصلت لرحلاتهم، فرص غير مغطاة، وما يحتاج انتباههم اليوم.'],
+     ['enquiry','إشعار استفسار','يُرسل فور وصول استفسار: بيانات الرحلة، نوع الغرفة والعدد، الإجمالي بالجنيه، ميزانية العميل، مسار تصفحه، والمقاعد المتبقية، مع مهلة رد ٤ ساعات.'],
+     ['supplier_price_check','تأكيد أسعار مورد','قائمة ببنود المورد وتواريخ صلاحيتها المسجّلة، لطلب تأكيدها قبل إصدار العرض.'],
+     ['approval','اعتماد شركة','إخطار الشركة بأن ترخيصها اعتُمد وأن رحلاتها ستظهر للعملاء.'],
+     ['rejection','رفض طلب','إخطار الشركة بسبب الرفض وما يلزم لإعادة التقديم.']].map(([k,n,d])=>
+   `<div class="rowitem"><div><b>${n}</b><small>${d}</small></div><button class="btn sm pri" onclick="closeEd();composeEmail({template:'${k}'})">استخدم</button></div>`).join('')}
+ </div></div>`;
+}
+function recipientOptions(){
+ const staff=(S.profiles||[]).filter(p=>p.role!=='client'&&p.email);
+ return staff.map(p=>`<option value="${esc(p.email)}" data-name="${esc(p.name||'')}" data-co="${p.company_id||''}">${esc(p.name||p.email)} — ${esc(coN(p.company_id))}</option>`).join('')
+  + S.companies.filter(c=>c.email).map(c=>`<option value="${esc(c.email)}" data-name="${esc(c.name_ar)}" data-co="${c.id}">${esc(c.name_ar)} (بريد الشركة)</option>`).join('');
+}
+function composeEmail(pre){
+ pre=pre||{};
+ let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
+ const subj=pre.subject||({daily_digest:'تقريرك اليومي على وجهة',enquiry:'استفسار جديد على إحدى رحلاتك',supplier_price_check:'تأكيد أسعار قبل إصدار العرض',custom:''})[pre.template||'custom'];
+ const body=pre.body||({daily_digest:'صباح الخير،\n\nملخّص أداء رحلاتكم أمس على وجهة:\n\n• المشاهدات: —\n• الاستفسارات: —\n• الأعلى أداءً: —\n\nالكلمات التي وصلت لرحلاتكم: —\n\nيحتاج انتباهكم: استفسارات بلا رد، ورحلات بلا برنامج يومي.\n\nفريق وجهة',
+  enquiry:'تحية طيبة،\n\nوصل استفسار جديد على إحدى رحلاتكم. تجدونه في لوحة الشركة تحت "الاستفسارات".\n\nمهلة الرد أربع ساعات — الرد خلال ساعة يرفع فرصة الحجز.\n\nفريق وجهة',
+  custom:''})[pre.template||'custom'];
+ ov.innerHTML=`<div class="md"><div class="hd"><b>رسالة جديدة</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
+ <div class="bd"><div class="form">
+  <div class="w2"><label>إلى<select id="emTo" onchange="const o=this.selectedOptions[0];document.getElementById('emName').value=o.dataset.name||'';document.getElementById('emCo').value=o.dataset.co||''">
+    ${pre.to?`<option value="${esc(pre.to)}" selected>${esc(pre.to)}</option>`:''}${recipientOptions()}</select></label></div>
+  <div><label>الاسم<input id="emName"></label></div><input type="hidden" id="emCo">
+  <div><label>القالب<select id="emTpl">${['daily_digest','enquiry','supplier_price_check','approval','rejection','custom'].map(t=>`<option ${(pre.template||'custom')===t?'selected':''}>${t}</option>`).join('')}</select></label></div>
+  <div class="w3"><label>الموضوع<input id="emSubj" value="${esc(subj)}"></label></div>
+  <div class="w3"><label>النص<textarea id="emBody" style="min-height:220px">${esc(body)}</textarea></label></div>
+ </div><div id="ederr"></div></div>
+ <div class="ft"><button class="btn" onclick="copyEmail()">نسخ النص</button><button class="btn pri" onclick="queueEmail()">حفظ في الطابور</button></div></div>`;
+}
+function copyEmail(){ const t=document.getElementById('emSubj').value+'\n\n'+document.getElementById('emBody').value;
+ navigator.clipboard.writeText(t); toast('تم النسخ'); }
+async function queueEmail(){
+ try{ const to=document.getElementById('emTo').value; if(!to) throw new Error('اختر المستلم');
+  await post('wijha_emails',{template:document.getElementById('emTpl').value,to_email:to,
+   to_name:document.getElementById('emName').value||null, company_id:document.getElementById('emCo').value||null,
+   subject:document.getElementById('emSubj').value, body_text:document.getElementById('emBody').value,
+   created_by:S.me.id},'return=minimal');
+  toast('حُفظت في الطابور'); closeEd(); await loadAll(); render();
+ }catch(e){document.getElementById('ederr').innerHTML='<div class="err">'+esc(e.message)+'</div>'}
+}
+function viewEmail(id){ const e=(S.emails||[]).find(x=>x.id===id);
+ let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
+ ov.innerHTML=`<div class="md"><div class="hd"><b>${esc(e.subject)}</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
+ <div class="bd"><p class="note">إلى: ${esc(e.to_name||'')} &lt;${esc(e.to_email)}&gt;</p><pre class="json" style="direction:rtl;text-align:start;white-space:pre-wrap;font-family:var(--ar)">${esc(e.body_text||'')}</pre></div></div>`; }
+async function markSent(id){ try{ await patch('wijha_emails?id=eq.'+id,{status:'sent',sent_at:new Date().toISOString()}); await loadAll(); render(); }catch(e){toast(e.message,true)} }
+
+/* ═══════════ CHATS ═══════════ */
+function chatsV(){
+ const th=S.thread?S.threads.find(t=>t.id===S.thread):null;
+ const pn=id=>S.profiles.find(p=>p.id===id)?.name||S.profiles.find(p=>p.id===id)?.email||'عميل';
+ return `<h1>المحادثات <span class="pill">${S.threads.length}</span></h1><p class="sub">كل محادثة عميل ↔ شركة. الأرقام والبريد تُحجب تلقائياً قبل التخزين. الإدارة تستطيع التدخل في أي محادثة.</p>
+ <div class="chatgrid"><div class="tlist">${S.threads.map(t=>{const o=S.offers.find(x=>x.id===t.offer_id);return `<div class="titem ${S.thread===t.id?'on':''}" onclick="S.thread='${t.id}';render()"><div><b>${esc(pn(t.client_id))} ↔ ${esc(coN(t.company_id))}</b><small>${esc(o?.title_ar||'—')}</small><small>${(t.last_message_at||'').replace('T',' ').slice(0,16)} · ${t.last_message_from==='client'?'ينتظر رد الشركة':'رُدّ عليه'}</small></div>${t.company_unread?`<span class="pill bad">${t.company_unread}</span>`:''}</div>`}).join('')||'<div class="titem dim">لا محادثات بعد</div>'}</div>
+ <div class="cwin">${th?`<div class="titem" style="cursor:default"><div><b>${esc(pn(th.client_id))} ↔ ${esc(coN(th.company_id))}</b><small>${esc(S.offers.find(x=>x.id===th.offer_id)?.title_ar||'')}</small></div><span class="pill ${th.status==='open'?'ok':''}">${th.status}</span></div><div class="cbody" id="cbody">…</div>
+  <div class="cfoot"><input id="cin" placeholder="${isAdminRole(S.me.role)?'رد كإدارة…':'رد على العميل…'}" onkeydown="if(event.key==='Enter')sendAdmin()"><button class="btn pri" onclick="sendAdmin()">إرسال</button></div>`:'<div class="cbody dim" style="place-content:center;text-align:center">اختر محادثة</div>'}</div></div>`;
+}
+async function loadMsgs(){ try{ S.msgs=await get('wijha_messages?select=*&thread_id=eq.'+S.thread+'&order=created_at'); const b=document.getElementById('cbody'); if(!b)return;
+ b.innerHTML=S.msgs.map(m=>`<div class="msg ${m.sender_role}${m.blocked?' blocked':''}">${esc(m.body)}<time>${m.sender_role} · ${(m.created_at||'').replace('T',' ').slice(0,16)}</time></div>`).join('')||'<span class="dim">لا رسائل</span>'; b.scrollTop=b.scrollHeight; }catch(e){toast(e.message,true)} }
+async function sendAdmin(){ const v=cin.value.trim(); if(!v)return; cin.value=''; try{ await post('wijha_messages',{thread_id:S.thread,sender_id:S.me.id,sender_role:isAdminRole(S.me.role)?'admin':'company',body:v},'return=minimal'); await rpc('wijha_mark_read',{p_thread:S.thread}).catch(()=>{}); await loadMsgs(); }catch(e){toast(e.message,true)} }
+
+/* ═══════════ INSIGHTS ═══════════ */
+function insights(){
+ const wk=S.events.filter(e=>new Date(e.at)>Date.now()-7*864e5); const byO={}; wk.forEach(e=>{byO[e.offer_id]=byO[e.offer_id]||{view:0,save:0,enquiry:0,chat_open:0};byO[e.offer_id][e.kind]++});
+ const top=Object.entries(byO).map(([id,v])=>({o:S.offers.find(x=>x.id===id),...v})).filter(r=>r.o).sort((a,b)=>(b.enquiry*5+b.save*2+b.view)-(a.enquiry*5+a.save*2+a.view)).slice(0,12);
+ const terms={}; S.terms.filter(t=>new Date(t.at)>Date.now()-7*864e5).forEach(t=>{const k=(t.term||'').trim().toLowerCase();if(k)terms[k]=(terms[k]||0)+1}); const tt=Object.entries(terms).sort((a,b)=>b[1]-a[1]).slice(0,20);
+ return `<h1>الطلب والبحث</h1><p class="sub">آخر ٧ أيام من <span class="mono">offer_events</span> و<span class="mono">search_terms</span>. هذه هي المصادر التي يُبنى منها التقرير اليومي للشركات.</p>
+ <div class="kpis"><div class="kpi"><b>${wk.filter(e=>e.kind==='view').length}</b><small>مشاهدة</small></div><div class="kpi"><b>${wk.filter(e=>e.kind==='save').length}</b><small>حفظ</small></div><div class="kpi"><b>${wk.filter(e=>e.kind==='enquiry').length}</b><small>استفسار</small></div><div class="kpi"><b>${wk.filter(e=>e.kind==='chat_open').length}</b><small>محادثة</small></div><div class="kpi"><b>${S.terms.length}</b><small>عملية بحث مسجّلة</small></div></div>
+ <h2>الأعلى تفاعلاً</h2><div class="tw"><table><thead><tr><th>الرحلة</th><th>الشركة</th><th>مشاهدة</th><th>حفظ</th><th>استفسار</th><th>محادثة</th></tr></thead><tbody>${top.map(r=>`<tr><td><b>${esc(r.o.title_ar)}</b></td><td>${esc(coN(r.o.company_id))}</td><td class="num">${r.view}</td><td class="num">${r.save}</td><td class="num">${r.enquiry}</td><td class="num">${r.chat_open}</td></tr>`).join('')||'<tr><td colspan="6" class="dim">لا أحداث بعد — تظهر بعد تصفح حقيقي للموقع</td></tr>'}</tbody></table></div>
+ <h2>كلمات البحث</h2><div class="tw"><table style="min-width:0"><tbody>${tt.map(([k,n])=>`<tr><td>${esc(k)}</td><td class="num">${n}</td></tr>`).join('')||'<tr><td class="dim">لا بحث مسجّل بعد</td></tr>'}</tbody></table></div>`;
+}
+boot();
+</script>
+</body>
+</html>

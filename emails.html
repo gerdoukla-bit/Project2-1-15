@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wijha — Company email templates</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&family=IBM+Plex+Mono:wght@400;500&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2efe9;--surface:#fff;--line:#e4dfd4;--ink:#1b1b1f;--muted:#6b6a72;--dim:#96939b;
+ --amber:#e0961d;--amber-ink:#8a5a05;--amber-soft:#fff4dd;--green:#1f8a5b;--green-soft:#e6f5ec;
+ --red:#c23b3b;--red-soft:#fdeaea;--dark:#1f1e22;--ar:'Cairo',sans-serif;--sans:'DM Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:var(--ar);color:var(--ink);line-height:1.55;padding:24px 16px 80px}
+.page{max-width:1160px;margin:0 auto}
+.pagehead{margin-bottom:22px}
+.pagehead h1{font-size:26px;font-weight:800}
+.pagehead p{color:var(--muted);font-size:14px;margin-top:4px}
+.tabs{display:flex;gap:8px;margin:18px 0}
+.tab{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+.tab.on{border-color:var(--amber);background:var(--amber-soft);color:var(--amber-ink)}
+.meta{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:13px}
+.meta div{display:flex;gap:10px;padding:3px 0}
+.meta b{min-width:96px;color:var(--muted);font-weight:700}
+.meta span{font-family:var(--mono);font-size:12px;direction:ltr;unicode-bidi:isolate}
+
+/* ── email canvas ── */
+.mail{max-width:640px;margin:0 auto;background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 18px 46px -30px rgba(0,0,0,.5)}
+.mh{background:var(--dark);color:#f3efe6;padding:22px 26px}
+.mh .brand{font-size:20px;font-weight:800}
+.mh .brand em{font-style:normal;color:var(--amber);font-family:var(--sans);font-size:13px}
+.mh .sub{font-size:12px;opacity:.72;margin-top:2px}
+.mb{padding:24px 26px}
+.greet{font-size:16px;font-weight:700;margin-bottom:6px}
+.lede{font-size:14px;color:var(--muted);margin-bottom:18px}
+.sect{margin:22px 0 0}
+.sect h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber-ink);margin-bottom:10px;font-family:var(--mono)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.kpi{background:var(--bg);border-radius:12px;padding:12px 10px;text-align:center}
+.kpi b{display:block;font-size:20px;font-weight:800;font-family:var(--sans)}
+.kpi small{font-size:10.5px;color:var(--muted);display:block;line-height:1.3}
+.kpi .d{font-size:11px;font-weight:700;margin-top:3px}
+.up{color:var(--green)} .down{color:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:start;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td small{display:block;color:var(--muted);font-size:11px}
+.num{font-family:var(--mono);font-size:12px;direction:ltr;unicode-bidi:isolate;text-align:end}
+.bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%;background:var(--amber)}
+.bar.g i{background:var(--green)}
+.pill{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px}
+.p-new{background:var(--red-soft);color:var(--red)}
+.p-ok{background:var(--green-soft);color:var(--green)}
+.p-warn{background:var(--amber-soft);color:var(--amber-ink)}
+.callout{background:var(--amber-soft);border-radius:12px;padding:14px 16px;margin:18px 0;font-size:13.5px}
+.callout b{display:block;margin-bottom:4px;color:var(--amber-ink)}
+.act{background:var(--green-soft);border-radius:12px;padding:14px 16px;margin:18px 0;font-size:13.5px}
+.act b{display:block;margin-bottom:6px;color:var(--green)}
+.act ol{margin:0;padding-inline-start:18px} .act li{padding:2px 0}
+.btn{display:block;background:var(--amber);color:#1b1b1f;text-align:center;padding:13px;border-radius:11px;font-weight:800;font-size:14px;text-decoration:none;margin:18px 0 8px}
+.btn.sec{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.enq{background:var(--bg);border-radius:14px;padding:16px}
+.enq .row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.enq .row:last-child{border-bottom:0}
+.enq .row span{color:var(--muted)} .enq .row b{text-align:end}
+.quote{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13.5px;color:var(--muted);margin-top:10px}
+.sla{display:flex;gap:8px;align-items:center;background:var(--red-soft);color:var(--red);border-radius:10px;padding:10px 14px;font-size:12.5px;font-weight:700;margin-top:12px}
+.mf{background:var(--bg);padding:18px 26px;font-size:11px;color:var(--muted);text-align:center;line-height:1.7}
+.mf a{color:var(--muted)}
+.trend{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:7px 0;border-bottom:1px dashed var(--line);align-items:center}
+.trend:last-child{border-bottom:0}
+.trend .g{flex:1;margin:0 8px}
+.spark{display:flex;gap:2px;align-items:flex-end;height:26px}
+.spark i{width:7px;background:var(--amber);border-radius:2px 2px 0 0;display:block}
+@media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="page">
+ <div class="pagehead">
+  <h1>قوالب بريد الشركات — Wijha company emails</h1>
+  <p>القالبان يُرسلان تلقائياً إلى مسؤول الحساب في الشركة. القالب اليومي في الساعة ٩ صباحاً، وقالب الاستفسار فور وصوله.</p>
+ </div>
+ <div class="tabs">
+  <button class="tab on" onclick="show(0,this)">١ — التقرير اليومي · Daily digest</button>
+  <button class="tab" onclick="show(1,this)">٢ — استفسار جديد · New enquiry</button>
+ </div>
+
+ <!-- ══════════ 1. DAILY DIGEST ══════════ -->
+ <div id="m0">
+  <div class="meta">
+   <div><b>To</b><span>sales@travelsawa.com</span></div>
+   <div><b>From</b><span>Wijha &lt;daily@wijha.app&gt;</span></div>
+   <div><b>Subject</b><span>تقريرك اليومي · ٣٧ استفسار جديد و٨٨٠ مشاهدة — النرويج تتصدّر البحث</span></div>
+   <div><b>Schedule</b><span>daily 09:00 Africa/Cairo · trigger: cron</span></div>
+   <div><b>Preheader</b><span>مشاهدات رحلاتك ارتفعت ١٨٪ · «آيسلندا» أعلى كلمة بحث صاعدة</span></div>
+  </div>
+
+  <div class="mail">
+   <div class="mh"><div class="brand">وجهة <em>Wijha</em></div>
+     <div class="sub">تقرير الشركة اليومي · الأربعاء ٢٦ أغسطس ٢٠٢٦</div></div>
+   <div class="mb">
+    <div class="greet">صباح الخير يا ياسمين 👋</div>
+    <p class="lede">ملخّص أداء رحلات <b>ترافل سوا</b> على وجهة خلال آخر ٢٤ ساعة، ومقارنتها بالأسبوع الماضي.</p>
+
+    <div class="sect"><h3>الأرقام أمس</h3>
+     <div class="kpis">
+      <div class="kpi"><b>880</b><small>مشاهدة</small><div class="d up">▲ ١٨٪</div></div>
+      <div class="kpi"><b>37</b><small>استفسار</small><div class="d up">▲ ٢٦٪</div></div>
+      <div class="kpi"><b>58</b><small>حفظ للرحلة</small><div class="d up">▲ ٩٪</div></div>
+      <div class="kpi"><b>4.2%</b><small>معدّل الاستفسار</small><div class="d up">▲ ٠٫٤ نقطة</div></div>
+     </div>
+     <div class="trend" style="margin-top:12px">
+       <span>المشاهدات خلال ٧ أيام</span>
+       <div class="g"><div class="spark">
+         <i style="height:48%"></i><i style="height:58%"></i><i style="height:55%"></i><i style="height:73%"></i><i style="height:82%"></i><i style="height:78%"></i><i style="height:100%"></i>
+       </div></div>
+       <b class="num up">4,340</b>
+     </div>
+    </div>
+
+    <div class="sect"><h3>رحلاتك — الأعلى أداءً</h3>
+     <table><thead><tr><th>الرحلة</th><th class="num">مشاهدة</th><th class="num">استفسار</th><th class="num">تحويل</th></tr></thead><tbody>
+      <tr><td><b>رحلة خارجية · مدريد والأندلس</b><small>١٦ – ٢٣ سبتمبر ٢٠٢٦ · ٨٣٬٣٧٥ ج.م</small></td><td class="num">1,284</td><td class="num">37</td><td class="num"><span class="pill p-ok">2.9%</span></td></tr>
+      <tr><td><b>رحلة خارجية · النرويج</b><small>٤ – ١١ سبتمبر ٢٠٢٦ · ١١٤٬٤٢٥ ج.م</small></td><td class="num">1,102</td><td class="num">29</td><td class="num"><span class="pill p-ok">2.6%</span></td></tr>
+      <tr><td><b>رحلة خارجية · باريس</b><small>٢٣ – ٢٨ يوليو ٢٠٢٦ · ٥١٬١٧٥ ج.م</small></td><td class="num">864</td><td class="num">18</td><td class="num"><span class="pill p-ok">2.1%</span></td></tr>
+      <tr><td><b>رحلة خارجية · آيسلندا</b><small>٣٠ سبتمبر – ٨ أكتوبر · ١٠٦٬٣٧٥ ج.م</small></td><td class="num">702</td><td class="num">21</td><td class="num"><span class="pill p-ok">3.0%</span></td></tr>
+      <tr><td><b>رحلة خارجية · التشيك والنمسا والمجر</b><small>٢٣ يوليو – ٢ أغسطس · ٩١٬٤٢٥ ج.م</small></td><td class="num">540</td><td class="num">9</td><td class="num"><span class="pill p-warn">1.7%</span></td></tr>
+     </tbody></table>
+    </div>
+
+    <div class="sect"><h3>كلمات بحث وصلت لرحلاتك</h3>
+     <table><tbody>
+      <tr><td>عمرة رمضان</td><td style="width:38%"><div class="bar"><i style="width:100%"></i></div></td><td class="num">402</td><td class="num up">▲ ٢٢٪</td></tr>
+      <tr><td>النرويج</td><td><div class="bar"><i style="width:78%"></i></div></td><td class="num">312</td><td class="num up">▲ ٤١٪</td></tr>
+      <tr><td>رحلات أوروبا</td><td><div class="bar"><i style="width:72%"></i></div></td><td class="num">288</td><td class="num up">▲ ١٢٪</td></tr>
+      <tr><td>آيسلندا</td><td><div class="bar"><i style="width:51%"></i></div></td><td class="num">206</td><td class="num up">▲ ٦٣٪</td></tr>
+      <tr><td>تأشيرة شنغن</td><td><div class="bar"><i style="width:47%"></i></div></td><td class="num">187</td><td class="num up">▲ ٨٪</td></tr>
+      <tr><td>مدريد</td><td><div class="bar"><i style="width:38%"></i></div></td><td class="num">151</td><td class="num up">▲ ٣٥٪</td></tr>
+     </tbody></table>
+    </div>
+
+    <div class="callout"><b>📈 اتجاه صاعد هذا الأسبوع</b>
+     البحث عن <b>آيسلندا</b> ارتفع ٦٣٪ خلال ٧ أيام، وأغلبه من مستخدمين بميزانية ١٠٠–٢٠٠ ألف جنيه. عندك رحلتان لآيسلندا (أبريل وسبتمبر) — إضافة صور للبرنامج اليومي رفعت معدّل الاستفسار ١٫٤× في رحلات مشابهة.</div>
+
+    <div class="sect"><h3>ما يبحث عنه العملاء ولا تغطّيه</h3>
+     <table><tbody>
+      <tr><td>اليابان — رحلات جماعية<small>٢٤١ بحث · لا توجد رحلة منشورة لك</small></td><td class="num"><span class="pill p-warn">فرصة</span></td></tr>
+      <tr><td>جورجيا وأذربيجان<small>١٨٨ بحث · منافس واحد فقط ينشر</small></td><td class="num"><span class="pill p-warn">فرصة</span></td></tr>
+      <tr><td>رحلات نصف الترم يناير ٢٠٢٧<small>١٦٣ بحث · لا نتائج في هذا التاريخ</small></td><td class="num"><span class="pill p-warn">فرصة</span></td></tr>
+     </tbody></table>
+    </div>
+
+    <div class="act"><b>يحتاج انتباهك اليوم</b>
+     <ol>
+      <li><b>٦ استفسارات</b> لم يتم الرد عليها منذ أكثر من ٤ ساعات (متوسط ردّك ١ س ٥٢ د).</li>
+      <li><b>١٥ رحلة</b> ما زالت بدون برنامج يومي — الرحلات المكتملة تحصل على ضعف الاستفسارات.</li>
+      <li><b>رحلة إيطاليا وسويسرا</b> بدون سعر منشور، ولا تظهر في نتائج الفرز حسب السعر.</li>
+      <li><b>مدريد والأندلس</b> باقي ٥ مقاعد من ٢٤ — فكّر في تفعيل شارة «يقترب الموعد».</li>
+     </ol></div>
+
+    <a class="btn" href="#">افتح لوحة الشركة</a>
+    <a class="btn sec" href="#">أكمل بيانات ١٥ رحلة ناقصة</a>
+   </div>
+   <div class="mf">وجهة — منصة تجمع عروض شركات السياحة المصرية المرخّصة.<br>
+    تصلك هذه الرسالة لأنك مسؤول حساب ترافل سوا · <a href="#">تعديل تكرار الرسائل</a> · <a href="#">إلغاء الاشتراك</a></div>
+  </div>
+ </div>
+
+ <!-- ══════════ 2. ENQUIRY ══════════ -->
+ <div id="m1" style="display:none">
+  <div class="meta">
+   <div><b>To</b><span>sales@travelsawa.com</span></div>
+   <div><b>From</b><span>Wijha &lt;enquiries@wijha.app&gt;</span></div>
+   <div><b>Subject</b><span>استفسار جديد · مدريد والأندلس ١٦ سبتمبر — منى ع. — غرفة ثنائية × ٢</span></div>
+   <div><b>Trigger</b><span>on insert → leads · SLA 4h</span></div>
+   <div><b>Reply-To</b><span>thread-8841@chat.wijha.app</span></div>
+  </div>
+
+  <div class="mail">
+   <div class="mh"><div class="brand">وجهة <em>Wijha</em></div>
+     <div class="sub">استفسار جديد · وصل ١٠:٢٦ ص</div></div>
+   <div class="mb">
+    <div class="greet">استفسار جديد على «مدريد والأندلس» 🎉</div>
+    <p class="lede">عميلة أرسلت استفساراً منذ دقيقتين. السجل التالي محفوظ في لوحة الشركة.</p>
+
+    <div class="enq">
+     <div class="row"><span>الرحلة</span><b>رحلة خارجية · مدريد والأندلس · ١٦ – ٢٣ سبتمبر ٢٠٢٦</b></div>
+     <div class="row"><span>العميل</span><b>منى ع. · القاهرة</b></div>
+     <div class="row"><span>الغرفة والعدد</span><b>ثنائية × ٢ مسافر</b></div>
+     <div class="row"><span>السعر المعروض</span><b>١٦٦٬٧٥٠ ج.م <small>(١٤٥٠ يورو + ٣٠٬٠٠٠ ج.م) × ٢</small></b></div>
+     <div class="row"><span>الميزانية المعلنة</span><b>١٠٠٬٠٠٠ – ٢٠٠٬٠٠٠ ج.م</b></div>
+     <div class="row"><span>الاهتمامات</span><b>أوروبا · مجموعات</b></div>
+     <div class="row"><span>مسار العميل</span><b>بحث «مدريد» ← ٣ رحلات ← حفظ رحلتين ← استفسار</b></div>
+     <div class="row"><span>رحلات شاهدتها أيضاً</span><b>البرتغال وإسبانيا · إيطاليا وفرنسا وإسبانيا</b></div>
+     <div class="row"><span>المقاعد المتبقية</span><b>٥ من ٢٤</b></div>
+    </div>
+
+    <div class="quote">💬 «الرحلة دي شاملة تذكرة الطيران ولا لأ؟ وإيه الـ ٣٠ ألف جنيه اللي مكتوبة زيادة؟»</div>
+
+    <div class="sla">⏱ مهلة الرد ٤ ساعات — تنتهي ٠٢:٢٦ م. الردّ خلال ساعة يرفع فرصة الحجز ٢٫٣×.</div>
+
+    <a class="btn" href="#">افتح المحادثة وردّ</a>
+    <a class="btn sec" href="#">عرض ملف الرحلة</a>
+
+    <div class="callout"><b>💡 ردود مقترحة</b>
+     • أكّد أن تذكرة القاهرة/مدريد/القاهرة مشمولة.<br>
+     • اشرح أن الـ ٣٠٬٠٠٠ ج.م هي الجزء المحلي (ضرائب التذكرة والخدمة).<br>
+     • اذكر أن الحجز = تذكرة الطيران كاملة + ٥٠٪ من قيمة الرحلة.</div>
+
+    <p class="lede" style="font-size:12px;margin:0">لا تُشارك أرقام الهاتف أو البريد داخل محادثة وجهة — النظام يحجبها آلياً قبل التخزين.</p>
+   </div>
+   <div class="mf">وجهة — استفسار #8841 · <a href="#">إعدادات التنبيهات</a></div>
+  </div>
+ </div>
+</div>
+<script>
+function show(i,el){for(let k=0;k<2;k++)document.getElementById('m'+k).style.display=k===i?'':'none';
+ document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));el.classList.add('on')}
+</script>
+</body>
+</html>
