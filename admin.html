@@ -136,9 +136,11 @@ const cName=(c,L)=>{const r=COUNTRIES.find(x=>x[0]===c)||VISA_TARGETS.find(x=>x[
 const ADMIN_ROLES=['admin','wijha_admin'], CO_ROLES=['company','company_admin','company_staff'];
 const isAdminRole=r=>ADMIN_ROLES.includes(r), isCoRole=r=>CO_ROLES.includes(r);
 const myRole=()=>(S.roles||[]).find(r=>r.key===S.me?.wijha_role_key);
-const perm=a=>{const r=myRole(); if(!r) return isAdminRole(S.me?.role)?'full':'view'; return (r.permissions||{})[a]||'none'};
+const perm=a=>{const r=myRole(); if(!r) return isAdminRole(S.me?.role)?'full':(a==='clients'?'none':'view'); return (r.permissions||{})[a]||'none'};
 const can=(a,lvl='view')=>{const p=perm(a); return p==='full'||(p==='edit'&&lvl!=='full')||(p==='view'&&lvl==='view')};
-const S={url:localStorage.getItem('wijha_url')||'',key:localStorage.getItem('wijha_key')||'',
+/* public project URL + public anon key (safe to publish; access is enforced by database rules). Never put the service-role key here. */
+const DEFAULT_URL='https://ejxndvelxocklapmiuvu.supabase.co', DEFAULT_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqeG5kdmVseG9ja2xhcG1pdXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0ODIyNjMsImV4cCI6MjEwMzA1ODI2M30.mJbyBJDSDDxop3R5RXNx-s2xmRKuHKZa_6_1tC_7TJw';
+const S={url:localStorage.getItem('wijha_url')||DEFAULT_URL,key:localStorage.getItem('wijha_key')||DEFAULT_KEY,
  tok:JSON.parse(localStorage.getItem('wijha_admin_tok')||'null'),me:null,view:'overview',
  offers:[],companies:[],profiles:[],imports:[],threads:[],events:[],terms:[],filter:{q:'',cat:'',status:'',co:'',svc:''},sel:new Set(),thread:null,msgs:[]};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -258,11 +260,15 @@ async function doLogin(){try{await login(e.value.trim(),p.value);await boot()}ca
 function overview(){
  const by={}; S.offers.forEach(o=>{const k=o.category+'|'+o.status;by[k]=(by[k]||0)+1});
  const cats=['tours','hajj','umrah']; const statuses=[...new Set(S.offers.map(o=>o.status))];
- const pubStatus=statuses.sort((a,b)=>S.offers.filter(o=>o.status===b&&o.category!=='tours').length-S.offers.filter(o=>o.status===a&&o.category!=='tours').length)[0];
+ const pubStatus='published';
  const toursNotPub=S.offers.filter(o=>o.category==='tours'&&o.status!==pubStatus).length;
  const noProg=S.offers.filter(o=>o.stage_count==0).length, noPrice=S.offers.filter(o=>egp(o)==null).length;
  const weekEv=S.events.filter(e=>new Date(e.at)>Date.now()-7*864e5);
  return `<h1>نظرة عامة</h1><p class="sub">ما هو موجود فعلاً في قاعدة البيانات — بكل الحالات، وليس فقط المنشور.</p>
+ ${(()=>{const rq=S.offers.filter(o=>o.review_state==='pending'||o.status==='pending_review').length, iq=S.imports.filter(i=>i.status==='queued').length;
+   return (rq||iq)?`<div class="note-box" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--amber-soft,#fff4dd);border-radius:12px;padding:12px 16px;margin:12px 0"><b>⏳ بانتظار المراجعة:</b>
+   ${rq?`<button class="btn sm pri" onclick="S.view='offers';S.filter.status='pending_review';render()">${rq} عرض</button>`:''}
+   ${iq?`<button class="btn sm" onclick="S.view='intake';render()">${iq} ملف مرفوع بانتظار التحويل إلى عرض</button>`:''}</div>`:''})()}
  <div class="kpis">
   <div class="kpi"><b>${S.offers.length}</b><small>إجمالي العروض</small></div>
   ${cats.map(c=>`<div class="kpi"><b>${S.offers.filter(o=>o.category===c).length}</b><small>${CATL[c]}</small></div>`).join('')}
@@ -857,7 +863,7 @@ function emailsV(){
   <button class="btn pri" onclick="composeEmail({template:'daily_digest'})">✉ التقرير اليومي</button>
   <button class="btn" onclick="composeEmail({template:'enquiry'})">✉ إشعار استفسار</button>
   <button class="btn" onclick="composeEmail({template:'custom'})">✉ رسالة مخصّصة</button>
-  <button class="btn" onclick="openTemplates()">معاينة القوالب ↗</button></div>
+  <button class="btn" onclick="openTemplates()">القوالب ومعاينتها</button></div>
  <div class="tw"><table><thead><tr><th>إلى</th><th>الموضوع</th><th>القالب</th><th>الحالة</th><th>التاريخ</th><th></th></tr></thead><tbody>
  ${box.map(e=>`<tr><td><b>${esc(e.to_name||'')}</b><small class="mono">${esc(e.to_email)}</small></td><td>${esc(e.subject)}</td>
   <td>${esc(e.template)}</td><td><span class="pill ${e.status==='sent'?'ok':e.status==='failed'?'bad':'warn'}">${esc(e.status)}</span>${e.error?`<small>${esc(e.error)}</small>`:''}</td>
@@ -870,6 +876,8 @@ function openTemplates(){
  let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
  ov.innerHTML=`<div class="md"><div class="hd"><b>قوالب البريد</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
  <div class="bd"><p class="note">هذه القوالب مدمجة هنا. استخدم زر «رسالة جديدة» لإرسال أي منها إلى مسؤول شركة أو موظف.</p>
+  <details style="margin-bottom:12px"><summary class="btn sm" style="display:inline-block;cursor:pointer">👁 معاينة التصميم الكامل (بيانات تجريبية)</summary>
+   <iframe src="./emails.html" title="email preview" style="width:100%;height:70vh;border:1px solid var(--line);border-radius:12px;margin-top:10px;background:#fff" loading="lazy"></iframe></details>
   ${[['daily_digest','التقرير اليومي','يُرسل ٩ صباحاً: المشاهدات والاستفسارات والحفظ، أعلى الرحلات أداءً، كلمات البحث التي وصلت لرحلاتهم، فرص غير مغطاة، وما يحتاج انتباههم اليوم.'],
      ['enquiry','إشعار استفسار','يُرسل فور وصول استفسار: بيانات الرحلة، نوع الغرفة والعدد، الإجمالي بالجنيه، ميزانية العميل، مسار تصفحه، والمقاعد المتبقية، مع مهلة رد ٤ ساعات.'],
      ['supplier_price_check','تأكيد أسعار مورد','قائمة ببنود المورد وتواريخ صلاحيتها المسجّلة، لطلب تأكيدها قبل إصدار العرض.'],
