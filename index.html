@@ -2221,7 +2221,7 @@ async function doClientSignupLive(){
  const hasVisa=document.getElementById('cHasVisa')?.value==='yes';
  const visas=hasVisa?(window.__visas||[]).filter(x=>x.country&&x.expiry):[];
  try{
-  const r=await signUp(email,pass,{name:v('cName'),phone:dial+localNum,role:'client'});
+  const r=await signUp(email,pass,{name:v('cName'),phone:dial+localNum});
   if(!r.session){ document.getElementById('cErr').innerHTML=`<div class="note-box">${L==='ar'?'تم إنشاء الحساب — افتح بريدك وأكّد الرابط ثم سجّل الدخول.':'Account created — confirm the link in your email, then sign in.'}</div>`; return; }
   await apatch('profiles?id=eq.'+AU.user.id,{
     name:v('cName')||null, dial_code:dial||null, phone:localNum?dial+localNum:null,
@@ -2298,8 +2298,8 @@ signupCo=function(){
 async function uploadRegistry(file){
  if(!file) return null;
  const base=(localStorage.getItem('wijha_url')||'').replace(/\/$/,'');
- const ext=(file.name.split('.').pop()||'bin').toLowerCase();
- const path=`registry/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+ const ext=((file.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5))||'bin';
+ const path=`${AU.user.id}/registry-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
  const r=await fetch(base+'/storage/v1/object/company-docs/'+path,{method:'POST',
    headers:{apikey:localStorage.getItem('wijha_key')||'',Authorization:'Bearer '+AU.access_token,'Content-Type':file.type||'application/octet-stream'},body:file});
  if(!r.ok) throw new Error((L==='ar'?'رفع السجل التجاري فشل: ':'Registry upload failed: ')+(await r.text()).slice(0,140));
@@ -2309,17 +2309,15 @@ async function doCoSignupLive(){
  const email=v('oEmail'),pass=v('oPass'),name=v('oName');
  if(!email||!pass||!name){showErr('oErr',L==='ar'?'اسم الشركة والبريد وكلمة المرور مطلوبة.':'Company name, email and password are required.');return}
  try{
-  const r=await signUp(email,pass,{name,role:'company'});
+  const r=await signUp(email,pass,{name});
   if(!r.session){ document.getElementById('oErr').innerHTML=`<div class="note-box">${L==='ar'?'أكّد بريدك ثم سجّل الدخول لإكمال التسجيل.':'Confirm your email, then sign in to finish registering.'}</div>`; return; }
   let doc=null; const f=document.getElementById('oDoc')?.files?.[0];
   if(f) doc=await uploadRegistry(f);
   const iata=document.getElementById('oIata')?.value==='yes';
   const slug=name.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF]+/g,'-').replace(/^-|-$/g,'')||('co-'+Date.now());
-  const row={name_ar:name,slug,email,phone:v('oPhone')||null,iata_member:iata,
-    license_no:iata?(v('oLic')||null):null, license_category:iata?(document.getElementById('oCat')?.value||null):null,
-    commercial_registry_url:doc, wijha_review:'pending', etaa_verified:false, submitted_by:AU.user.id};
-  const c=await apost('companies',row); const cid=c[0].id;
-  await apatch('profiles?id=eq.'+AU.user.id,{role:'company',company_id:cid,name});
+  /* the server creates the company as "pending" and links this user; role/status can't be chosen from the browser */
+  const cid=await apost('rpc/wijha_register_company',{p_name:name,p_slug:slug,p_email:email,p_phone:v('oPhone')||null,p_iata:iata,
+    p_license:iata?(v('oLic')||null):null,p_category:iata?(document.getElementById('oCat')?.value||null):null,p_registry_path:doc});
   await loadProfile(); await loadCatalogue();
   CO={id:cid,name,emp:name,role:'company',verified:false}; localStorage.setItem('wijha_co',JSON.stringify(CO));
   syncNav(); startPoll(); go('#/company');

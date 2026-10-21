@@ -141,7 +141,10 @@ const can=(a,lvl='view')=>{const p=perm(a); return p==='full'||(p==='edit'&&lvl!
 const S={url:localStorage.getItem('wijha_url')||'',key:localStorage.getItem('wijha_key')||'',
  tok:JSON.parse(localStorage.getItem('wijha_admin_tok')||'null'),me:null,view:'overview',
  offers:[],companies:[],profiles:[],imports:[],threads:[],events:[],terms:[],filter:{q:'',cat:'',status:'',co:'',svc:''},sel:new Set(),thread:null,msgs:[]};
-const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* file extension / folder helpers: never trust a file name; every upload goes in the uploader's own folder */
+const safeExt=(f,d)=>((f.name.split('.').pop()||d).toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5))||d;
+const upFolder=cid=>isAdminRole(S.me?.role)?(cid||'admin'):S.me.company_id;
 const nf=n=>n==null?'—':Number(n).toLocaleString('en-US');
 const FX={EGP:1,EUR:57.5,USD:48.6,GBP:66,SAR:13.4};
 const CATL={tours:'رحلة خارجية',hajj:'حج',umrah:'عمرة'};
@@ -280,18 +283,18 @@ function overview(){
  ${S.offers.slice(0,8).map(o=>`<tr onclick="editOffer('${o.id}')" style="cursor:pointer"><td><b>${esc(o.title_ar)}</b><small>${CATL[o.category]} · ${esc(o.sub_category||'')}</small></td><td>${esc(coN(o.company_id))}</td><td><span class="pill ${o.status===pubStatus?'ok':'warn'}">${esc(o.status)}</span></td><td class="num">${nf(egp(o))}</td><td class="num">${(o.updated_at||o.created_at||'').slice(0,10)}</td></tr>`).join('')}</tbody></table></div>`;
 }
 async function publishAllNonInternal(){
- const n = S.offers.filter(o=>!o.internal_only).length;
- if(!confirm(`نشر ${n} رحلة (كل ما هو غير معلّم "استخدام داخلي فقط")؟`))return;
+ const n = S.offers.filter(o=>!o.internal_only && o.review_state==='approved').length;
+ if(!confirm(`نشر ${n} رحلة (المعتمدة فقط، وغير المعلّمة "استخدام داخلي فقط")؟`))return;
  try{
   const pub = S.offers.find(o=>o.status)?.status || 'published';
-  await patch('offers?internal_only=eq.false', {status:pub, visibility:'public', review_state:'approved', published_at:new Date().toISOString()});
-  await patch('offers?internal_only=is.null', {status:pub, visibility:'public', review_state:'approved', published_at:new Date().toISOString()});
+  await patch('offers?review_state=eq.approved&internal_only=eq.false', {status:pub, visibility:'public', published_at:new Date().toISOString()});
+  await patch('offers?review_state=eq.approved&internal_only=is.null', {status:pub, visibility:'public', published_at:new Date().toISOString()});
   toast('تم نشر الرحلات'); await loadAll(); render();
  }catch(e){toast(e.message,true)}
 }
 async function bulkStatus(cat,status){
  if(!confirm(`تغيير حالة كل عروض "${CATL[cat]}" إلى ${status}؟`))return;
- try{ await patch(`offers?category=eq.${cat}`,{status,published_at:new Date().toISOString()}); toast('تم'); await loadAll(); render(); }catch(e){toast(e.message,true)}
+ try{ await patch(`offers?category=eq.${cat}&review_state=eq.approved`,{status,published_at:new Date().toISOString()}); toast('تم'); await loadAll(); render(); }catch(e){toast(e.message,true)}
 }
 
 /* ═══════════ OFFERS ═══════════ */
@@ -394,8 +397,8 @@ function drawEditor(){
 }
 async function uploadCover(file){
  if(!file)return;
- try{ const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
-  const path=`covers/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+ try{ const ext=safeExt(file,'jpg');
+  const path=`${upFolder(ED.full?.company_id)}/covers/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
   const r=await fetch(S.url+'/storage/v1/object/offer-photos/'+path,{method:'POST',
    headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':file.type},body:file});
   if(!r.ok) throw new Error((await r.text()).slice(0,140));
@@ -450,7 +453,7 @@ function coForm(){
    ${t('license_no','رقم الترخيص','text','ETAA-A-0000')}
    <div><label>الفئة<select data-k="license_category">
      <option value="">—</option>${AR_LETTERS.map(x=>`<option ${f.license_category===x?'selected':''}>${x}</option>`).join('')}</select></label></div>` : '';
- const doc = `<div class="w3"><label>السجل التجاري ${f.commercial_registry_url?`<span class="pill ok">مرفوع</span> <button class="btn sm" onclick="openDoc('${esc(f.commercial_registry_url)}')">عرض</button>`:''}
+ const doc = `<div class="w3"><label>السجل التجاري ${f.commercial_registry_url?`<span class="pill ok">مرفوع</span> <button class="btn sm" data-p="${esc(f.commercial_registry_url)}" onclick="openDoc(this.dataset.p)">عرض</button>`:''}
    <input type="file" id="crFile" accept="application/pdf,image/*" onchange="EC_FILE=this.files[0]"></label>
    <p class="note">PDF أو صورة، حتى ١٠ ميجابايت. يُحفظ في مخزن خاص ولا يظهر للعملاء.</p></div>`;
  const adminSec = isAdmin ? `
@@ -492,8 +495,8 @@ function readCo(){ document.querySelectorAll('#ov [data-k]').forEach(el=>{ let v
 function quickReview(st){ readCo(); EC.full.wijha_review=st; saveCo(); }
 async function uploadDoc(){
  if(!EC_FILE) return null;
- const ext=(EC_FILE.name.split('.').pop()||'bin').toLowerCase();
- const path=`registry/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+ const ext=safeExt(EC_FILE,'bin');
+ const path=`${S.me.id}/registry-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
  const r=await fetch(S.url+'/storage/v1/object/company-docs/'+path,{method:'POST',
    headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':EC_FILE.type||'application/octet-stream'},
    body:EC_FILE});
@@ -603,7 +606,7 @@ function drawReview(i){
   <div>
    <h3>المصدر الأصلي</h3>
    ${i.url?`<p class="note">رابط: <a href="${esc(i.url)}" target="_blank">${esc(i.url)}</a></p>`:''}
-   ${i.file_path?`<button class="btn sm" onclick="openIntakeFile('${esc(i.file_path)}')">📎 فتح الملف المرفوع</button>`:''}
+   ${i.file_path?`<button class="btn sm" data-p="${esc(i.file_path)}" onclick="openIntakeFile(this.dataset.p)">📎 فتح الملف المرفوع</button>`:''}
    ${i.raw_text?`<pre class="json" style="direction:rtl;text-align:start;white-space:pre-wrap;font-family:var(--ar);max-height:420px">${esc(i.raw_text)}</pre>`:''}
    ${!i.url&&!i.file_path&&!i.raw_text?'<p class="note">لا يوجد نص أو ملف أو رابط محفوظ لهذا العنصر.</p>':''}
    ${i.payload?`<h4 style="margin-top:12px">ما استُخرج تلقائياً</h4><pre class="json">${esc(JSON.stringify(i.payload,null,2))}</pre>`:`<div class="note-box" style="margin-top:12px">لم يُستخرج شيء تلقائياً بعد — انسخ التفاصيل من العمود المقابل يدوياً إلى الحقول على اليمين.</div>`}
@@ -633,13 +636,12 @@ async function createOfferFromIntake(importId){
  const f=IR.full;
  if(!f.title_ar){ document.getElementById('ederr').innerHTML='<div class="err">العنوان مطلوب</div>'; return; }
  try{
-  const pubStatus=S.offers.find(x=>x.category!=='tours')?.status||'published';
   const row={company_id:f.company_id, category:f.category, sub_category:f.sub_category||null,
    title_ar:f.title_ar, title_en:f.title_en||null, dest_ar:f.dest_ar||null, dest_en:f.dest_en||null,
    dates_text_ar:f.dates_text_ar||null, days:f.days||null, nights:f.nights||null,
    currency:f.currency||'EGP', price_double:f.price_double||null, price_quad:f.price_quad||null,
    egp_addon:f.egp_addon||0, brief_ar:f.brief_ar||null,
-   detail_level:'outline', status:pubStatus, intake_id:importId};
+   detail_level:'outline', status:'pending_review', review_state:'pending', intake_id:importId};
   const i=(S.imports||[]).find(x=>x.id===importId);
   if(i){ row.source_kind = i.file_path?'pdf':i.url?'url':'text'; row.source_file=i.file_path||null;
          row.source_text=i.raw_text||null; row.source_url=i.url||null; }
@@ -683,7 +685,7 @@ function intakeV(){
  <h2>الطابور</h2>
  <div class="tw"><table><thead><tr><th>المصدر</th><th>الشركة</th><th>النوع</th><th>الحالة</th><th>أُضيف</th><th></th></tr></thead><tbody>
  ${q.map(i=>`<tr><td>${i.url?`<a href="${esc(i.url)}" target="_blank" class="mono">${esc(i.url.slice(0,52))}</a>`:''}
-  ${i.file_path?`<button class="btn sm" onclick="openIntakeFile('${esc(i.file_path)}')">📎 ${esc(i.file_path.split('/').pop())}</button>`:''}
+  ${i.file_path?`<button class="btn sm" data-p="${esc(i.file_path)}" onclick="openIntakeFile(this.dataset.p)">📎 ${esc(i.file_path.split('/').pop())}</button>`:''}
   ${i.raw_text?`<div class="dim" style="font-size:11px;max-width:320px">${esc((i.raw_text||'').slice(0,110))}…</div>`:''}
   ${i.title_hint?`<small>${esc(i.title_hint)}</small>`:''}${i.error?`<small style="color:var(--red)">${esc(i.error)}</small>`:''}</td>
   <td>${esc(coN(i.company_id))}</td><td>${esc(i.kind)}</td>
@@ -707,7 +709,7 @@ async function submitIntake(){
  try{
   if(!tx && !url && !files.length) throw new Error('املأ واحداً على الأقل: نص، أو ملف، أو رابط');
   if(url && !/^https?:\/\//.test(url)) throw new Error('الرابط غير صحيح');
-  const paths=[]; for(const f of files) paths.push(await uploadIntake(f));
+  const paths=[]; for(const f of files) paths.push(await uploadIntake(f,cid));
   const kind = files.length ? (document.getElementById('inKind')?.value||'pdf') : (url?'url':'text');
   await post('wijha_imports',{company_id:cid,submitted_by:S.me.id,kind,note,title_hint:title,status:'queued',
     raw_text:tx||null, url:url||null, file_path:paths[0]||null},'return=minimal');
@@ -716,9 +718,9 @@ async function submitIntake(){
   toast('أُضيف للطابور'); INTAKE.files=[]; await loadAll(); render();
  }catch(e){ document.getElementById('inErr').innerHTML='<div class="err">'+esc(e.message)+'</div>' }
 }
-async function uploadIntake(file){
- const ext=(file.name.split('.').pop()||'bin').toLowerCase();
- const path=`intake/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+async function uploadIntake(file,cid){
+ const ext=safeExt(file,'bin');
+ const path=`${upFolder(cid)}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
  const r=await fetch(S.url+'/storage/v1/object/offer-intake/'+path,{method:'POST',
   headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':file.type||'application/octet-stream'},body:file});
  if(!r.ok) throw new Error('رفع الملف فشل: '+(await r.text()).slice(0,140));
