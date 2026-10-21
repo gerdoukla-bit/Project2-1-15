@@ -199,7 +199,13 @@ h3{font-size:15px;font-weight:700;margin-bottom:10px} h4{font-size:13px;font-wei
 .field{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
 .field .k{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;direction:ltr;text-align:start}
 .rooms{display:grid;gap:6px}
-.room{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;text-align:start}
+.room{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;text-align:start;transition:border-color .15s,background .15s}
+.room .rn{display:flex;flex-direction:column;gap:2px;min-width:0}.room .rh{font-size:11px;color:var(--amber-d,#8a6a1f)}
+.room .rs{display:flex;align-items:center;gap:8px}.room .rs b{min-width:18px;text-align:center;font-family:var(--sans)}
+.room .rs button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);font-size:18px;background:var(--surface)}
+.room .rs button:hover{border-color:var(--amber)}
+.sheet-x{display:none;position:absolute;top:12px;inset-inline-end:12px;width:34px;height:34px;border-radius:50%;background:var(--bg);place-items:center;font-size:14px}
+.paxsum{margin-top:10px;font-size:13px;font-weight:700;color:var(--muted)}
 .room.on{border-color:var(--amber);background:var(--amber-soft)}
 .room .n{font-size:13px;font-weight:700} .room .p{font-family:var(--sans);font-size:13px;font-weight:800;margin-inline-start:auto}
 .room .p em{font-style:normal;font-size:10px;color:var(--muted);font-family:var(--ar)}
@@ -309,7 +315,12 @@ footer h4{font-size:13px;color:var(--ink);margin-bottom:8px} footer a{display:bl
 
 @media(max-width:1000px){
  .hero{grid-template-columns:1fr} .hero-art{height:210px}
- .layout{grid-template-columns:1fr} .side{display:none} .mbar{display:flex}
+ .layout{grid-template-columns:1fr} .mbar{display:flex}
+ .side{position:fixed;inset:0;z-index:90;background:rgba(20,18,14,.5);visibility:hidden;opacity:0;transition:opacity .2s,visibility .2s;top:0}
+ .side.open{visibility:visible;opacity:1}
+ .side .bcard{position:absolute;bottom:0;inset-inline:0;max-height:90vh;overflow:auto;border-radius:22px 22px 0 0;padding:22px 18px 28px;transform:translateY(24px);transition:transform .25s}
+ .side.open .bcard{transform:none}
+ .sheet-x{display:grid!important}
  .facts{grid-template-columns:repeat(2,1fr)} .cats,.how,.kpis,.acctgrid{grid-template-columns:1fr}
  .two,.hotels,.form2{grid-template-columns:1fr}
  .gallery{grid-template-columns:2fr 1fr;grid-template-rows:160px 160px} .gallery .g4,.gallery .g5{display:none}
@@ -319,6 +330,28 @@ footer h4{font-size:13px;color:var(--ink);margin-bottom:8px} footer a{display:bl
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 
 .lang.ok{color:var(--green);border-color:var(--green)}
+
+/* ── premium polish ── */
+:root{--bg:#faf8f3;--line:#e7e1d3;--gold:#b98a2e;--shadow-lg:0 30px 60px -34px rgba(60,40,10,.35)}
+body{letter-spacing:.005em}
+.nav{backdrop-filter:saturate(1.4) blur(12px);background:rgba(250,248,243,.9)!important}
+body{overflow-x:clip}
+@media(max-width:600px){.nav-right{gap:5px}.nav-right .btn,.nav-right .lang{padding:7px 10px;font-size:12px}.nav-right .btn-ghost{display:inline-flex}#connPill{display:none}h1{font-size:25px}}
+h1{font-weight:800;letter-spacing:-.02em;line-height:1.25}
+.gallery{gap:10px!important} .gallery>div{border-radius:18px;overflow:hidden}
+.gallery>div>*{transition:transform .6s ease} .gallery>div:hover>*{transform:scale(1.04)}
+.fact{box-shadow:0 1px 0 rgba(0,0,0,.02),0 10px 24px -20px rgba(60,40,10,.25);border-radius:14px}
+.bcard{border-radius:20px;box-shadow:var(--shadow-lg);border-top:3px solid var(--gold)}
+.bcard .pl .pr-egp{letter-spacing:-.02em}
+.total .v{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.btn{border-radius:12px} .btn-primary{background:linear-gradient(180deg,#e8a62a,#d38d14);box-shadow:0 8px 18px -10px rgba(190,120,10,.7)}
+.btn-primary:hover{transform:translateY(-1px);background:linear-gradient(180deg,#eeb03a,#c8850f)}
+.card{border-radius:18px;transition:transform .2s,box-shadow .2s} .card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+section{scroll-margin-top:90px}
+.room.on{box-shadow:0 0 0 3px rgba(224,150,29,.14)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--amber-ink);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(max-width:1000px){.mbar{box-shadow:0 -10px 30px -18px rgba(0,0,0,.35);padding-bottom:max(12px,env(safe-area-inset-bottom))}.mbar .btn{padding:12px 22px}}
 </style>
 </head>
 <body>
@@ -352,7 +385,7 @@ footer h4{font-size:13px;color:var(--ink);margin-bottom:8px} footer a{display:bl
 
 <div class="mbar hidden" id="mbar">
   <div><div class="p" id="mTotal">—</div><small id="mSub"></small></div>
-  <button class="btn btn-primary" onclick="sendEnq()" data-t="enquire"></button>
+  <button class="btn btn-primary" onclick="sheet(true)" id="mBtn">اختر الغرف</button>
 </div>
 
 <script>
@@ -1177,7 +1210,7 @@ function go(h){location.hash=h}
 window.addEventListener('hashchange',route);
 function route(){
  const h=location.hash||'#/'; setTimeout(drawCmpBar,0); const app=document.getElementById('app');
- window.scrollTo(0,0); document.getElementById('mbar').classList.add('hidden');
+ window.scrollTo(0,0); document.getElementById('mbar').classList.add('hidden'); document.body.style.overflow='';
  document.querySelectorAll('[data-nav]').forEach(a=>a.classList.remove('on'));
  syncNav();
  if(h.startsWith('#/trip/')) return detail(h.slice(7));
@@ -1254,7 +1287,7 @@ function home(){
    <div class="grid">${feat.map(card).join('')}</div></section>
   <section class="sec"><h2>${t('cos_title')}</h2><div class="cos">${COS.map(c=>`<a class="co-card" href="#/trips?co=${c.id}">
     <div class="lg">${esc((L==='ar'?c.ar:c.en).slice(0,1))}</div>
-    <div><b>${esc(L==='ar'?c.ar:c.en)}</b><small>${TRIPS.filter(x=>x.co===c.id).length} ${t('results')} · ★ ${c.rating}</small>
+    <div><b>${esc(L==='ar'?c.ar:c.en)}</b><small>${TRIPS.filter(x=>x.co===c.id).length} ${t('results')} ${c.reviews>0&&c.rating?' · ★ '+c.rating:''}</small>
     ${c.verified?`<span class="vf-pill">✓ ${t('verified')} · ${c.lic}</span>`:''}</div></a>`).join('')}</div></section>
   <section class="sec"><h2>${t('how_title')}</h2><div class="how">${[1,2,3,4].map(i=>
    `<div><span class="num">0${i}</span><b>${t('how'+i)}</b><small>${t('how'+i+'s')}</small></div>`).join('')}</div></section>
@@ -1381,10 +1414,15 @@ function similar(t_){
 }
 
 /* ══════════════ DETAIL ══════════════ */
-let CUR=null,B={room:null,pax:1};
+let CUR=null,B={q:{}};
+const OCC={single:1,double:2,triple:3,quad:4};
+const qtyOf=()=>Object.entries(B.q).filter(([k,n])=>n>0);
+const paxOf=()=>qtyOf().reduce((a,[k,n])=>a+n,0);
+const mixLabel=()=>qtyOf().map(([k,n])=>t(k)+' × '+n).join(' + ');
+const mixTotal=x=>qtyOf().reduce((a,[k,n])=>a+(egpOf(x,k)||0)*n,0)+(x.ferry||0)*paxOf();
 function detail(id){
  const x=trip(id); if(!x){go('#/trips');return;}
- CUR=x; const rows=priceRows(x); B={room:rows[0]?.[0],pax:1};
+ CUR=x; const rows=priceRows(x); B={q:{}}; if(rows[0]) B.q[rows[0][0]]=1;
  const c=co(x.co), s=nextSeed(), sims=similar(x);
  const total=x.seats||0, taken=x.taken||0, pct=total?Math.round(taken/total*100):0;
  document.getElementById('app').innerHTML=`<div class="wrap">
@@ -1400,12 +1438,12 @@ function detail(id){
    <div class="head-row"><div class="sub">
      <a href="#/trips?co=${c.id}">${esc(L==='ar'?c.ar:c.en)}</a>
      ${c.verified?`<span class="vf-pill">✓ ${t('verified')} · ${c.lic}</span>`:''}
-     <span class="rating"><b>★</b> ${c.rating} · ${c.reviews} ${t('reviews')}</span>
+     ${c.reviews>0&&c.rating?`<span class="rating"><b>★</b> ${c.rating} · ${c.reviews} ${t('reviews')}</span>`:''}
      ${isSoon(x)?`<span class="scarce">${t('soon')} · ${soonDays(x)} ${L==='ar'?'يوم':'days'}</span>`:''}
    </div>
    <div class="sub"><button class="tag" onclick="toggleSave('${x.id}')" id="saveBtn">${SAVED.includes(x.id)?'★ '+t('saved'):'☆ '+t('save')}</button>
      <button class="tag" onclick="toggleCmp('${x.id}')">${inCmp(x.id)?'✓ '+(L==='ar'?'في المقارنة':'In compare'):'⇄ '+(L==='ar'?'قارن':'Compare')}</button>
-     <button class="tag" onclick="share()">↗ Share</button></div></div>
+     <button class="tag" onclick="share()">↗ ${L==='ar'?'مشاركة':'Share'}</button></div></div>
   </div>
   <div class="gallery">
     <div class="g1">${pic(x.cover,x.art,s)}</div><div class="g2">${pic(x.itin[1]?.photo,x.itin[1]?.art||x.art,s+1)}</div>
@@ -1506,15 +1544,19 @@ function detail(id){
        <div class="why">${r.why.map(w=>`<span>${esc(w)}</span>`).join('')}${r.x.co===x.co?`<span class="same">${L==='ar'?'نفس الشركة':'same company'}</span>`:''}</div></div>`).join('')}</div></section>`:''}
   </div>
 
-  <aside class="side"><div class="bcard">
+  <aside class="side" id="side" onclick="if(event.target===this)sheet(false)"><div class="bcard">
+    <button class="sheet-x" aria-label="${L==='ar'?'إغلاق':'Close'}" onclick="sheet(false)">✕</button>
     <div class="pl">${priceBlock(x)}</div>
     <div class="gst">${esc(L==='ar'?x.dates.ar:x.dates.en)}${x.priceNote?` · ${esc(L==='ar'?x.priceNote.ar:x.priceNote.en)}`:''}</div>
-    <div class="field"><div class="k">${t('room')}</div><div class="rooms">${rows.map(([k,v])=>
-      `<button class="room ${B.room===k?'on':''}" data-k="${k}" onclick="setRoom('${k}')">
-        <span class="n">${t(k)}</span><span class="p">${nf(egpOf(x,k))} <em>ج.م</em></span>
-        ${x.cur!=='EGP'?`<span class="o">${nf(v)} ${CURSYM[x.cur]}</span>`:''}</button>`).join('')}</div></div>
-    <div class="field"><div class="k">${t('travelers')}</div><div class="stepper"><span id="paxL"></span>
-      <div><button onclick="pax(-1)">−</button> <button onclick="pax(1)">+</button></div></div></div>
+    <div class="field"><div class="k">${L==='ar'?'اختر الغرف وعدد المسافرين':'Choose rooms & travellers'}</div>
+      <div class="rooms">${rows.map(([k,v])=>
+      `<div class="room" data-k="${k}">
+        <div class="rn"><span class="n">${t(k)}</span><span class="o">${x.cur!=='EGP'?nf(v)+' '+CURSYM[x.cur]+' · ':''}${L==='ar'?'للفرد':'per person'}</span>
+          <span class="rh" id="rh_${k}"></span></div>
+        <div class="rp">${nf(egpOf(x,k))} <em>ج.م</em></div>
+        <div class="rs"><button aria-label="−" onclick="qty('${k}',-1)">−</button><b id="q_${k}">0</b><button aria-label="+" onclick="qty('${k}',1)">+</button></div>
+      </div>`).join('')}</div>
+      <div class="paxsum" id="paxL"></div></div>
     <div class="total"><span class="k">${t('total')}</span><span class="v" id="tot"></span></div>
     <details class="mini"><summary>${t('breakdown')}</summary><div class="breakdown" id="bd"></div></details>
     <button class="btn btn-primary" onclick="sendEnq()">${t('enquire')}</button>
@@ -1522,32 +1564,38 @@ function detail(id){
     <p class="note">${t('pricenote')}</p>
   </div></aside></div></div>`;
  document.getElementById('mbar').classList.remove('hidden');
+ document.getElementById('mBtn').textContent=L==='ar'?'اختر الغرف':'Choose rooms';
  calc();
 }
-function setRoom(k){B.room=k;document.querySelectorAll('.room').forEach(b=>b.classList.toggle('on',b.dataset.k===k));calc()}
-function pax(d){B.pax=Math.max(1,Math.min(20,B.pax+d));calc()}
+function sheet(on){ document.getElementById('side')?.classList.toggle('open',on); document.body.style.overflow=on?'hidden':''; }
+function qty(k,d){ B.q[k]=Math.max(0,Math.min(20,(B.q[k]||0)+d)); if(paxOf()>20){B.q[k]--;} calc() }
 function calc(){
- const x=CUR;if(!x)return; const unit=egpOf(x,B.room)||0, orig=x.prices[B.room]||0;
- const ferry=(x.ferry||0)*B.pax, base=unit*B.pax, tot=base+ferry;
- document.getElementById('paxL').textContent=B.pax+' '+(B.pax>1?t('adults'):t('adult'));
- document.getElementById('tot').innerHTML=`${nf(tot)} <em>ج.م</em>`;
- const localPart=(x.egpAddon||0)*B.pax, fxPart=Math.round(orig*FX[x.cur])*B.pax;
- document.getElementById('bd').innerHTML=
-  `<div><span>${t('pkg')} (${t(B.room)}) × ${B.pax}</span><span>${nf(fxPart)} ج.م</span></div>`+
-  (x.cur!=='EGP'?`<div class="dim"><span>${nf(orig)} ${CURSYM[x.cur]} × ${FX[x.cur]}</span><span>${L==='ar'?'سعر الصرف':'FX rate'}</span></div>`:'')+
-  (localPart?`<div><span>${t('local')} × ${B.pax}</span><span>${nf(localPart)} ج.م</span></div>`:'')+
-  (ferry?`<div><span>${t('ferry')} × ${B.pax}</span><span>${nf(ferry)} ج.م</span></div>`:'')+
-  (x.deposit?`<div class="dim"><span>${t('dep')}</span><span>${nf(x.deposit)} ج.م ${t('person')}</span></div>`:'')+
-  `<div class="sum"><span>${t('total')}</span><span>${nf(tot)} ج.م</span></div>`;
- document.getElementById('mTotal').innerHTML=`${nf(tot)} <em>ج.م</em>`;
- document.getElementById('mSub').textContent=`${B.pax} × ${t(B.room)}`;
+ const x=CUR;if(!x)return; const n=paxOf(), ferry=(x.ferry||0)*n, tot=mixTotal(x);
+ document.querySelectorAll('.room').forEach(el=>{const k=el.dataset.k, q=B.q[k]||0;
+   el.classList.toggle('on',q>0); document.getElementById('q_'+k).textContent=q;
+   const occ=OCC[k], rh=document.getElementById('rh_'+k);
+   if(occ&&q>0){const rooms=Math.ceil(q/occ); rh.textContent=(L==='ar'?`${rooms} غرفة`:`${rooms} room${rooms>1?'s':''}`)+(q%occ?(L==='ar'?` · غرفة غير مكتملة (${q%occ}/${occ})`:` · one room not full (${q%occ}/${occ})`):'');}
+   else rh.textContent='';});
+ document.getElementById('paxL').textContent=n?(n+' '+(n>1?t('adults'):t('adult'))):(L==='ar'?'اختر غرفة واحدة على الأقل':'Pick at least one room');
+ document.getElementById('tot').innerHTML=n?`${nf(tot)} <em>ج.م</em>`:'—';
+ let bd='';
+ for(const [k,q] of qtyOf()){ const unit=egpOf(x,k)||0;
+   bd+=`<div><span>${t(k)} × ${q}</span><span>${nf(unit*q)} ج.م</span></div>`;
+   if(x.cur!=='EGP') bd+=`<div class="dim"><span>${nf(x.prices[k])} ${CURSYM[x.cur]} × ${FX[x.cur]}${x.egpAddon?` + ${nf(x.egpAddon)}`:''}</span><span>${L==='ar'?'للفرد':'per person'}</span></div>`; }
+ if(ferry) bd+=`<div><span>${t('ferry')} × ${n}</span><span>${nf(ferry)} ج.م</span></div>`;
+ if(x.deposit&&n) bd+=`<div class="dim"><span>${t('dep')}</span><span>${nf(x.deposit)} ج.م ${t('person')}</span></div>`;
+ bd+=`<div class="sum"><span>${t('total')}</span><span>${nf(tot)} ج.م</span></div>`;
+ document.getElementById('bd').innerHTML=bd;
+ document.getElementById('mTotal').innerHTML=n?`${nf(tot)} <em>ج.م</em>`:'—';
+ document.getElementById('mSub').textContent=n?mixLabel():'';
 }
 function toggleSave(id){ const i=SAVED.indexOf(id); i<0?SAVED.push(id):SAVED.splice(i,1); persist();
  document.getElementById('saveBtn').innerHTML=SAVED.includes(id)?'★ '+t('saved'):'☆ '+t('save'); }
 function share(){ if(navigator.share)navigator.share({title:document.title,url:location.href});
  else{navigator.clipboard.writeText(location.href);toast(L==='ar'?'تم نسخ الرابط':'Link copied')} }
 function sendEnq(){ const x=CUR;
- ENQ.unshift({trip:x.id,co:x.co,room:B.room,pax:B.pax,at:new Date().toISOString(),status:'new'}); persist();
+ if(!paxOf()){toast(L==='ar'?'اختر غرفة أولاً':'Pick a room first');return}
+ ENQ.unshift({trip:x.id,co:x.co,room:qtyOf()[0][0],mix:mixLabel(),total:mixTotal(x),pax:paxOf(),at:new Date().toISOString(),status:'new'}); persist();
  toast(L==='ar'?'تم إرسال الاستفسار — ستصلك رسالة من الشركة':'Enquiry sent — the company will reply'); }
 function toast(m){ const d=document.createElement('div'); d.className='toast'; d.textContent=m;
  document.body.appendChild(d); setTimeout(()=>d.remove(),3200); }
@@ -1639,7 +1687,7 @@ function account(){
    </div>
    <div class="panel"><h3>${t('acc_enq')} <span class="pillnum">${ENQ.length}</span></h3>
      ${ENQ.length?ENQ.filter(e=>trip(e.trip)).map(e=>{const x=trip(e.trip);return `<a class="rowitem" href="#/trip/${e.trip}">
-       <div><b>${esc(tripName(x,L))}</b><small>${t(e.room)} × ${e.pax} · ${new Date(e.at).toLocaleDateString()}</small></div>
+       <div><b>${esc(tripName(x,L))}</b><small>${e.mix||(t(e.room)+' × '+e.pax)} · ${new Date(e.at).toLocaleDateString()}</small></div>
        <span class="tag ok">${L==='ar'?'قيد الرد':'Awaiting reply'}</span></a>`}).join(''):`<p class="lead">${L==='ar'?'لم ترسل أي استفسار بعد.':'No enquiries yet.'}</p>`}
    </div>
    <div class="panel"><h3>${t('acc_chats')}</h3>
@@ -1724,7 +1772,7 @@ function dash(){
        <div class="sbar"><i style="width:${Math.min(100,k[1]/4)}%"></i></div><b>${k[1]}</b><em class="up">${k[2]}</em></div>`).join('')}</div>
    <div class="panel"><h3>${t('dash_inbox')} <span class="pillnum">${THREADS.reduce((a,x)=>a+x.unread,0)+ENQ.length}</span></h3>
      ${ENQ.filter(e=>trip(e.trip)).map(e=>{const x=trip(e.trip);return `<a class="rowitem" href="#/trip/${e.trip}"><div><b>${esc(tripName(x,L))}</b>
-       <small>${t(e.room)} × ${e.pax} · ${L==='ar'?'استفسار جديد':'new enquiry'}</small></div><span class="tag ok">NEW</span></a>`}).join('')}
+       <small>${e.mix||(t(e.room)+' × '+e.pax)} · ${L==='ar'?'استفسار جديد':'new enquiry'}</small></div><span class="tag ok">NEW</span></a>`}).join('')}
      ${THREADS.map(th=>{const x=trip(th.trip);return `<a class="rowitem" href="#/chat/${th.id}"><div><b>${esc(th.client)}</b>
        <small>${x?esc(tripName(x,L)):'—'} · ${th.msgs.length} ${L==='ar'?'رسالة':'wijha_messages'}</small></div>
        ${th.unread?`<span class="pillnum">${th.unread}</span>`:`<span class="tag">✓</span>`}</a>`}).join('')}</div>
@@ -1910,6 +1958,7 @@ function useDemo(){ API=null; LIVE=false;
 }
 function setConn(){
  const el=document.getElementById('connPill'); if(!el)return;
+ try{ if(!localStorage.getItem('wijha_dev')) el.style.display='none'; }catch(e){}
  el.textContent = LIVE ? 'live ✓' : 'demo';
  el.className = 'lang '+(LIVE?'ok':'');
  el.title = LIVE ? (localStorage.getItem('wijha_url')||'') : 'built-in demo data';
@@ -1979,7 +2028,7 @@ async function loadCatalogue(){
  companies.forEach(c=>COS.push({id:c.id, ar:c.name_ar, en:c.name_en||c.name_ar, lic:c.license_no||'—',
    gov:c.governorate, govEn:c.governorate, addr:c.address_ar, addrEn:c.address_en||c.address_ar,
    hotline:c.hotline||'—', wa:(c.whatsapp||'').replace(/\D/g,''), email:c.email, site:c.website,
-   verified:!!c.etaa_verified, rating:4.6, reviews:0,
+   verified:!!c.etaa_verified, rating:null, reviews:0,
    aboutAr:c.about_ar||'', aboutEn:c.about_en||c.about_ar||'',
    pay:DEMO_COS[0].pay, payEn:DEMO_COS[0].payEn}));
  Object.keys(HOTELS).forEach(k=>delete HOTELS[k]);
@@ -2071,8 +2120,10 @@ function sid(){ let s=localStorage.getItem('wijha_sid');
  if(!s){s='s_'+Math.random().toString(36).slice(2);localStorage.setItem('wijha_sid',s)} return s; }
 
 /* ── boot ── */
+/* public project URL + public "anon" key: designed to be public, access is controlled by database rules (RLS). NEVER put the service-role key here. */
+const DEFAULT_URL='https://ejxndvelxocklapmiuvu.supabase.co', DEFAULT_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqeG5kdmVseG9ja2xhcG1pdXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0ODIyNjMsImV4cCI6MjEwMzA1ODI2M30.mJbyBJDSDDxop3R5RXNx-s2xmRKuHKZa_6_1tC_7TJw';
 (async()=>{
- const u=localStorage.getItem('wijha_url'), k=localStorage.getItem('wijha_key');
+ const u=localStorage.getItem('wijha_url')||DEFAULT_URL, k=localStorage.getItem('wijha_key')||DEFAULT_KEY;
  if(u&&k){
   try{ const api=makeApi(u,k); await api.select('public_offers?select=id&limit=1');
     API=api; await loadCatalogue(); LIVE=true; }
@@ -2357,7 +2408,7 @@ sendEnq=async function(){
  try{
   let th=(await aget(`wijha_threads?select=id&client_id=eq.${AU.user.id}&company_id=eq.${x.co}&offer_id=eq.${x.id}`))[0];
   if(!th){ th=(await apost('wijha_threads',{client_id:AU.user.id,company_id:x.co,offer_id:x.id}))[0]; }
-  const body=(L==='ar'?`استفسار عن: ${tripName(x,'ar')} — ${t(B.room)} × ${B.pax} — الإجمالي ${nf((egpOf(x,B.room)||0)*B.pax)} ج.م`:`Enquiry: ${tripName(x,'en')} — ${t(B.room)} × ${B.pax} — total ${nf((egpOf(x,B.room)||0)*B.pax)} EGP`);
+  const body=(L==='ar'?`استفسار عن: ${tripName(x,'ar')} — ${mixLabel()} — الإجمالي ${nf(mixTotal(x))} ج.م`:`Enquiry: ${tripName(x,'en')} — ${mixLabel()} — total ${nf(mixTotal(x))} EGP`);
   await apost('wijha_messages',{thread_id:th.id,sender_id:AU.user.id,sender_role:'client',body},'return=minimal');
   API.insert('offer_events',{offer_id:x.id,company_id:x.co,kind:'enquiry',session_id:sid()});
   toast(L==='ar'?'تم إرسال الاستفسار — ستصلك الردود هنا':'Enquiry sent — replies arrive here'); go('#/chat/'+th.id);
