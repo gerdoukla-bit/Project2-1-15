@@ -318,7 +318,7 @@ function offersV(){
  <div class="tw"><table><thead><tr><th><input type="checkbox" onchange="rows_toggle(this.checked)"></th><th>الرقم المرجعي</th><th>الرحلة</th><th>الشركة</th><th>النوع</th><th>التواريخ</th><th>ينتهي</th><th>EGP</th><th>الظهور</th><th>برنامج</th><th>المراجعة</th><th></th></tr></thead><tbody>
  ${rows.map(o=>`<tr class="${S.sel.has(o.id)?'sel':''}"><td><input type="checkbox" ${S.sel.has(o.id)?'checked':''} onchange="S.sel[this.checked?'add':'delete']('${o.id}');render()"></td>
   <td><span class="mono" style="font-weight:700;color:var(--amber-ink)">${esc(o.ref_code||'—')}</span></td>
-  <td><b>${esc(o.title_ar)}</b><small>${esc(o.dest_ar||o.title_en||'')}</small>${o.source_kind?`<small class="dim">المصدر: ${esc(o.source_kind)}</small>`:''}</td><td>${esc(coN(o.company_id))}</td>
+  <td><b>${esc(o.title_ar)}</b>${o.is_sample?' <span class="pill warn">تجريبي</span>':''}<small>${esc(o.dest_ar||o.title_en||'')}</small>${o.source_kind?`<small class="dim">المصدر: ${esc(o.source_kind)}</small>`:''}</td><td>${esc(coN(o.company_id))}</td>
   <td>${CATL[o.category]}<small>${esc(o.sub_category||'')}</small></td><td>${esc(o.dates_text_ar||o.starts_on||'—')}<small>${o.days?o.days+' يوم':''}</small></td>
   <td class="num">${o.expires_on?`<span class="pill ${new Date(o.expires_on)<new Date()?'bad':'ok'}">${o.expires_on}</span>`:'<span class="pill warn">بدون</span>'}</td>
   <td class="num">${nf(egp(o))}<small class="dim">${o.currency!=='EGP'?nf(o.price_quad??o.price_double)+' '+o.currency:''}</small></td>
@@ -326,6 +326,7 @@ function offersV(){
   <td class="num">${o.stage_count} <span class="dim">/ ${o.item_count} / ${o.hotel_count}</span>${o.detail_level==='outline'?'<small>outline</small>':''}</td>
   <td><span class="pill ${o.review_state==='approved'?'ok':o.review_state==='rejected'?'bad':'warn'}">${({draft:'مسودة',pending:'بانتظار المراجعة',approved:'معتمد',rejected:'مرفوض'})[o.review_state||'approved']}</span>${o.review_note?`<small>${esc(o.review_note)}</small>`:''}</td>
   <td class="acts"><button class="btn sm" onclick="editOffer('${o.id}')">تعديل</button>
+   ${isAdminRole(S.me.role)?`<button class="btn sm" title="عرض تجريبي / حقيقي" onclick="toggleSample('${o.id}',${o.is_sample?'false':'true'})">${o.is_sample?'☑ تجريبي':'☐ تجريبي'}</button>`:''}
    ${o.internal_only||o.visibility==='internal'?`<button class="btn sm" onclick="toast('هذه الرحلة داخلية — لا تظهر على الموقع العام',true)">معاينة (داخلية)</button>`:`<a class="btn sm" href="./index.html#/trip/${o.id}" target="_blank">معاينة ↗</a>`}
    ${isAdminRole(S.me.role)&&o.review_state==='pending'?`<button class="btn sm ok" onclick="reviewOffer('${o.id}','approved')">اعتماد</button><button class="btn sm danger" onclick="reviewOffer('${o.id}','rejected')">رفض</button>`:''}
    <button class="btn sm danger" onclick="delOffer('${o.id}')">حذف</button></td></tr>`).join('')||'<tr><td colspan="12" class="dim">لا نتائج</td></tr>'}</tbody></table></div>
@@ -436,6 +437,7 @@ async function saveOffer(){
   toast(isAdminRole(S.me.role)?'تم الحفظ':'تم الحفظ — بانتظار مراجعة فريق وجهة'); closeEd(); await loadAll(); render();
  }catch(e){ document.getElementById('ederr').innerHTML='<div class="err">'+esc(e.message)+'</div>' }
 }
+async function toggleSample(id,val){ try{ await patch('offers?id=eq.'+id,{is_sample:val}); const o=S.offers.find(x=>x.id===id); if(o)o.is_sample=val; toast(val?'تم التعليم كعرض تجريبي':'تم التعليم كعرض حقيقي'); render(); }catch(e){toast(e.message,true)} }
 async function reviewOffer(id,state){
  const note = state==='rejected' ? prompt('سبب الرفض (يظهر للشركة):') : null;
  if(state==='rejected' && note===null) return;

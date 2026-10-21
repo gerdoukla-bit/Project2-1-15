@@ -332,6 +332,7 @@ footer h4{font-size:13px;color:var(--ink);margin-bottom:8px} footer a{display:bl
 .lang.ok{color:var(--green);border-color:var(--green)}
 
 /* ── premium polish ── */
+.card .img .flag.sample{background:#2b2a30;color:#f3efe6;top:auto;bottom:10px;inset-inline-end:auto;inset-inline-start:10px}
 :root{--bg:#faf8f3;--line:#e7e1d3;--gold:#b98a2e;--shadow-lg:0 30px 60px -34px rgba(60,40,10,.35)}
 body{letter-spacing:.005em}
 .nav{backdrop-filter:saturate(1.4) blur(12px);background:rgba(250,248,243,.9)!important}
@@ -1240,6 +1241,7 @@ function card(t_){
  return `<a class="card" href="#/trip/${t_.id}">
   <div class="img">${pic(t_.cover,t_.art,s)}
     <span class="cat">${CATS[t_.cat].icon} ${L==='ar'?CATS[t_.cat].ar:CATS[t_.cat].en}</span>
+    ${t_.sample?`<span class="flag sample">${L==='ar'?'عرض تجريبي':'Sample offer'}</span>`:''}
     ${isSoon(t_)?`<span class="flag soon">${t('soon')}</span>`:isFull(t_)?`<span class="flag full">${t('full')}</span>`:''}
     <button class="cmpbtn ${inCmp(t_.id)?'on':''}" onclick="toggleCmp('${t_.id}',event)" title="${L==='ar'?'أضف للمقارنة':'Add to compare'}">${inCmp(t_.id)?'✓':'⇄'}</button></div>
   <div class="body">
@@ -1434,6 +1436,7 @@ function detail(id){
      <span class="tag">${x.days} ${t('days')} / ${x.nights||x.days-1} ${t('nights')}</span>
      ${x.flightsIncluded?`<span class="tag ok">✈ ${t('inc_yes')}</span>`:''}
    </div>
+   ${x.sample?`<div class="note-box">🧪 ${L==='ar'?'هذا عرض تجريبي لعرض شكل الصفحة — الأسعار والمواعيد غير مؤكدة وقد لا يكون متاحاً للحجز.':'This is a sample offer shown to demonstrate the page — prices and dates are not confirmed and it may not be bookable.'}</div>`:''}
    <h1>${esc(tripName(x,L))}</h1>
    <div class="head-row"><div class="sub">
      <a href="#/trips?co=${c.id}">${esc(L==='ar'?c.ar:c.en)}</a>
@@ -1996,7 +1999,7 @@ function mapOffer(o){
   start:o.starts_on||null, days:o.days||null, nights:o.nights||null,
   cur:o.currency||'EGP', prices, egpAddon:Number(o.egp_addon||0),
   deposit:o.deposit?Number(o.deposit):null, ferry:o.ferry_fee?Number(o.ferry_fee):null,
-  flightsIncluded:!!o.flights_included, seats:o.seats_total||null, taken:o.seats_taken||0,
+  sample:!!o.is_sample, flightsIncluded:!!o.flights_included, seats:o.seats_total||null, taken:o.seats_taken||0,
   briefAr:o.brief_ar||'', briefEn:o.brief_en||o.brief_ar||'',
   arrival:o.arrival_city||null, track:o.track||null, season:o.season||null,
   regDeadline:o.registration_deadline||null, validUntil:o.price_valid_until||null,
@@ -2017,6 +2020,7 @@ async function loadCatalogue(){
     // pull the extra Hajj/Umrah columns the view does not expose
     try{ const extra=await API.select('offers?select=id,arrival_city,track,season,registration_deadline,price_valid_until,price_basis,source_type,source_note_ar,meals_ar,meals_en,mina_ar,mina_en,note_ar,note_en,view_count,cover_url');
          const m={}; extra.forEach(e=>m[e.id]=e); rows.forEach(r=>Object.assign(r,m[r.id]||{})); }catch(e){}
+    try{ const sm=await API.select('offers?select=id,is_sample&is_sample=eq.true'); const ids=new Set(sm.map(x=>x.id)); rows.forEach(r=>{r.is_sample=ids.has(r.id)}); }catch(e){}
     return rows; }),
   API.select('companies?select=id,slug,name_ar,name_en,license_no,etaa_verified,governorate,address_ar,address_en,hotline,whatsapp,email,website,about_ar,about_en'),
   API.select('hotels?select=*').catch(()=>[]),
