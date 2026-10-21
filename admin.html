@@ -85,6 +85,9 @@ tr.sel{background:var(--amber-soft)}
 .chip{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--line);font-size:11px;margin:2px 2px 0 0}
 pre.json{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px;font-size:11px;direction:ltr;text-align:start;overflow:auto;max-height:260px}
 @media(max-width:900px){.shell{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap}.who{margin:0;border:0}.chatgrid{grid-template-columns:1fr;height:auto}}
+.drop{display:flex;flex-direction:column;align-items:center;gap:6px;border:2px dashed var(--line,#ddd);border-radius:16px;padding:34px 16px;cursor:pointer;text-align:center;background:#fffdf8}
+.drop.over,.drop:hover{border-color:#e0961d;background:#fff4dd}
+.btn.danger{background:#fdeaea;color:#c23b3b}
 </style>
 </head>
 <body>
@@ -135,8 +138,10 @@ const cName=(c,L)=>{const r=COUNTRIES.find(x=>x[0]===c)||VISA_TARGETS.find(x=>x[
 /* ═══════════ state ═══════════ */
 const ADMIN_ROLES=['admin','wijha_admin'], CO_ROLES=['company','company_admin','company_staff'];
 const isAdminRole=r=>ADMIN_ROLES.includes(r), isCoRole=r=>CO_ROLES.includes(r);
+/* Wijha scout = inspector / sales person: adds offers for ANY company, everything goes to admin review */
+const isScout=r=>r==='wijha_scout', anyCo=r=>isAdminRole(r)||isScout(r);
 const myRole=()=>(S.roles||[]).find(r=>r.key===S.me?.wijha_role_key);
-const perm=a=>{const r=myRole(); if(!r) return isAdminRole(S.me?.role)?'full':(a==='clients'?'none':'view'); return (r.permissions||{})[a]||'none'};
+const perm=a=>{const r=myRole(); if(!r) return isAdminRole(S.me?.role)?'full':isScout(S.me?.role)?(a==='offers'?'edit':a==='companies'?'view':'none'):(a==='clients'?'none':a==='offers'?'edit':'view'); return (r.permissions||{})[a]||'none'};
 const can=(a,lvl='view')=>{const p=perm(a); return p==='full'||(p==='edit'&&lvl!=='full')||(p==='view'&&lvl==='view')};
 /* public project URL + public anon key (safe to publish; access is enforced by database rules). Never put the service-role key here. */
 const DEFAULT_URL='https://ejxndvelxocklapmiuvu.supabase.co', DEFAULT_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqeG5kdmVseG9ja2xhcG1pdXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0ODIyNjMsImV4cCI6MjEwMzA1ODI2M30.mJbyBJDSDDxop3R5RXNx-s2xmRKuHKZa_6_1tC_7TJw';
@@ -146,7 +151,7 @@ const S={url:localStorage.getItem('wijha_url')||DEFAULT_URL,key:localStorage.get
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* file extension / folder helpers: never trust a file name; every upload goes in the uploader's own folder */
 const safeExt=(f,d)=>((f.name.split('.').pop()||d).toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5))||d;
-const upFolder=cid=>isAdminRole(S.me?.role)?(cid||'admin'):S.me.company_id;
+const upFolder=cid=>anyCo(S.me?.role)?(cid||'admin'):S.me.company_id;
 const nf=n=>n==null?'—':Number(n).toLocaleString('en-US');
 const FX={EGP:1,EUR:57.5,USD:48.6,GBP:66,SAR:13.4};
 const CATL={tours:'رحلة خارجية',hajj:'حج',umrah:'عمرة'};
@@ -187,7 +192,7 @@ function logout(){S.tok=null;S.me=null;localStorage.removeItem('wijha_admin_tok'
 async function boot(){
  if(!S.url||!S.key||!S.tok){render();return}
  try{ const p=await get('profiles?select=*&id=eq.'+S.tok.user.id); S.me=p[0]||null;
-  if(!S.me||!(isAdminRole(S.me.role)||isCoRole(S.me.role))){ render(`<div class="login"><h1>ليس حساب مدير أو شركة</h1><p class="sub">هذا الحساب (${esc(S.tok.user.email)}) دوره <b>${esc(S.me?.role||'—')}</b>. شغّل في SQL:</p><pre class="json">update profiles set role='admin' where email='${esc(S.tok.user.email)}';</pre><button class="btn" onclick="logout()">خروج</button></div>`); return; }
+  if(!S.me||!(isAdminRole(S.me.role)||isCoRole(S.me.role)||isScout(S.me.role))){ render(`<div class="login"><h1>ليس حساب مدير أو شركة</h1><p class="sub">هذا الحساب (${esc(S.tok.user.email)}) دوره <b>${esc(S.me?.role||'—')}</b>. شغّل في SQL:</p><pre class="json">update profiles set role='admin' where email='${esc(S.tok.user.email)}';</pre><button class="btn" onclick="logout()">خروج</button></div>`); return; }
   await loadAll(); render();
  }catch(e){ toast(e.message,true); render(); }
 }
@@ -228,9 +233,9 @@ function render(custom){
     genuinely sees a different console rather than the same one greyed out */
  const ALL=[
   ['overview','نظرة عامة','', 'offers'],
-  ['offers', isAdmin?'الرحلات':'رحلاتي', S.offers.length, 'offers'],
+  ['offers', isAdmin?'الرحلات':isScout(S.me.role)?'العروض التي أضفتها':'رحلاتي', S.offers.length, 'offers'],
   ['intake','إضافة عرض', queued, 'offers'],
-  ['companies', isAdmin?'الشركات':'بيانات الشركة', isAdmin?(pend?pend+' ⚠':S.companies.length):'', 'companies'],
+  ['companies', isAdmin||isScout(S.me.role)?'الشركات':'بيانات الشركة', isAdmin?(pend?pend+' ⚠':S.companies.length):'', 'companies'],
   ['team', isAdmin?'الفريق والصلاحيات':'فريق الشركة', isAdmin?(S.profiles||[]).length:'', 'team'],
   ['suppliers','مكتبة الموردين',(S.suppliers||[]).length, 'suppliers'],
   ['emails','البريد',(S.emails||[]).filter(e=>e.status==='queued').length, 'emails'],
@@ -238,6 +243,7 @@ function render(custom){
   ['chats','المحادثات', unread, 'chats'],
   ['insights','الطلب والبحث','', 'finance']];
  let nav=ALL.filter(([k,l,n,area])=>{
+   if(isScout(S.me.role)) return ['offers','intake','companies'].includes(k);
    if(k==='overview') return isAdmin;
    if(k==='intake')   return can('offers','edit');
    if(k==='team')     return can('team','view');
@@ -245,7 +251,7 @@ function render(custom){
  }).map(([k,l,n])=>[k,l,n]);
  if(!nav.length) nav=[['offers','رحلاتي',S.offers.length]];
  if(!isAdmin&&!nav.some(n=>n[0]===S.view)) S.view='offers';
- root.innerHTML=`<div class="shell"><aside class="side"><div class="brand">وجهة <span>${isAdminRole(S.me.role)?'COMMAND CENTRE':'COMPANY CONSOLE'}</span></div>
+ root.innerHTML=`<div class="shell"><aside class="side"><div class="brand">وجهة <span>${isAdminRole(S.me.role)?'COMMAND CENTRE':isScout(S.me.role)?'WIJHA SCOUT':'COMPANY CONSOLE'}</span></div>
   <nav class="nav">${nav.map(([k,l,n])=>`<a href="#" class="${S.view===k?'on':''}" onclick="S.view='${k}';S.sel.clear();render();return false">${l}${n!==''?`<span class="n ${(k==='chats'&&unread)||(k==='companies'&&pend)||(k==='imports'&&queued)?'hot':''}">${n}</span>`:''}</a>`).join('')}</nav>
   <div class="who"><b>${esc(S.me.name||S.me.email)}</b>
   <span class="pill" style="background:#3a393f;color:#e9e5dc;border:0">${esc(myRole()?.name_ar||S.me.role)}</span>
@@ -318,7 +324,7 @@ function offersV(){
  <div class="tw"><table><thead><tr><th><input type="checkbox" onchange="rows_toggle(this.checked)"></th><th>الرقم المرجعي</th><th>الرحلة</th><th>الشركة</th><th>النوع</th><th>التواريخ</th><th>ينتهي</th><th>EGP</th><th>الظهور</th><th>برنامج</th><th>المراجعة</th><th></th></tr></thead><tbody>
  ${rows.map(o=>`<tr class="${S.sel.has(o.id)?'sel':''}"><td><input type="checkbox" ${S.sel.has(o.id)?'checked':''} onchange="S.sel[this.checked?'add':'delete']('${o.id}');render()"></td>
   <td><span class="mono" style="font-weight:700;color:var(--amber-ink)">${esc(o.ref_code||'—')}</span></td>
-  <td><b>${esc(o.title_ar)}</b>${o.is_sample?' <span class="pill warn">تجريبي</span>':''}<small>${esc(o.dest_ar||o.title_en||'')}</small>${o.source_kind?`<small class="dim">المصدر: ${esc(o.source_kind)}</small>`:''}</td><td>${esc(coN(o.company_id))}</td>
+  <td><b>${esc(o.title_ar)}</b>${o.is_sample?' <span class="pill warn">تجريبي</span>':''}${o.listed_by&&o.listed_by!=='company'&&!o.is_claimed?` <span class="pill info" title="لم ترفعه الشركة بنفسها">${o.listed_by==='agent'?'جمعه الوكيل الآلي':'جمعته وجهة'}</span>`:''}<small>${esc(o.dest_ar||o.title_en||'')}</small>${o.source_kind?`<small class="dim">المصدر: ${esc(o.source_kind)}</small>`:''}</td><td>${esc(coN(o.company_id))}</td>
   <td>${CATL[o.category]}<small>${esc(o.sub_category||'')}</small></td><td>${esc(o.dates_text_ar||o.starts_on||'—')}<small>${o.days?o.days+' يوم':''}</small></td>
   <td class="num">${o.expires_on?`<span class="pill ${new Date(o.expires_on)<new Date()?'bad':'ok'}">${o.expires_on}</span>`:'<span class="pill warn">بدون</span>'}</td>
   <td class="num">${nf(egp(o))}<small class="dim">${o.currency!=='EGP'?nf(o.price_quad??o.price_double)+' '+o.currency:''}</small></td>
@@ -359,28 +365,41 @@ async function editOffer(id){
  const o=id?S.offers.find(x=>x.id===id):null;
  let full={},stages=[],items=[],hotels=[],notes=[];
  if(id){ try{ [full,stages,items,hotels,notes]=await Promise.all([get('offers?select=*&id=eq.'+id).then(r=>r[0]),get('offer_stages?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_items?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_hotels?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_notes?select=*&offer_id=eq.'+id+'&order=sort_order')]); }catch(e){toast(e.message,true);return} }
+ if(id&&stages.length){ try{ const si=await get('offer_stage_items?select=*&stage_id=in.('+stages.map(x=>x.id).join(',')+')&order=block_order,sort_order');
+   stages.forEach(st=>st.items=si.filter(i=>i.stage_id===st.id)); }catch(e){ toast('تعذّر تحميل تفاصيل الأيام — لن يتم الحفظ حتى لا تُحذف',true); return } }
  ED={id,full:full||{},stages,items,hotels,notes,tab:'main'};
  if(!id){
   const d=new Date(); d.setDate(d.getDate()+60);
   ED.full={category:'tours',currency:'EGP',status:S.offers.find(x=>x.category!=='tours')?.status||'published',
     detail_level:'outline',flights_included:false,visibility:'public',expires_on:d.toISOString().slice(0,10),
-    company_id:isAdminRole(S.me.role)?S.companies[0]?.id:S.me.company_id};
+    company_id:anyCo(S.me.role)?S.companies[0]?.id:S.me.company_id};
  }
  drawEditor();
 }
 function fld(k,label,type,extra){
  const v=ED.full[k]; const cls=extra&&typeof extra==='string'?extra:'';
  if(k==='ref_code') return `<div class="${cls}"><label>${label}<input value="${esc(v||'سيُنشأ تلقائياً عند الحفظ')}" disabled style="font-family:var(--mono);color:var(--muted)"></label></div>`;
- if(type==='company') return `<div class="${cls}"><label>${label}<select data-k="${k}" ${!isAdminRole(S.me.role)?'disabled':''}>${(isAdminRole(S.me.role)?S.companies:S.companies.filter(c=>c.id===S.me.company_id)).map(c=>`<option value="${c.id}" ${v===c.id?'selected':''}>${esc(c.name_ar)}</option>`).join('')}</select></label></div>`;
+ if(type==='company') return `<div class="${cls}"><label>${label}<select data-k="${k}" ${!anyCo(S.me.role)?'disabled':''}>${(anyCo(S.me.role)?S.companies:S.companies.filter(c=>c.id===S.me.company_id)).map(c=>`<option value="${c.id}" ${v===c.id?'selected':''}>${esc(c.name_ar)}</option>`).join('')}</select></label></div>`;
  if(type==='select') return `<div class="${cls}"><label>${label}<select data-k="${k}">${extra.map(x=>`<option ${v===x?'selected':''}>${x}</option>`).join('')}</select></label></div>`;
  if(type==='bool') return `<div class="${cls}"><label>${label}<select data-k="${k}" data-bool="1"><option value="true" ${v?'selected':''}>نعم</option><option value="false" ${!v?'selected':''}>لا</option></select></label></div>`;
  if(type==='textarea') return `<div class="${cls}"><label>${label}<textarea data-k="${k}">${esc(v??'')}</textarea></label></div>`;
  return `<div class="${cls}"><label>${label}<input data-k="${k}" type="${type}" value="${esc(v??'')}"></label></div>`;
 }
+/* things the automatic reading was unsure about, shown above the form until a human fixes them */
+function checksBox(){
+ if(!ED.id) return '';
+ const imp=(S.imports||[]).find(i=>(i.payload?.created||[]).some(c=>c.offer_id===ED.id));
+ if(!imp) return '';
+ const c=(imp.payload.created.find(c=>c.offer_id===ED.id)?.checks)||[];
+ return `<div class="note-box" style="background:#fff4dd;border-radius:12px;padding:12px 14px;margin-bottom:12px">
+  <b>🤖 قُرئ هذا العرض تلقائياً من ${imp.file_path?'الملف المرفوع':imp.kind==='voice'?'التسجيل الصوتي':'النص المرسل'} — راجعه قبل الإرسال</b>
+  ${imp.file_path?` <button class="btn sm" data-p="${esc(imp.file_path)}" onclick="openIntakeFile(this.dataset.p)">📎 افتح الأصل للمقارنة</button>`:''}
+  ${c.length?`<ul style="margin:8px 18px 0">${c.map(x=>`<li>${esc(x.problem_ar)}</li>`).join('')}</ul>`:'<div class="note">لم يُبلّغ عن نقاط غير واضحة.</div>'}</div>`;
+}
 function drawEditor(){
  const tabs=[['main','البيانات'],['stages',`المراحل (${ED.stages.length})`],['items',`يشمل / لا يشمل (${ED.items.length})`],['hotels',`الفنادق (${ED.hotels.length})`],['notes',`تأشيرة وملاحظات (${ED.notes.length})`]];
  const isRites = ['hajj','umrah'].includes(ED.full.category);
- const body= ED.tab==='main' ? `<div class="form">${OFFER_FIELDS
+ const body= ED.tab==='main' ? `${checksBox()}<div class="form">${OFFER_FIELDS
    .filter(f=>f[0]!=='hajj'||isRites)
    .map(f=>{ const g = f[0]==='hajj' ? f.slice(1) : f;
      return g[0]==='sec'?`<div class="sec">${g[1]}</div>`:fld(g[0],g[1],g[2],g[3]) }).join('')}
@@ -400,7 +419,7 @@ function drawEditor(){
  let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
  ov.innerHTML=`<div class="md"><div class="hd"><b>${ED.id?'تعديل الرحلة':'رحلة جديدة'}</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
   <div class="bd"><div class="tabs">${tabs.map(([k,l])=>`<button class="${ED.tab===k?'on':''}" onclick="readMain();ED.tab='${k}';drawEditor()">${l}</button>`).join('')}</div>${body}<div id="ederr"></div></div>
-  <div class="ft">${ED.id?`<a class="btn" href="./index.html#/trip/${ED.id}" target="_blank">معاينة ↗</a>`:''}<button class="btn pri" onclick="saveOffer()">حفظ</button></div></div>`;
+  <div class="ft">${ED.id?`<a class="btn" href="./index.html#/trip/${ED.id}" target="_blank">معاينة ↗</a>`:''}<button class="btn pri" onclick="saveOffer()">حفظ</button>${!isAdminRole(S.me.role)&&ED.id&&['draft','rejected'].includes(ED.full.status)?`<button class="btn ok" onclick="saveOffer(true)">حفظ وإرسال للمراجعة ✓</button>`:''}</div></div>`;
 }
 async function uploadCover(file){
  if(!file)return;
@@ -413,11 +432,11 @@ async function uploadCover(file){
   toast('تم رفع الصورة'); drawEditor();
  }catch(e){toast(e.message,true)}
 }
-function readMain(){ if(ED.tab!=='main')return; if(!isAdminRole(S.me.role)) ED.full.company_id=S.me.company_id; document.querySelectorAll('#ov [data-k]').forEach(el=>{ const k=el.dataset.k; if(el.disabled)return; let v=el.value;
+function readMain(){ if(ED.tab!=='main')return; if(!anyCo(S.me.role)) ED.full.company_id=S.me.company_id; document.querySelectorAll('#ov [data-k]').forEach(el=>{ const k=el.dataset.k; if(el.disabled)return; let v=el.value;
  if(el.dataset.bool) v=v==='true'; else if(el.type==='number') v=v===''?null:Number(v); else if(v==='') v=null; ED.full[k]=v; }); }
 function closeEd(){document.getElementById('ov')?.remove();ED=null}
-async function saveOffer(){
- readMain(); const f={...ED.full}; delete f.id; delete f.created_at; delete f.updated_at; delete f.ref_code;
+async function saveOffer(submit){
+ readMain(); const f={...ED.full}; if(submit) f.status='pending_review'; delete f.id; delete f.created_at; delete f.updated_at; delete f.ref_code;
  if(!f.expires_on){ document.getElementById('ederr').innerHTML='<div class="err">تاريخ انتهاء العرض إلزامي — لا يمكن الحفظ بدونه</div>'; return; }
  if(f.starts_on && f.expires_on > f.starts_on){ document.getElementById('ederr').innerHTML='<div class="err">تاريخ الانتهاء يجب أن يكون قبل تاريخ السفر</div>'; return; }
  try{
@@ -427,7 +446,14 @@ async function saveOffer(){
   if(id) await patch('offers?id=eq.'+id,f); else { const r=await post('offers',f); id=r[0].id; }
   if(!admin){ try{ await post('wijha_offer_revisions',{offer_id:id,changed_by:S.me.id,company_id:S.me.company_id,after_data:f,state:'pending',note:'تعديل من الشركة'},'return=minimal') }catch(e){} }
   // children: replace-all strategy (simple and safe for an admin tool)
-  for(const [tb,rows,map] of [['offer_stages',ED.stages,s=>({offer_id:id,sort_order:s.sort_order??0,title_ar:s.title_ar||'—',day_label:s.day_label||null,description_ar:s.description_ar||null,photo_url:s.photo_url||null})],
+  // stages first, keeping each day's detailed items (offer_stage_items) attached to the new stage rows
+  if(ED.id) await del(`offer_stages?offer_id=eq.${id}`).catch(e=>{ if(!/لم يُحذف/.test(e.message)) throw e; });
+  if(ED.stages.length){
+    const rows=await post('offer_stages',ED.stages.map((s,i)=>({offer_id:id,sort_order:s.sort_order??i,title_ar:s.title_ar||'—',title_en:s.title_en||null,day_label:s.day_label||null,description_ar:s.description_ar||null,photo_url:s.photo_url||null})));
+    const kids=[]; rows.forEach((r,i)=>(ED.stages[i].items||[]).forEach((it,j)=>kids.push({stage_id:r.id,block_ar:it.block_ar||null,block_order:it.block_order??0,item_cat:it.item_cat||null,text_ar:it.text_ar||'—',text_en:it.text_en||null,sort_order:it.sort_order??j})));
+    if(kids.length) await post('offer_stage_items',kids,'return=minimal');
+  }
+  for(const [tb,rows,map] of [
     ['offer_items',ED.items,it=>({offer_id:id,kind:it.kind,item_cat:it.item_cat||null,text_ar:it.text_ar||'—',price_text:it.price_text||null,sort_order:it.sort_order??0})],
     ['offer_hotels',ED.hotels,h=>({offer_id:id,sort_order:h.sort_order??0,city_ar:h.city_ar||'—',hotel_name:h.hotel_name||'—',nights:h.nights||null,date_range:h.date_range||null,hotel_id:h.hotel_id||null})],
     ['offer_notes',ED.notes,n=>({offer_id:id,kind:n.kind,label_ar:n.label_ar||null,text_ar:n.text_ar||null,sort_order:n.sort_order??0})]]){
@@ -536,7 +562,7 @@ async function saveCo(){
 
 function companiesV(){
  const isAdmin=isAdminRole(S.me.role); const rank=c=>({pending:0,rejected:1,approved:2})[c.wijha_review||'pending'];
- const list=(isAdmin?S.companies:S.companies.filter(c=>c.id===S.me.company_id)).slice().sort((a,b)=>rank(a)-rank(b));
+ const list=(anyCo(S.me.role)?S.companies:S.companies.filter(c=>c.id===S.me.company_id)).slice().sort((a,b)=>rank(a)-rank(b));
  return `<h1>${isAdmin?'الشركات':'بيانات الشركة'} <span class="pill">${list.length}</span></h1><div class="bar">${isAdmin?'<button class="btn pri" onclick="editCo(null)">+ شركة جديدة</button>':''}</div>
  <div class="tw"><table><thead><tr><th>الشركة</th><th>الترخيص / الهاتف</th><th>حالة المراجعة</th><th>رحلات</th><th>أعضاء</th><th>جوجل</th><th>سوشيال</th><th>مصدر</th><th></th></tr></thead><tbody>
  ${list.map(c=>{const n=S.offers.filter(o=>o.company_id===c.id).length, m=S.profiles.filter(p=>p.company_id===c.id).length, soc=['facebook_url','instagram_url','tiktok_url','youtube_url','x_url','linkedin_url'].filter(k=>c[k]).length;
@@ -665,42 +691,108 @@ async function markIntakeFailed(id){ const why=prompt('سبب التعذّر (ا
 
 let INTAKE={files:[]};
 function intakeV(){
- const isAdmin=isAdminRole(S.me.role);
- const cid=isAdmin?(S.companies[0]?.id||''):S.me.company_id;
+ const pickAny=anyCo(S.me.role); const cid=pickAny?(S.companies[0]?.id||''):S.me.company_id;
  const q=(S.imports||[]);
+ const st={queued:['بانتظار التحويل','warn'],processing:['جارٍ القراءة…','warn'],extracted:['جاهز للمراجعة','ok'],imported:['تم','ok'],failed:['تعذّر','bad'],rejected:['مرفوض','bad']};
  return `<h1>إضافة عرض</h1>
- <p class="sub">املأ أي واحد من الثلاثة — أو أكثر من واحد معاً. الصق النص، وارفع الملف، وضع الرابط، ثم أرسل.</p>
- <div class="tw" style="padding:16px">
-  <div class="form">
-   <div><label>الشركة<select id="inCo" ${isAdmin?'':'disabled'}>${(isAdmin?S.companies:S.companies.filter(c=>c.id===cid)).map(c=>`<option value="${c.id}">${esc(c.name_ar)}</option>`).join('')}</select></label></div>
-   <div><label>اسم مبدئي (اختياري)<input id="inTitle" placeholder="مثال: النرويج سبتمبر"></label></div>
-   <div class="sec">١ — الصق النص</div>
-   <div class="w3"><label>نص العرض كما وصلك — واتساب، بريد، منشور<textarea id="inText" style="min-height:170px" placeholder="برنامج النرويج ٨ أيام / ٧ ليالٍ&#10;٤ – ١١ سبتمبر ٢٠٢٦&#10;السعر: ١٩٩٠ يورو للفرد في الغرفة الثنائية&#10;يشمل: الإقامة، الانتقالات، مرشد عربي&#10;لا يشمل: تذكرة الطيران، التأشيرة"></textarea></label></div>
-   <div class="sec">٢ — ارفع ملفاً</div>
-   <div class="w2"><label>PDF أو صورة أو Excel<input type="file" id="inFile" accept="application/pdf,image/*,.xlsx,.csv,.txt" multiple onchange="INTAKE.files=[...this.files];document.getElementById('fileList').textContent=INTAKE.files.map(f=>f.name).join(' · ')"></label>
-     <div id="fileList" class="note"></div></div>
-   <div><label>نوع المصدر<select id="inKind"><option value="pdf">PDF</option><option value="image">صورة</option><option value="text">نص</option><option value="url">رابط</option></select></label></div>
-   <div class="sec">٣ — أو ضع رابطاً</div>
-   <div class="w3"><label>رابط صفحة العرض<input id="inUrl" placeholder="https://example.com/trip-page"></label></div>
-   <div class="w3"><label>ملاحظة للمُعالِج<input id="inNote" placeholder="مثال: خذ الأسعار من الجدول الثاني فقط"></label></div>
+ <p class="sub">أرسل العرض بأي شكل عندك — ملف PDF أو Word أو صورة الإعلان، أو اكتبه، أو سجّله بصوتك. وجهة تقرؤه وتحوّله إلى صفحة عرض بنفس تصنيفات كل الشركات، ثم تراجعه أنت قبل النشر.</p>
+ <div class="tw" style="padding:18px">
+  ${pickAny?`<div class="form" style="margin-bottom:12px"><div class="w2"><label>الشركة صاحبة العرض<select id="inCo">${S.companies.map(c=>`<option value="${c.id}">${esc(c.name_ar)}${c.status!=='approved'?' (قيد المراجعة)':''}</option>`).join('')}</select></label></div></div>`:`<input type="hidden" id="inCo" value="${cid}">`}
+  <label id="drop" class="drop" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')"
+     ondrop="event.preventDefault();this.classList.remove('over');addIntakeFiles(event.dataTransfer.files)">
+   <input type="file" id="inFile" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,image/*,audio/*" onchange="addIntakeFiles(this.files)" style="display:none">
+   <b style="font-size:17px">📄 اضغط هنا لاختيار ملف — أو اسحبه وأفلته</b>
+   <small>PDF · Word · صورة الإعلان (JPG/PNG) · Excel · حتى ٢٠ ميجا</small>
+  </label>
+  <div id="fileList" class="note">${(INTAKE.files||[]).map(f=>'📎 '+esc(f.name)).join(' · ')}</div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0 6px">
+   <button class="btn ${INTAKE.rec?'danger':''}" id="recBtn" onclick="toggleVoice()">${INTAKE.rec?'⏹ إيقاف التسجيل':'🎙 سجّل العرض بصوتك'}</button>
+   <span class="note" id="recNote">${INTAKE.audio?'✓ تم حفظ التسجيل الصوتي':'تكلّم عادي: اسم الرحلة، المواعيد، الفنادق، الأسعار لكل غرفة، وما يشمله السعر.'}</span>
   </div>
-  <div class="bar" style="margin-top:12px"><button class="btn pri" onclick="submitIntake()">أرسل للمعالجة</button>
-   <button class="btn" onclick="editOffer(null)">أو املأ النموذج الكامل يدوياً</button></div>
-  <div id="inErr"></div>
+  <label>أو اكتب / الصق تفاصيل العرض (رسالة واتساب، بوست، بريد…)
+   <textarea id="inText" style="min-height:150px;width:100%" placeholder="عمرة ١٠ أيام — السفر ١٥ أغسطس&#10;فندق سويس أوتيل ٥ نجوم&#10;رباعي ٦٥ ألف — ثلاثي ٧٢ ألف — ثنائي ٨٥ ألف&#10;يشمل: التأشيرة والطيران والإفطار">${esc(INTAKE.text||'')}</textarea></label>
+  <details style="margin-top:8px"><summary class="note" style="cursor:pointer">خيارات أخرى (رابط صفحة العرض، ملاحظة)</summary>
+   <div class="form" style="margin-top:8px"><div class="w3"><label>رابط صفحة العرض على موقعكم<input id="inUrl" placeholder="https://"></label></div>
+   <div class="w3"><label>ملاحظة (اختياري)<input id="inNote" placeholder="مثال: الأسعار في الجدول الثاني فقط"></label></div></div></details>
+  <div class="bar" style="margin-top:14px"><button class="btn pri" style="font-size:16px;padding:12px 26px" onclick="submitIntake()">✨ حوّل إلى صفحة عرض</button>
+   <button class="btn" onclick="editOffer(null)">أو املأ النموذج يدوياً</button></div>
+  <div id="inErr"></div><div id="inProg"></div>
  </div>
- <div class="kpi warn" style="margin:14px 0"><b>الاستخراج التلقائي غير مُفعَّل بعد</b>
-  <small>المتصفح لا يستطيع قراءة PDF ولا جلب صفحة من موقع آخر. ما يُرفع الآن يُحفظ في الطابور بأمان مع ملفه ونصه، وتتم قراءته يدوياً حتى تُفعَّل الدالة الخلفية. لهذا لم يُستخرج شيء من ملفَي الـ PDF والصورة اللذين رفعتهما.</small></div>
- <h2>الطابور</h2>
- <div class="tw"><table><thead><tr><th>المصدر</th><th>الشركة</th><th>النوع</th><th>الحالة</th><th>أُضيف</th><th></th></tr></thead><tbody>
- ${q.map(i=>`<tr><td>${i.url?`<a href="${esc(i.url)}" target="_blank" class="mono">${esc(i.url.slice(0,52))}</a>`:''}
-  ${i.file_path?`<button class="btn sm" data-p="${esc(i.file_path)}" onclick="openIntakeFile(this.dataset.p)">📎 ${esc(i.file_path.split('/').pop())}</button>`:''}
+ <h2 style="margin-top:22px">ما أرسلته</h2>
+ <div class="tw"><table><thead><tr><th>المصدر</th><th>الشركة</th><th>الحالة</th><th>أُضيف</th><th></th></tr></thead><tbody>
+ ${q.map(i=>{const s=st[i.status]||[i.status,'warn']; const made=i.payload?.created||[];
+  return `<tr><td>${i.file_path?`<button class="btn sm" data-p="${esc(i.file_path)}" onclick="openIntakeFile(this.dataset.p)">${i.kind==='voice'?'🎙':'📎'} ${esc(i.file_path.split('/').pop())}</button>`:''}
+  ${i.url?`<a href="${esc(i.url)}" target="_blank" rel="noopener" class="mono">${esc(i.url.slice(0,52))}</a>`:''}
   ${i.raw_text?`<div class="dim" style="font-size:11px;max-width:320px">${esc((i.raw_text||'').slice(0,110))}…</div>`:''}
-  ${i.title_hint?`<small>${esc(i.title_hint)}</small>`:''}${i.error?`<small style="color:var(--red)">${esc(i.error)}</small>`:''}</td>
-  <td>${esc(coN(i.company_id))}</td><td>${esc(i.kind)}</td>
-  <td><span class="pill ${i.status==='imported'?'ok':i.status==='failed'||i.status==='rejected'?'bad':'warn'}">${esc(i.status)}</span></td>
+  ${i.error?`<small style="color:var(--red)">${esc(i.error)}</small>`:''}</td>
+  <td>${esc(coN(i.company_id))}</td>
+  <td><span class="pill ${s[1]}">${s[0]}</span>${made.length>1?`<small>${made.length} عروض</small>`:''}</td>
   <td class="num">${(i.created_at||'').slice(0,10)}</td>
-  <td class="acts">${i.result_offer_id?`<button class="btn sm ok" onclick="editOffer('${i.result_offer_id}')">فتح الرحلة</button>`:`<button class="btn sm pri" onclick="reviewIntake('${i.id}')">راجع وأنشئ الرحلة</button>`}<button class="btn sm danger" onclick="delImport('${i.id}')">×</button></td></tr>`).join('')||'<tr><td colspan="6" class="dim">الطابور فارغ</td></tr>'}
+  <td class="acts">${made.map(c=>`<button class="btn sm ok" onclick="editOffer('${c.offer_id}')">راجع: ${esc(c.title_ar.slice(0,28))}${c.checks?.length?` <b>(${c.checks.length} ⚠)</b>`:''}</button>`).join('')}
+   ${!made.length&&i.status!=='processing'?`<button class="btn sm pri" onclick="processImport('${i.id}',true)">✨ حوّل الآن</button>`:''}
+   ${isAdminRole(S.me.role)&&!made.length?`<button class="btn sm" onclick="reviewIntake('${i.id}')">يدوياً</button>`:''}</td></tr>`}).join('')||'<tr><td colspan="5" class="dim">لا شيء بعد</td></tr>'}
  </tbody></table></div>`;
+}
+function addIntakeFiles(list){ INTAKE.text=document.getElementById('inText')?.value||INTAKE.text;
+ const ok=[...list].filter(f=>{ if(f.size>20*1024*1024){toast(f.name+': أكبر من ٢٠ ميجا',true);return false}
+   if(/\.(heic|heif)$/i.test(f.name)){toast('صور الآيفون HEIC: أرسلها كـ JPG (لقطة شاشة تكفي)',true);return false} return true });
+ INTAKE.files=[...(INTAKE.files||[]),...ok]; document.getElementById('fileList').innerHTML=INTAKE.files.map(f=>'📎 '+esc(f.name)).join(' · '); }
+
+/* voice: record audio + live Arabic transcript in the browser (free, no extra service). The transcript is what gets read. */
+function toggleVoice(){
+ if(INTAKE.rec){ INTAKE.rec.stop(); INTAKE.sr?.stop(); return; }
+ if(!navigator.mediaDevices?.getUserMedia){ toast('المتصفح لا يدعم التسجيل — اكتب العرض في الخانة',true); return; }
+ navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+  const chunks=[]; const rec=new MediaRecorder(stream); INTAKE.rec=rec;
+  rec.ondataavailable=e=>chunks.push(e.data);
+  rec.onstop=()=>{ stream.getTracks().forEach(t=>t.stop()); const type=rec.mimeType||'audio/webm';
+    INTAKE.audio=new File([new Blob(chunks,{type})],'voice-'+Date.now()+(type.includes('mp4')?'.m4a':'.webm'),{type});
+    INTAKE.rec=null; INTAKE.text=document.getElementById('inText').value; render(); };
+  rec.start();
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(SR){ const sr=new SR(); INTAKE.sr=sr; sr.lang='ar-EG'; sr.continuous=true; sr.interimResults=true;
+    const ta=document.getElementById('inText'); const base=ta.value?ta.value+'\n':'';
+    sr.onresult=e=>{ let txt=''; for(let i=0;i<e.results.length;i++) txt+=e.results[i][0].transcript+' '; ta.value=base+txt.trim(); };
+    sr.onerror=()=>{}; try{sr.start()}catch(e){} }
+  else document.getElementById('recNote').textContent='جارٍ التسجيل… (هذا المتصفح لا يكتب الكلام تلقائياً؛ استخدم Chrome أو اكتب ملخصاً بعد التسجيل)';
+  const b=document.getElementById('recBtn'); b.textContent='⏹ إيقاف التسجيل'; b.classList.add('danger');
+ }).catch(()=>toast('لم يُسمح باستخدام الميكروفون',true));
+}
+
+async function submitIntake(){
+ const cid=document.getElementById('inCo')?.value, note=document.getElementById('inNote')?.value||null;
+ const tx=(document.getElementById('inText')?.value||'').trim(), url=(document.getElementById('inUrl')?.value||'').trim();
+ const files=INTAKE.files||[], audio=INTAKE.audio, err=document.getElementById('inErr'), prog=document.getElementById('inProg');
+ err.innerHTML='';
+ try{
+  if(!cid) throw new Error('اختر الشركة');
+  if(!tx && !url && !files.length && !audio) throw new Error('ارفع ملفاً أو سجّل أو اكتب تفاصيل العرض');
+  if(url && !/^https?:\/\//.test(url)) throw new Error('الرابط غير صحيح');
+  prog.innerHTML='<div class="note-box">⏳ جارٍ الرفع…</div>';
+  const ids=[];
+  const add=async row=>{ const r=await post('wijha_imports',{company_id:cid,submitted_by:S.me.id,note,status:'queued',...row}); ids.push(r[0].id); };
+  for(const f of files){ const path=await uploadIntake(f,cid); await add({kind:(f.name.split('.').pop()||'file').toLowerCase(),file_path:path,raw_text:files.length===1?(tx||null):null}); }
+  if(audio){ const path=await uploadIntake(audio,cid); await add({kind:'voice',file_path:path,raw_text:tx||null}); }
+  else if(url) await add({kind:'url',url,raw_text:files.length?null:(tx||null)});
+  else if(!files.length || (files.length>1&&tx)) await add({kind:'text',raw_text:tx});
+  INTAKE={files:[]};
+  for(let i=0;i<ids.length;i++){ prog.innerHTML=`<div class="note-box">🤖 جارٍ قراءة العرض ${ids.length>1?`(${i+1} من ${ids.length})`:''}… قد يستغرق دقيقة</div>`; await processImport(ids[i]); }
+  await loadAll(); render();
+ }catch(e){ err.innerHTML='<div class="err">'+esc(e.message)+'</div>'; prog.innerHTML=''; }
+}
+
+/* calls the wijha-extract function; if it is not deployed yet the upload simply waits in the list for the team */
+async function processImport(id,redraw){
+ try{
+  const r=await fetch(S.url+'/functions/v1/wijha-extract',{method:'POST',headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':'application/json'},body:JSON.stringify({import_id:id})});
+  const b=await r.json().catch(()=>({}));
+  if(r.status===404) toast('القراءة التلقائية لم تُفعّل بعد — حُفظ العرض وسيُراجعه فريق وجهة',true);
+  else if(!r.ok) toast(b.error||('تعذّرت القراءة ('+r.status+')'),true);
+  else{ const n=b.created?.length||0, w=(b.created||[]).reduce((a,c)=>a+(c.checks?.length||0),0);
+    toast(n>1?`تم إنشاء ${n} عروض — راجعها قبل الإرسال`:`تم إنشاء العرض — راجعه قبل الإرسال${w?` (${w} نقطة تحتاج تأكيد)`:''}`);
+    if(n===1&&redraw!==false){ await loadAll(); render(); return editOffer(b.created[0].offer_id); } }
+ }catch(e){ toast('تعذّر الاتصال: '+e.message,true) }
+ if(redraw){ await loadAll(); render(); }
 }
 async function openIntakeFile(path){
  try{ const r=await fetch(S.url+'/storage/v1/object/sign/offer-intake/'+path,{method:'POST',
@@ -708,29 +800,11 @@ async function openIntakeFile(path){
   const b=await r.json(); if(!r.ok) throw new Error(b.message||'no access');
   window.open(S.url+'/storage/v1'+b.signedURL,'_blank'); }catch(e){toast(e.message,true)}
 }
-async function submitIntake(){
- const cid=document.getElementById('inCo')?.value, note=document.getElementById('inNote')?.value||null;
- const title=document.getElementById('inTitle')?.value||null;
- const tx=(document.getElementById('inText')?.value||'').trim();
- const url=(document.getElementById('inUrl')?.value||'').trim();
- const files=INTAKE.files||[];
- try{
-  if(!tx && !url && !files.length) throw new Error('املأ واحداً على الأقل: نص، أو ملف، أو رابط');
-  if(url && !/^https?:\/\//.test(url)) throw new Error('الرابط غير صحيح');
-  const paths=[]; for(const f of files) paths.push(await uploadIntake(f,cid));
-  const kind = files.length ? (document.getElementById('inKind')?.value||'pdf') : (url?'url':'text');
-  await post('wijha_imports',{company_id:cid,submitted_by:S.me.id,kind,note,title_hint:title,status:'queued',
-    raw_text:tx||null, url:url||null, file_path:paths[0]||null},'return=minimal');
-  for(const p of paths.slice(1))
-    await post('wijha_imports',{company_id:cid,submitted_by:S.me.id,kind,note,title_hint:title,status:'queued',file_path:p},'return=minimal');
-  toast('أُضيف للطابور'); INTAKE.files=[]; await loadAll(); render();
- }catch(e){ document.getElementById('inErr').innerHTML='<div class="err">'+esc(e.message)+'</div>' }
-}
 async function uploadIntake(file,cid){
  const ext=safeExt(file,'bin');
  const path=`${upFolder(cid)}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
  const r=await fetch(S.url+'/storage/v1/object/offer-intake/'+path,{method:'POST',
-  headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':file.type||'application/octet-stream'},body:file});
+  headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':(file.type||'application/octet-stream').split(';')[0]},body:file});
  if(!r.ok) throw new Error('رفع الملف فشل: '+(await r.text()).slice(0,140));
  return path;
 }

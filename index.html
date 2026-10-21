@@ -199,17 +199,17 @@ h3{font-size:15px;font-weight:700;margin-bottom:10px} h4{font-size:13px;font-wei
 .field{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
 .field .k{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;direction:ltr;text-align:start}
 .rooms{display:grid;gap:6px}
-.room{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;text-align:start;transition:border-color .15s,background .15s}
-.room .rn{display:flex;flex-direction:column;gap:2px;min-width:0}.room .rh{font-size:11px;color:var(--amber-d,#8a6a1f)}
-.room .rs{display:flex;align-items:center;gap:8px}.room .rs b{min-width:18px;text-align:center;font-family:var(--sans)}
-.room .rs button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);font-size:18px;background:var(--surface)}
+.room{display:grid;grid-template-columns:1fr auto;grid-template-areas:"n rp" "o rs" "rh rh";align-items:center;column-gap:10px;row-gap:4px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;text-align:start;transition:border-color .15s,background .15s}
+.room .n{grid-area:n;font-size:14px;font-weight:800} .room .rp{grid-area:rp;font-family:var(--sans);font-size:14px;font-weight:800;white-space:nowrap;text-align:end}
+.room .rp em{font-style:normal;font-size:10.5px;color:var(--muted);font-family:var(--ar);font-weight:600}
+.room .o{grid-area:o;font-family:var(--mono);font-size:11px;color:var(--dim);direction:ltr;text-align:start;unicode-bidi:isolate}
+.room .rs{grid-area:rs;display:flex;align-items:center;gap:8px;justify-self:end}.room .rs b{min-width:20px;text-align:center;font-family:var(--sans);font-size:15px}
+.room .rs button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);font-size:18px;line-height:1;background:var(--surface)}
 .room .rs button:hover{border-color:var(--amber)}
+.room.on{border-color:var(--amber);background:var(--amber-soft)}
+.room .rh{grid-area:rh;font-size:11.5px;color:var(--amber-ink)} .room .rh:empty{display:none}
 .sheet-x{display:none;position:absolute;top:12px;inset-inline-end:12px;width:34px;height:34px;border-radius:50%;background:var(--bg);place-items:center;font-size:14px}
 .paxsum{margin-top:10px;font-size:13px;font-weight:700;color:var(--muted)}
-.room.on{border-color:var(--amber);background:var(--amber-soft)}
-.room .n{font-size:13px;font-weight:700} .room .p{font-family:var(--sans);font-size:13px;font-weight:800;margin-inline-start:auto}
-.room .p em{font-style:normal;font-size:10px;color:var(--muted);font-family:var(--ar)}
-.room .o{font-family:var(--mono);font-size:10.5px;color:var(--dim);direction:ltr}
 .stepper{display:flex;align-items:center;justify-content:space-between} .stepper span{font-weight:700}
 .stepper button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);font-size:16px}
 .total{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 12px;border-top:1px solid var(--line);margin-top:8px}
@@ -332,6 +332,7 @@ footer h4{font-size:13px;color:var(--ink);margin-bottom:8px} footer a{display:bl
 .lang.ok{color:var(--green);border-color:var(--green)}
 
 /* ── premium polish ── */
+.by-w{font-size:11px;color:var(--muted);font-weight:600}.by-w-box{background:#eef2f7;color:#3d4f66}
 .card .img .flag.sample{background:#2b2a30;color:#f3efe6;top:auto;bottom:10px;inset-inline-end:auto;inset-inline-start:10px}
 :root{--bg:#faf8f3;--line:#e7e1d3;--gold:#b98a2e;--shadow-lg:0 30px 60px -34px rgba(60,40,10,.35)}
 body{letter-spacing:.005em}
@@ -1188,6 +1189,8 @@ function seedThreads(){
 const trip=id=>TRIPS.find(x=>x.id===id);
 const coName=id=>{const c=co(id);return c?(L==='ar'?c.ar:(c.en||c.ar)):'—'};
 const co=id=>COS.find(x=>x.id===id);
+const byWijha=t=>t.listedBy&&t.listedBy!=='company'&&!t.claimed;
+const LISTED_TXT=()=>L==='ar'?'جمعته وجهة من مصادر الشركة المنشورة — لم ترفعه الشركة بنفسها':'Collected by Wijha from the company\'s published material — not uploaded by the company itself';
 function soonDays(t){ if(!t.start)return 999; return Math.round((new Date(t.start)-new Date())/864e5); }
 function isSoon(t){const d=soonDays(t);return d>0&&d<70;}
 function isFull(t){return t.seats&&t.taken/t.seats>=0.8;}
@@ -1241,12 +1244,12 @@ function card(t_){
  return `<a class="card" href="#/trip/${t_.id}">
   <div class="img">${pic(t_.cover,t_.art,s)}
     <span class="cat">${CATS[t_.cat].icon} ${L==='ar'?CATS[t_.cat].ar:CATS[t_.cat].en}</span>
-    ${t_.sample?`<span class="flag sample">${L==='ar'?'عرض تجريبي':'Sample offer'}</span>`:''}
-    ${isSoon(t_)?`<span class="flag soon">${t('soon')}</span>`:isFull(t_)?`<span class="flag full">${t('full')}</span>`:''}
+    ${t_.sample?`<span class="flag sample">${t_.expired?(L==='ar'?'تجريبي · منتهي':'Sample · expired'):(L==='ar'?'عرض تجريبي':'Sample offer')}</span>`:''}
+    ${!t_.expired&&isSoon(t_)?`<span class="flag soon">${t('soon')}</span>`:isFull(t_)?`<span class="flag full">${t('full')}</span>`:''}
     <button class="cmpbtn ${inCmp(t_.id)?'on':''}" onclick="toggleCmp('${t_.id}',event)" title="${L==='ar'?'أضف للمقارنة':'Add to compare'}">${inCmp(t_.id)?'✓':'⇄'}</button></div>
   <div class="body">
     <div class="ttl">${esc(tripName(t_,L))}</div>
-    <div class="co">${esc(L==='ar'?c.ar:c.en)}${c.verified?' <span class="vf">✓</span>':''}</div>
+    <div class="co">${esc(L==='ar'?c.ar:c.en)}${c.verified?' <span class="vf">✓</span>':''}${byWijha(t_)?` <span class="by-w" title="${esc(LISTED_TXT())}">${L==='ar'?'· جمعته وجهة':'· listed by Wijha'}</span>`:''}</div>
     <div class="meta"><span>🗓 ${t_.days} ${t('days')}</span><span>📍 ${esc(L==='ar'?t_.regionAr:t_.region)}</span>${t_.flightsIncluded?`<span>✈ ${t('inc_yes')}</span>`:''}</div>
     <div class="pr">${priceBlock(t_)}<span class="cta">${t('view')} →</span></div>
   </div></a>`;
@@ -1254,10 +1257,11 @@ function card(t_){
 
 /* pick 4 featured trips from whatever is loaded — never hardcoded ids */
 function pickFeatured(){
- const take=(c,n)=>TRIPS.filter(x=>x.cat===c&&x.detail==='full').slice(0,n)
-   .concat(TRIPS.filter(x=>x.cat===c&&x.detail!=='full').slice(0,n)).slice(0,n);
+ const LIVE_T=TRIPS.filter(x=>!x.expired);
+ const take=(c,n)=>LIVE_T.filter(x=>x.cat===c&&x.detail==='full').slice(0,n)
+   .concat(LIVE_T.filter(x=>x.cat===c&&x.detail!=='full').slice(0,n)).slice(0,n);
  let f=[...take('abroad',2),...take('umrah',1),...take('hajj',1)].filter(Boolean);
- for(const x of TRIPS){ if(f.length>=4) break; if(!f.includes(x)) f.push(x); }
+ for(const x of LIVE_T){ if(f.length>=4) break; if(!f.includes(x)) f.push(x); }
  return f.slice(0,4);
 }
 
@@ -1320,9 +1324,9 @@ function draw(){
  const norm=s=>String(s||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).toLowerCase();
  let rows=TRIPS.filter(x=>(!F.cat||x.cat===F.cat)&&(!F.sub||x.sub===F.sub)&&(!F.co||x.co===F.co));
  if(F.q){const q=norm(F.q);rows=rows.filter(x=>norm(tripName(x,'ar')+tripName(x,'en')+x.dest+x.destAr+co(x.co).ar+co(x.co).en).includes(q));}
- rows.sort((a,b)=>F.sort==='soon'?soonDays(a)-soonDays(b):
+ rows.sort((a,b)=>(!!a.expired-!!b.expired)||(F.sort==='soon'?soonDays(a)-soonDays(b):
    F.sort==='asc'?(egpOf(a,priceRows(a)[0]?.[0])??9e9)-(egpOf(b,priceRows(b)[0]?.[0])??9e9)
-                 :(egpOf(b,priceRows(b)[0]?.[0])??0)-(egpOf(a,priceRows(a)[0]?.[0])??0));
+                 :(egpOf(b,priceRows(b)[0]?.[0])??0)-(egpOf(a,priceRows(a)[0]?.[0])??0)));
  document.getElementById('grid').innerHTML=rows.map(card).join('')||`<p class="lead">${t('nores')}</p>`;
  document.getElementById('cnt').textContent=rows.length+' '+t('results');
 }
@@ -1436,7 +1440,8 @@ function detail(id){
      <span class="tag">${x.days} ${t('days')} / ${x.nights||x.days-1} ${t('nights')}</span>
      ${x.flightsIncluded?`<span class="tag ok">✈ ${t('inc_yes')}</span>`:''}
    </div>
-   ${x.sample?`<div class="note-box">🧪 ${L==='ar'?'هذا عرض تجريبي لعرض شكل الصفحة — الأسعار والمواعيد غير مؤكدة وقد لا يكون متاحاً للحجز.':'This is a sample offer shown to demonstrate the page — prices and dates are not confirmed and it may not be bookable.'}</div>`:''}
+   ${x.sample?`<div class="note-box">🧪 ${x.expired?(L==='ar'?'عرض تجريبي انتهى موعده — معروض كمثال فقط ولا يمكن الاستفسار عنه.':'Sample offer whose dates have passed — shown as an example only, enquiries are closed.'):(L==='ar'?'هذا عرض تجريبي لعرض شكل الصفحة — الأسعار والمواعيد غير مؤكدة وقد لا يكون متاحاً للحجز.':'This is a sample offer shown to demonstrate the page — prices and dates are not confirmed and it may not be bookable.')}</div>`:''}
+   ${byWijha(x)?`<div class="note-box by-w-box">ℹ️ ${esc(LISTED_TXT())}</div>`:''}
    <h1>${esc(tripName(x,L))}</h1>
    <div class="head-row"><div class="sub">
      <a href="#/trips?co=${c.id}">${esc(L==='ar'?c.ar:c.en)}</a>
@@ -1554,15 +1559,16 @@ function detail(id){
     <div class="field"><div class="k">${L==='ar'?'اختر الغرف وعدد المسافرين':'Choose rooms & travellers'}</div>
       <div class="rooms">${rows.map(([k,v])=>
       `<div class="room" data-k="${k}">
-        <div class="rn"><span class="n">${t(k)}</span><span class="o">${x.cur!=='EGP'?nf(v)+' '+CURSYM[x.cur]+' · ':''}${L==='ar'?'للفرد':'per person'}</span>
-          <span class="rh" id="rh_${k}"></span></div>
-        <div class="rp">${nf(egpOf(x,k))} <em>ج.م</em></div>
-        <div class="rs"><button aria-label="−" onclick="qty('${k}',-1)">−</button><b id="q_${k}">0</b><button aria-label="+" onclick="qty('${k}',1)">+</button></div>
+        <span class="n">${t(k)}</span>
+        <span class="rp">${nf(egpOf(x,k))} <em>ج.م ${L==='ar'?'للفرد':'/ person'}</em></span>
+        <span class="o">${x.cur!=='EGP'?nf(v)+' '+CURSYM[x.cur]:''}</span>
+        <div class="rs"><button aria-label="${L==='ar'?'إنقاص':'Remove'} ${t(k)}" onclick="qty('${k}',-1)">−</button><b id="q_${k}">0</b><button aria-label="${L==='ar'?'إضافة':'Add'} ${t(k)}" onclick="qty('${k}',1)">+</button></div>
+        <span class="rh" id="rh_${k}"></span>
       </div>`).join('')}</div>
       <div class="paxsum" id="paxL"></div></div>
     <div class="total"><span class="k">${t('total')}</span><span class="v" id="tot"></span></div>
     <details class="mini"><summary>${t('breakdown')}</summary><div class="breakdown" id="bd"></div></details>
-    <button class="btn btn-primary" onclick="sendEnq()">${t('enquire')}</button>
+    ${x.expired?`<div class="note-box">${L==='ar'?'انتهى موعد هذا العرض':'This offer has ended'}</div>`:`<button class="btn btn-primary" onclick="sendEnq()">${t('enquire')}</button>`}
     <a class="btn btn-ghost" href="#/chat/${threadFor(x.id)}">💬 ${t('chat')}</a>
     <p class="note">${t('pricenote')}</p>
   </div></aside></div></div>`;
@@ -1577,7 +1583,8 @@ function calc(){
  document.querySelectorAll('.room').forEach(el=>{const k=el.dataset.k, q=B.q[k]||0;
    el.classList.toggle('on',q>0); document.getElementById('q_'+k).textContent=q;
    const occ=OCC[k], rh=document.getElementById('rh_'+k);
-   if(occ&&q>0){const rooms=Math.ceil(q/occ); rh.textContent=(L==='ar'?`${rooms} غرفة`:`${rooms} room${rooms>1?'s':''}`)+(q%occ?(L==='ar'?` · غرفة غير مكتملة (${q%occ}/${occ})`:` · one room not full (${q%occ}/${occ})`):'');}
+   if(occ>1&&q>0){const rooms=Math.ceil(q/occ), free=rooms*occ-q;
+     rh.textContent=(L==='ar'?`${rooms} ${rooms>1?'غرف':'غرفة'}`:`${rooms} room${rooms>1?'s':''}`)+(free?(L==='ar'?` · متبقٍ ${free} ${free>1?'أماكن':'مكان'}`:` · ${free} place${free>1?'s':''} free`):'');}
    else rh.textContent='';});
  document.getElementById('paxL').textContent=n?(n+' '+(n>1?t('adults'):t('adult'))):(L==='ar'?'اختر غرفة واحدة على الأقل':'Pick at least one room');
  document.getElementById('tot').innerHTML=n?`${nf(tot)} <em>ج.م</em>`:'—';
@@ -1596,7 +1603,7 @@ function toggleSave(id){ const i=SAVED.indexOf(id); i<0?SAVED.push(id):SAVED.spl
  document.getElementById('saveBtn').innerHTML=SAVED.includes(id)?'★ '+t('saved'):'☆ '+t('save'); }
 function share(){ if(navigator.share)navigator.share({title:document.title,url:location.href});
  else{navigator.clipboard.writeText(location.href);toast(L==='ar'?'تم نسخ الرابط':'Link copied')} }
-function sendEnq(){ const x=CUR;
+function sendEnq(){ const x=CUR; if(x.expired){toast(L==='ar'?'هذا العرض منتهٍ — اختر عرضاً آخر':'This offer has ended — please choose another');return}
  if(!paxOf()){toast(L==='ar'?'اختر غرفة أولاً':'Pick a room first');return}
  ENQ.unshift({trip:x.id,co:x.co,room:qtyOf()[0][0],mix:mixLabel(),total:mixTotal(x),pax:paxOf(),at:new Date().toISOString(),status:'new'}); persist();
  toast(L==='ar'?'تم إرسال الاستفسار — ستصلك رسالة من الشركة':'Enquiry sent — the company will reply'); }
@@ -1999,7 +2006,7 @@ function mapOffer(o){
   start:o.starts_on||null, days:o.days||null, nights:o.nights||null,
   cur:o.currency||'EGP', prices, egpAddon:Number(o.egp_addon||0),
   deposit:o.deposit?Number(o.deposit):null, ferry:o.ferry_fee?Number(o.ferry_fee):null,
-  sample:!!o.is_sample, flightsIncluded:!!o.flights_included, seats:o.seats_total||null, taken:o.seats_taken||0,
+  sample:!!o.is_sample, expired:!!o.is_expired||(!!o.expires_on&&o.expires_on<new Date().toISOString().slice(0,10)), listedBy:o.listed_by||'company', claimed:!!o.is_claimed, flightsIncluded:!!o.flights_included, seats:o.seats_total||null, taken:o.seats_taken||0,
   briefAr:o.brief_ar||'', briefEn:o.brief_en||o.brief_ar||'',
   arrival:o.arrival_city||null, track:o.track||null, season:o.season||null,
   regDeadline:o.registration_deadline||null, validUntil:o.price_valid_until||null,
