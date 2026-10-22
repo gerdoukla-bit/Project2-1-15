@@ -697,7 +697,7 @@ function intakeV(){
  return `<h1>إضافة عرض</h1>
  <p class="sub">أرسل العرض بأي شكل عندك — ملف PDF أو Word أو صورة الإعلان، أو اكتبه، أو سجّله بصوتك. وجهة تقرؤه وتحوّله إلى صفحة عرض بنفس تصنيفات كل الشركات، ثم تراجعه أنت قبل النشر.</p>
  <div class="tw" style="padding:18px">
-  ${pickAny?`<div class="form" style="margin-bottom:12px"><div class="w2"><label>الشركة صاحبة العرض<select id="inCo">${S.companies.map(c=>`<option value="${c.id}">${esc(c.name_ar)}${c.status!=='approved'?' (قيد المراجعة)':''}</option>`).join('')}</select></label></div></div>`:`<input type="hidden" id="inCo" value="${cid}">`}
+  ${pickAny?`<div class="form" style="margin-bottom:12px"><div class="w2"><label>الشركة صاحبة العرض<select id="inCo"><option value="">— اختر الشركة —</option>${S.companies.map(c=>`<option value="${c.id}">${esc(c.name_ar)}${c.status!=='approved'?' (قيد المراجعة)':''}</option>`).join('')}</select></label></div></div>`:`<input type="hidden" id="inCo" value="${cid}">`}
   <label id="drop" class="drop" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')"
      ondrop="event.preventDefault();this.classList.remove('over');addIntakeFiles(event.dataTransfer.files)">
    <input type="file" id="inFile" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,image/*,audio/*" onchange="addIntakeFiles(this.files)" style="display:none">
