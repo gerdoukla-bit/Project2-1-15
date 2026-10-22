@@ -182,9 +182,20 @@ async function login(email,password){
  const b=await r.json(); if(!r.ok) throw new Error(b.error_description||b.msg||b.error||'login failed');
  S.tok=b; localStorage.setItem('wijha_admin_tok',JSON.stringify(b));
 }
-async function refresh(){
- const r=await fetch(S.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:S.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:S.tok.refresh_token})});
- const b=await r.json(); if(!r.ok){logout();throw new Error('session expired')} S.tok=b; localStorage.setItem('wijha_admin_tok',JSON.stringify(b));
+let _refreshing=null;
+function refresh(){
+ /* one refresh at a time: refresh tokens are single-use, two parallel calls would log the user out */
+ return _refreshing||(_refreshing=(async()=>{
+  try{ const r=await fetch(S.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:S.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:S.tok.refresh_token})});
+   const b=await r.json(); if(!r.ok){logout();throw new Error('انتهت الجلسة — سجّل الدخول من جديد')} S.tok=b; localStorage.setItem('wijha_admin_tok',JSON.stringify(b));
+  } finally { _refreshing=null }
+ })());
+}
+/* a token that is valid for at least 60 more seconds — use for every direct fetch (uploads, functions, signed links) */
+async function freshToken(){
+ try{ const exp=JSON.parse(atob(S.tok.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).exp;
+  if(!exp||exp*1000-Date.now()<60000) await refresh(); }catch(e){ if(S.tok?.refresh_token) await refresh(); }
+ return S.tok?.access_token||'';
 }
 function logout(){S.tok=null;S.me=null;localStorage.removeItem('wijha_admin_tok');render()}
 
@@ -426,7 +437,7 @@ async function uploadCover(file){
  try{ const ext=safeExt(file,'jpg');
   const path=`${upFolder(ED.full?.company_id)}/covers/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
   const r=await fetch(S.url+'/storage/v1/object/offer-photos/'+path,{method:'POST',
-   headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':file.type},body:file});
+   headers:{apikey:S.key,Authorization:'Bearer '+await freshToken(),'Content-Type':file.type},body:file});
   if(!r.ok) throw new Error((await r.text()).slice(0,140));
   ED.full.cover_url = S.url+'/storage/v1/object/public/offer-photos/'+path;
   toast('تم رفع الصورة'); drawEditor();
@@ -532,14 +543,14 @@ async function uploadDoc(){
  const ext=safeExt(EC_FILE,'bin');
  const path=`${S.me.id}/registry-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
  const r=await fetch(S.url+'/storage/v1/object/company-docs/'+path,{method:'POST',
-   headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':EC_FILE.type||'application/octet-stream'},
+   headers:{apikey:S.key,Authorization:'Bearer '+await freshToken(),'Content-Type':EC_FILE.type||'application/octet-stream'},
    body:EC_FILE});
  if(!r.ok) throw new Error('رفع الملف فشل: '+(await r.text()).slice(0,160));
  return path;
 }
 async function openDoc(path){
  try{ const r=await fetch(S.url+'/storage/v1/object/sign/company-docs/'+path,{method:'POST',
-   headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':'application/json'},
+   headers:{apikey:S.key,Authorization:'Bearer '+await freshToken(),'Content-Type':'application/json'},
    body:JSON.stringify({expiresIn:600})});
   const b=await r.json(); if(!r.ok) throw new Error(b.message||'no access');
   window.open(S.url+'/storage/v1'+b.signedURL,'_blank');
@@ -784,7 +795,7 @@ async function submitIntake(){
 /* calls the wijha-extract function; if it is not deployed yet the upload simply waits in the list for the team */
 async function processImport(id,redraw){
  try{
-  const r=await fetch(S.url+'/functions/v1/wijha-extract',{method:'POST',headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':'application/json'},body:JSON.stringify({import_id:id})});
+  const r=await fetch(S.url+'/functions/v1/wijha-extract',{method:'POST',headers:{apikey:S.key,Authorization:'Bearer '+await freshToken(),'Content-Type':'application/json'},body:JSON.stringify({import_id:id})});
   const b=await r.json().catch(()=>({}));
   if(r.status===404) toast('القراءة التلقائية لم تُفعّل بعد — حُفظ العرض وسيُراجعه فريق وجهة',true);
   else if(!r.ok) toast(b.error||('تعذّرت القراءة ('+r.status+')'),true);
@@ -796,7 +807,7 @@ async function processImport(id,redraw){
 }
 async function openIntakeFile(path){
  try{ const r=await fetch(S.url+'/storage/v1/object/sign/offer-intake/'+path,{method:'POST',
-  headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':'application/json'},body:JSON.stringify({expiresIn:600})});
+  headers:{apikey:S.key,Authorization:'Bearer '+await freshToken(),'Content-Type':'application/json'},body:JSON.stringify({expiresIn:600})});
   const b=await r.json(); if(!r.ok) throw new Error(b.message||'no access');
   window.open(S.url+'/storage/v1'+b.signedURL,'_blank'); }catch(e){toast(e.message,true)}
 }
@@ -804,7 +815,7 @@ async function uploadIntake(file,cid){
  const ext=safeExt(file,'bin');
  const path=`${upFolder(cid)}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
  const r=await fetch(S.url+'/storage/v1/object/offer-intake/'+path,{method:'POST',
-  headers:{apikey:S.key,Authorization:'Bearer '+(S.tok?.access_token||''),'Content-Type':(file.type||'application/octet-stream').split(';')[0]},body:file});
+  headers:{apikey:S.key,Authorization:'Bearer '+await freshToken(),'Content-Type':(file.type||'application/octet-stream').split(';')[0]},body:file});
  if(!r.ok) throw new Error('رفع الملف فشل: '+(await r.text()).slice(0,140));
  return path;
 }
