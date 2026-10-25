@@ -344,7 +344,8 @@ function offersV(){
   <td><span class="pill ${o.review_state==='approved'?'ok':o.review_state==='rejected'?'bad':'warn'}">${({draft:'مسودة',pending:'بانتظار المراجعة',approved:'معتمد',rejected:'مرفوض'})[o.review_state||'approved']}</span>${o.review_note?`<small>${esc(o.review_note)}</small>`:''}</td>
   <td class="acts"><button class="btn sm" onclick="editOffer('${o.id}')">تعديل</button>
    ${isAdminRole(S.me.role)?`<button class="btn sm" title="عرض تجريبي / حقيقي" onclick="toggleSample('${o.id}',${o.is_sample?'false':'true'})">${o.is_sample?'☑ تجريبي':'☐ تجريبي'}</button>`:''}
-   ${o.internal_only||o.visibility==='internal'?`<button class="btn sm" onclick="toast('هذه الرحلة داخلية — لا تظهر على الموقع العام',true)">معاينة (داخلية)</button>`:`<a class="btn sm" href="./index.html#/trip/${o.id}" target="_blank">معاينة ↗</a>`}
+   ${o.internal_only||o.visibility==='internal'?`<button class="btn sm" onclick="toast('هذه الرحلة داخلية — لا تظهر على الموقع العام',true)">معاينة (داخلية)</button>`:o.status!=='published'||o.review_state!=='approved'?`<button class="btn sm" title="الموقع العام يعرض المنشور والمعتمد فقط" onclick="toast('هذا العرض ${o.status!=='published'?'مسودة':'غير معتمد'} — لا يظهر على الموقع حتى ${o.review_state!=='approved'?'تعتمده ثم ':''}تنشره',true)">معاينة (غير منشور)</button>`:`<a class="btn sm" href="./index.html#/trip/${o.id}" target="_blank">معاينة ↗</a>`}
+   ${isAdminRole(S.me.role)&&o.review_state==='approved'&&!o.internal_only&&o.visibility!=='internal'?(o.status==='published'?`<button class="btn sm" title="إخفاء من الموقع" onclick="setPublished('${o.id}',false)">إخفاء</button>`:`<button class="btn sm ok" title="إظهار على الموقع" onclick="setPublished('${o.id}',true)">نشر</button>`):''}
    ${isAdminRole(S.me.role)&&o.review_state==='pending'?`<button class="btn sm ok" onclick="reviewOffer('${o.id}','approved')">اعتماد</button><button class="btn sm danger" onclick="reviewOffer('${o.id}','rejected')">رفض</button>`:''}
    <button class="btn sm danger" onclick="delOffer('${o.id}')">حذف</button></td></tr>`).join('')||'<tr><td colspan="12" class="dim">لا نتائج</td></tr>'}</tbody></table></div>
  <p class="note">برنامج = مراحل / بنود / فنادق. "outline" = بيانات رأسية فقط، البرنامج اليومي لم يُدخل بعد.</p>`;
@@ -475,6 +476,9 @@ async function saveOffer(submit){
  }catch(e){ document.getElementById('ederr').innerHTML='<div class="err">'+esc(e.message)+'</div>' }
 }
 async function toggleSample(id,val){ try{ await patch('offers?id=eq.'+id,{is_sample:val}); const o=S.offers.find(x=>x.id===id); if(o)o.is_sample=val; toast(val?'تم التعليم كعرض تجريبي':'تم التعليم كعرض حقيقي'); render(); }catch(e){toast(e.message,true)} }
+async function setPublished(id,on){
+ try{ await patch('offers?id=eq.'+id,on?{status:'published',published_at:new Date().toISOString()}:{status:'draft'});
+  toast(on?'تم النشر — يظهر الآن على الموقع':'تم الإخفاء من الموقع'); await loadAll(); render(); }catch(e){toast(e.message,true)} }
 async function reviewOffer(id,state){
  const note = state==='rejected' ? prompt('سبب الرفض (يظهر للشركة):') : null;
  if(state==='rejected' && note===null) return;
