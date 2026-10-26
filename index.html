@@ -355,6 +355,116 @@ section{scroll-margin-top:90px}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--amber-ink);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media(max-width:1000px){.mbar{box-shadow:0 -10px 30px -18px rgba(0,0,0,.35);padding-bottom:max(12px,env(safe-area-inset-bottom))}.mbar .btn{padding:12px 22px}}
+
+/* ══ HOME redesign ══ */
+main#app{min-height:calc(100vh - 60px)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.h-page{padding-top:18px}
+.h-arr{flex:0 0 auto} [dir=rtl] .h-arr{transform:scaleX(-1)}
+.h-h2{font-size:clamp(22px,3.2vw,30px);font-weight:800;letter-spacing:-.015em;line-height:1.25;margin-bottom:16px}
+.h-lead{color:var(--muted);font-size:15px;margin:-10px 0 18px;max-width:560px}
+.h-sec{padding:44px 0 8px}
+.h-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:4px}
+.h-head .h-h2{margin-bottom:10px}
+.h-more,.h-link{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:14px;color:var(--amber-ink);padding:8px 0;white-space:nowrap}
+.h-more:hover,.h-link:hover{text-decoration:underline;text-underline-offset:4px}
+/* hero */
+.h-hero{position:relative;border-radius:28px;overflow:hidden;background:#16303a;color:#fff;min-height:400px;display:flex;align-items:flex-end}
+.h-hero-art{position:absolute;inset:0} .h-hero-art svg{width:100%;height:100%;display:block}
+.h-hero::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(to top,rgba(10,22,28,.92) 0%,rgba(10,22,28,.62) 55%,rgba(10,22,28,.28) 100%)}
+.h-hero-in{position:relative;z-index:2;padding:48px 44px 40px;width:100%;max-width:760px}
+.h-hero h1{font-size:clamp(30px,5.2vw,54px);line-height:1.2;font-weight:800;letter-spacing:-.02em;color:#fff;text-wrap:balance}
+.h-sub{margin:14px 0 26px;font-size:clamp(15px,1.7vw,18px);line-height:1.75;color:#e9e6dd;max-width:620px}
+.h-search{display:flex;gap:8px;background:#fff;border-radius:18px;padding:8px;box-shadow:0 24px 50px -24px rgba(0,0,0,.6)}
+.h-f{display:flex;align-items:center;gap:10px;color:var(--muted);min-width:0}
+.h-f-q{flex:1 1 auto;padding:0 12px}
+.h-f-t{flex:0 0 auto;border-inline-start:1px solid var(--line);padding-inline-start:8px}
+.h-search input,.h-search select{border:0;outline:0;background:transparent;font-size:16px;color:var(--ink);width:100%;min-width:0;height:48px}
+.h-search select{cursor:pointer;padding-inline:6px;max-width:210px}
+.h-search:focus-within{box-shadow:0 0 0 3px rgba(224,150,29,.55),0 24px 50px -24px rgba(0,0,0,.6)}
+.h-search input:focus-visible,.h-search select:focus-visible{outline:0}
+.h-go{padding:0 28px;height:48px;font-size:15px;border-radius:12px}
+.h-pops{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px;font-size:13px;color:#d8d4c8}
+.h-pops button{padding:7px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff;font-size:13px;font-weight:600;min-height:34px}
+.h-pops button:hover{background:rgba(255,255,255,.22)}
+.h-pops button:focus-visible,.h-hero a:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.h-facts{margin-top:18px;font-size:14px;color:#e9e6dd;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.h-facts b{font-size:18px;font-family:var(--sans);color:#fff}
+.h-facts i{width:4px;height:4px;border-radius:50%;background:var(--amber)}
+/* categories */
+.h-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.h-cat{position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:230px;border-radius:22px;overflow:hidden;color:#fff;background:#222;isolation:isolate}
+.h-cat-art{position:absolute;inset:0;z-index:-2;transition:transform .5s ease} .h-cat-art svg{width:100%;height:100%;display:block}
+.h-cat::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(to top,rgba(10,10,12,.82),rgba(10,10,12,.05) 70%)}
+.h-cat:hover .h-cat-art{transform:scale(1.05)}
+.h-cat:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.h-cat-body{padding:18px 20px} .h-cat-body b{display:block;font-size:22px;font-weight:800;line-height:1.2}
+.h-cat-body small{display:block;margin-top:4px;font-size:13.5px;color:#eee}
+.h-cat-go{position:absolute;top:14px;inset-inline-end:14px;width:38px;height:38px;border-radius:50%;background:#fff;color:var(--ink);display:grid;place-items:center}
+/* featured */
+.h-feat{grid-template-columns:repeat(4,minmax(0,1fr))}
+.h-empty{border:1.5px dashed var(--line);border-radius:20px;padding:34px 22px;text-align:center;background:var(--surface)}
+.h-empty b{display:block;font-size:18px} .h-empty p{color:var(--muted);margin:6px auto 16px;max-width:420px;font-size:14.5px}
+/* trust */
+.h-trust{margin-top:48px;background:var(--dark);color:#f3efe6;border-radius:28px;padding:44px 40px}
+.h-trust .h-h2{color:#fff;margin-bottom:26px}
+.h-pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:34px}
+.h-pillars h3{font-size:18px;font-weight:800;margin:14px 0 8px;color:#fff}
+.h-pillars p{font-size:14.5px;line-height:1.8;color:#d6d2c6}
+.h-ic{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:rgba(224,150,29,.16);color:#f2b64a}
+.h-calc{margin-top:10px;font-size:13.5px;color:#fff!important} .h-calc b{font-family:var(--sans);color:#f2b64a}
+.h-trust .h-link{color:#f2b64a;margin-top:6px} .h-trust a:focus-visible{outline-color:#f2b64a}
+/* companies */
+.h-cos{list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.h-cos a{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;height:100%;transition:border-color .15s}
+.h-cos a:hover{border-color:var(--amber)}
+.h-cos .lg{width:44px;height:44px;border-radius:12px;background:var(--amber-soft);color:var(--amber-ink);display:grid;place-items:center;font-weight:800;font-size:18px;flex:0 0 auto}
+.h-cos b{display:block;font-size:14.5px;line-height:1.35} .h-cos small{display:block;font-size:12.5px;color:var(--muted)}
+.h-cos em{display:inline-block;margin-top:4px;font-style:normal;font-size:11.5px;font-weight:700;color:var(--green);background:var(--green-soft);padding:2px 8px;border-radius:999px}
+/* how */
+.h-how{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:22px;counter-reset:s}
+.h-how li{position:relative;padding-top:6px}
+.h-how li:not(:last-child)::after{content:'';position:absolute;top:24px;inset-inline-start:58px;inset-inline-end:-12px;border-top:2px dashed var(--line)}
+.h-n{position:relative;z-index:1;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--amber-soft);color:var(--amber-ink);font-weight:800;font-size:19px;font-family:var(--sans);margin-bottom:12px;border:2px solid var(--bg)}
+.h-how b{display:block;font-size:17px;margin-bottom:4px} .h-how small{display:block;font-size:14px;color:var(--muted);line-height:1.7;max-width:260px}
+/* company CTA */
+.h-co{margin:52px 0 20px;display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;background:var(--amber-soft);border:1px solid #f0d9a4;border-radius:24px;padding:30px 34px}
+.h-co h2{font-size:clamp(19px,2.6vw,25px);font-weight:800;margin-bottom:6px;color:#4a3000} .h-co p{color:#6b4a0a;font-size:15px;max-width:560px}
+.h-co .btn{height:50px;padding:0 28px;font-size:15px}
+/* skeleton (before data) */
+.h-skel{display:block;background:linear-gradient(90deg,#ece7da 25%,#f5f1e6 50%,#ece7da 75%);background-size:200% 100%;animation:hsk 1.4s linear infinite;border-radius:22px}
+.h-hero.h-skel{min-height:440px;border-radius:28px}
+.h-cats i.h-skel{height:230px}
+.h-page+*{}
+@keyframes hsk{to{background-position:-200% 0}}
+footer{background:var(--surface);margin-top:56px;padding-top:40px}
+footer .brand{font-size:24px} footer p{line-height:1.8;max-width:420px}
+footer a{padding:5px 0} footer a:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+footer h4{font-size:14px;margin-bottom:10px}
+@media(max-width:1000px){
+ .h-feat{grid-template-columns:repeat(2,minmax(0,1fr))} .h-cos{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .h-pillars{grid-template-columns:1fr;gap:28px} .h-trust{padding:32px 24px}
+ .h-cats{grid-template-columns:1fr} .h-cat{height:150px}
+ .h-how{grid-template-columns:1fr 1fr;gap:26px 18px} .h-how li::after{display:none}
+ .h-hero{min-height:0} .h-hero.h-skel{min-height:420px} .h-cats i.h-skel{height:150px}
+}
+@media(max-width:700px){
+ .h-page{padding-top:12px}
+ .h-hero{border-radius:22px} .h-hero-in{padding:56px 18px 22px}
+ .h-search{flex-direction:column;padding:6px;gap:0}
+ .h-f-q{border-bottom:1px solid var(--line)} .h-f-t{border-inline-start:0;padding-inline-start:12px;border-bottom:0}
+ .h-search select{max-width:none} .h-go{width:100%;margin-top:4px}
+ .h-sec{padding-top:36px}
+ .h-head{align-items:flex-start;flex-direction:column;gap:0} .h-head .h-lead{margin-bottom:8px}
+ .h-feat{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:20px;gap:12px;margin-inline:-20px;padding:4px 20px 14px;scrollbar-width:none}
+ .h-feat::-webkit-scrollbar{display:none}
+ .h-feat .card{flex:0 0 78%;scroll-snap-align:start}
+ .h-trust{border-radius:22px;margin-top:38px} .h-cos{grid-template-columns:1fr}
+ .h-co{padding:24px 20px;border-radius:20px} .h-co .btn{width:100%}
+ .h-how{grid-template-columns:1fr}
+ .h-hero.h-skel{min-height:520px}
+}
+@media(prefers-reduced-motion:reduce){.h-skel{animation:none}.h-cat-art{transition:none!important}.h-cat:hover .h-cat-art{transform:none}}
 </style>
 </head>
 <body>
@@ -370,20 +480,20 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{ou
   <div class="nav-right">
     <button class="lang" id="connPill" onclick="gate()" title="data source">demo</button>
     <button class="lang" id="langBtn" onclick="toggleLang()">EN</button>
-    <a class="btn btn-ghost" id="acctBtn" href="#/signup"></a>
-    <a class="btn btn-primary" id="coBtn" href="#/company/signup" data-t="nav_partner"></a>
+    <a class="btn btn-ghost" id="acctBtn" href="#/signup">دخول</a>
+    <a class="btn btn-primary" id="coBtn" href="#/company/signup" data-t="nav_partner">بوابة الشركات</a>
   </div>
 </div></header>
 
-<main id="app"></main>
+<main id="app" aria-live="polite"><div class="wrap h-page"><div class="h-hero h-skel" aria-hidden="true"></div></div></main>
 
 <footer><div class="wrap cols">
   <div><div class="brand" style="margin-bottom:8px">وجهة <span>Wijha</span></div>
-    <p>منصة تجمع رحلات الحج والعمرة والرحلات الخارجية من شركات السياحة المصرية المرخّصة.</p>
+    <p data-t="ft_about">منصة تجمع رحلات الحج والعمرة والرحلات الخارجية من شركات السياحة المصرية المرخّصة.</p>
     <p class="mono" style="margin-top:8px">© 2026 Wijha · Cairo, Egypt</p></div>
-  <div><h4>استكشف</h4><a href="#/trips/abroad">رحلات خارجية</a><a href="#/trips/umrah">عمرة</a><a href="#/trips/hajj">حج</a><a href="#/company/signup">بوابة الشركات</a><a href="./emails.html" target="_blank" rel="noopener">قوالب البريد</a><a href="./admin.html" target="_blank" rel="noopener">مركز القيادة</a></div>
-  <div><h4>قانوني</h4><a href="#/legal/terms">الشروط والأحكام</a><a href="#/legal/privacy">سياسة الخصوصية</a><a href="#/legal/cookies">ملفات تعريف الارتباط</a><a href="#/legal/refund">الاسترداد والإلغاء</a>
-    <p class="note">الأسعار والبرامج كما نشرتها الشركات — تأكّد من التفاصيل مع الشركة قبل الدفع.</p></div>
+  <div><h4 data-t="ft_explore">استكشف</h4><a href="#/trips/abroad" data-t="ft_abroad">رحلات خارجية</a><a href="#/trips/umrah" data-t="ft_umrah">عمرة</a><a href="#/trips/hajj" data-t="ft_hajj">حج</a><a href="#/company/signup" data-t="ft_portal">بوابة الشركات</a><a href="./emails.html" target="_blank" rel="noopener" data-t="ft_mail">قوالب البريد</a><a href="./admin.html" target="_blank" rel="noopener" data-t="ft_admin">مركز القيادة</a></div>
+  <div><h4 data-t="ft_legal">قانوني</h4><a href="#/legal/terms" data-t="ft_terms">الشروط والأحكام</a><a href="#/legal/privacy" data-t="ft_priv">سياسة الخصوصية</a><a href="#/legal/cookies" data-t="ft_cook">ملفات تعريف الارتباط</a><a href="#/legal/refund" data-t="ft_refund">الاسترداد والإلغاء</a>
+    <p class="note" data-t="ft_note">الأسعار والبرامج كما نشرتها الشركات — تأكّد من التفاصيل مع الشركة قبل الدفع.</p></div>
 </div></footer>
 
 <div class="mbar hidden" id="mbar">
@@ -1158,7 +1268,7 @@ function bindThreads(){
  const pool=TRIPS.filter(x=>x.cat==='abroad');
  const fallback=pool.length?pool:TRIPS;
  THREADS.forEach((th,i)=>{ if(!trip(th.trip)) th.trip=(fallback[i]||fallback[0]||{}).id;
-   const x=trip(th.trip); if(x&&!co(th.co)) th.co=x.co; });
+   const x=trip(th.trip); if(x&&!COS.find(c=>c.id===th.co)) th.co=x.co; });
 }
 /* find (or repoint) a thread for a given trip */
 function threadFor(tripId){
@@ -1191,8 +1301,9 @@ function seedThreads(){
 
 /* ══════════════ helpers ══════════════ */
 const trip=id=>TRIPS.find(x=>x.id===id);
-const coName=id=>{const c=co(id);return c?(L==='ar'?c.ar:(c.en||c.ar)):'—'};
-const co=id=>COS.find(x=>x.id===id);
+const coName=id=>{const c=COS.find(x=>x.id===id);return c?(L==='ar'?c.ar:(c.en||c.ar)):'—'};
+/* never undefined: an offer whose company row is unreadable still renders (audit F1) */
+const co=id=>COS.find(x=>x.id===id) || {id:id||'',ar:'—',en:'—',verified:false,lic:'—',hotline:'—',wa:'',aboutAr:'',aboutEn:''};
 const byWijha=t=>t.listedBy&&t.listedBy!=='company'&&!t.claimed;
 const LISTED_TXT=()=>L==='ar'?'جمعته وجهة من مصادر الشركة المنشورة — لم ترفعه الشركة بنفسها':'Collected by Wijha from the company\'s published material — not uploaded by the company itself';
 function soonDays(t){ if(!t.start)return 999; return Math.round((new Date(t.start)-new Date())/864e5); }
@@ -1218,13 +1329,14 @@ function go(h){location.hash=h}
 window.addEventListener('hashchange',route);
 function route(){
  const h=location.hash||'#/'; setTimeout(drawCmpBar,0); const app=document.getElementById('app');
+ if(window.__bootErr && !h.startsWith('#/legal/') && bootFail()) return;
  window.scrollTo(0,0); document.getElementById('mbar').classList.add('hidden'); document.body.style.overflow='';
  document.querySelectorAll('[data-nav]').forEach(a=>a.classList.remove('on'));
  syncNav();
  if(h.startsWith('#/legal/')) return legalPage(h.slice(8));
  if(h.startsWith('#/trip/')) return detail(h.slice(7));
  if(h.startsWith('#/hotel/')) return hotelPage(h.slice(8));
- if(h.startsWith('#/trips')) { const c=h.split('/')[2]||''; list(c);
+ if(h.startsWith('#/trips')) { const c=(h.split('/')[2]||'').split('?')[0]; list(c);
    const n=document.querySelector(`[data-nav="${c||'trips'}"]`); if(n)n.classList.add('on'); return; }
  if(h==='#/compare') return compareView();
  if(h==='#/signup') return signupClient();
@@ -1232,7 +1344,14 @@ function route(){
  if(h==='#/company/signup') return signupCo();
  if(h==='#/company') return dash();
  if(h.startsWith('#/chat')) return chatPage(h.split('/')[2]||'th1');
- home(); const n=document.querySelector('[data-nav=home]'); if(n)n.classList.add('on');
+ if(['','#','#/','#/home'].includes(h.split('?')[0])){ home(); const n=document.querySelector('[data-nav=home]'); if(n)n.classList.add('on'); return; }
+ notFound();
+}
+function notFound(why){
+ document.getElementById('app').innerHTML=`<div class="wrap narrow"><div class="panel" style="text-align:center;padding:40px 20px">
+  <h1>${L==='ar'?'الصفحة غير موجودة':'Page not found'}</h1>
+  <p class="lead">${why||(L==='ar'?'الرابط الذي فتحته غير صحيح أو لم يعد متاحاً.':'The link you opened is wrong or no longer available.')}</p>
+  <div class="acts" style="justify-content:center"><a class="btn btn-primary" href="#/">${L==='ar'?'الرئيسية':'Home'}</a><a class="btn btn-ghost" href="#/trips">${t('nav_offers')}</a></div></div></div>`;
 }
 function syncNav(){
  document.getElementById('acctBtn').innerHTML = ME? `👤 ${esc(ME.name||t('nav_account'))}` : t('nav_signin');
@@ -1271,44 +1390,131 @@ function pickFeatured(){
 }
 
 /* ══════════════ HOME ══════════════ */
+Object.assign(T.ar,{
+ h_title:'رحلتك القادمة، من شركة مرخّصة وبسعر واضح',
+ h_sub:'قارن رحلات الحج والعمرة والرحلات الخارجية بالجنيه المصري، ثم تواصل مع الشركة مباشرة. وجهة لا تأخذ أي نسبة من سعر الرحلة.',
+ h_q_lbl:'ابحث عن رحلة',h_q_ph:'وجهة أو اسم شركة',h_type_lbl:'نوع الرحلة',h_go:'ابحث',h_pop:'وجهات شائعة',
+ h_live:'رحلة متاحة الآن',h_lic:'شركة موثّقة الترخيص',
+ h_cats:'اختر نوع رحلتك',h_from:'تبدأ من',h_egp:'ج.م',h_nocat:'لا توجد رحلات منشورة حالياً',h_open:'تصفّح',
+ h_feat_sub:'عروض منشورة من شركات مختلفة، بالجنيه المصري.',
+ h_empty_t:'لا توجد رحلات منشورة الآن',h_empty_p:'الشركات تضيف عروضها تباعاً. يمكنك تصفّح كل الرحلات أو العودة لاحقاً.',
+ h_trust:'لماذا وجهة؟',
+ h_t1:'شركات مرخّصة فقط',h_t1p:'كل شركة على وجهة مرخّصة من اتحاد الغرف السياحية، ورقم الترخيص ظاهر في صفحتها.',
+ h_t2:'بلا عمولة مخفية',h_t2p:'وجهة لا تأخذ أي نسبة من سعر رحلتك. الحجز والدفع يتمان مع الشركة مباشرة، والسعر المعروض هو سعرها.',
+ h_t3:'قارن جنباً إلى جنب',h_t3p:'أضف حتى ٣ رحلات وقارن السعر والمواعيد والفنادق والطيران في جدول واحد.',
+ h_t3c:'ابدأ المقارنة',h_t3o:'افتح المقارنة',
+ h_t_of:'من',h_t_cos:'شركة موثّقة',
+ h_cos_sub:'الشركات التي لديها رحلات منشورة الآن.',h_lic_no:'ترخيص',
+ h_co_t:'هل تدير شركة سياحة مرخّصة؟',h_co_c:'سجّل شركتك',h_co_d:'افتح لوحة الشركة',
+ h_how_sub:'أربع خطوات من المقارنة إلى الحجز.',
+ ft_about:'منصة تجمع رحلات الحج والعمرة والرحلات الخارجية من شركات السياحة المصرية المرخّصة.',
+ ft_explore:'استكشف',ft_abroad:'رحلات خارجية',ft_umrah:'عمرة',ft_hajj:'حج',ft_portal:'بوابة الشركات',ft_mail:'قوالب البريد',ft_admin:'مركز القيادة',
+ ft_legal:'قانوني',ft_terms:'الشروط والأحكام',ft_priv:'سياسة الخصوصية',ft_cook:'ملفات تعريف الارتباط',ft_refund:'الاسترداد والإلغاء',
+ ft_note:'الأسعار والبرامج كما نشرتها الشركات — تأكّد من التفاصيل مع الشركة قبل الدفع.'
+});
+Object.assign(T.en,{
+ h_title:'Your next trip, from a licensed company, at a clear price',
+ h_sub:'Compare Hajj, Umrah and trips abroad in Egyptian pounds, then contact the company directly. Wijha takes no percentage of the trip price.',
+ h_q_lbl:'Find a trip',h_q_ph:'Destination or company name',h_type_lbl:'Trip type',h_go:'Search',h_pop:'Popular destinations',
+ h_live:'trips available now',h_lic:'companies with verified licences',
+ h_cats:'Choose your kind of trip',h_from:'From',h_egp:'EGP',h_nocat:'No trips published right now',h_open:'Browse',
+ h_feat_sub:'Offers from different companies, priced in Egyptian pounds.',
+ h_empty_t:'No trips are published right now',h_empty_p:'Companies add their offers as they are approved. Browse all trips or check back soon.',
+ h_trust:'Why Wijha',
+ h_t1:'Licensed companies only',h_t1p:'Every company on Wijha is licensed by the tourism chambers federation, and its licence number is shown on its page.',
+ h_t2:'No hidden commission',h_t2p:'Wijha takes no percentage of your trip price. You book and pay the company directly, and the price shown is the company\'s price.',
+ h_t3:'Compare side by side',h_t3p:'Add up to 3 trips and compare price, dates, hotels and flights in one table.',
+ h_t3c:'Start comparing',h_t3o:'Open comparison',
+ h_t_of:'of',h_t_cos:'verified',
+ h_cos_sub:'Companies with trips published right now.',h_lic_no:'Licence',
+ h_co_t:'Do you run a licensed travel company?',h_co_c:'Register your company',h_co_d:'Open company dashboard',
+ h_how_sub:'Four steps from comparing to booking.',
+ ft_about:'A marketplace for Hajj, Umrah and trips abroad from licensed Egyptian travel companies.',
+ ft_explore:'Explore',ft_abroad:'Trips abroad',ft_umrah:'Umrah',ft_hajj:'Hajj',ft_portal:'Company portal',ft_mail:'Email templates',ft_admin:'Command centre',
+ ft_legal:'Legal',ft_terms:'Terms & conditions',ft_priv:'Privacy policy',ft_cook:'Cookies',ft_refund:'Refunds & cancellation',
+ ft_note:'Prices and programmes are as published by the companies. Confirm details with the company before paying.'
+});
+const HI={
+ search:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
+ shield:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z"/><path d="M8.8 12l2.4 2.4 4.2-4.6"/></svg>',
+ tag:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/><path d="M14 8l-4 4"/></svg>',
+ cmp:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="7.5" height="16" rx="1.5"/><rect x="13.5" y="4" width="7.5" height="16" rx="1.5"/><path d="M5.5 9h2.5M5.5 13h2.5M16 9h2.5M16 13h2.5"/></svg>',
+ arr:'<svg class="h-arr" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
+};
+/* hero search → trips list (the list view reads F.q / F.cat) */
+function homeSearch(ev){
+ ev.preventDefault(); const f=ev.target;
+ F.q=(f.q.value||'').trim(); const c=f.cat.value; const h='#/trips'+(c?'/'+c:'');
+ if(location.hash===h) route(); else go(h);
+}
+function homeQ(q){ F.q=q; go('#/trips'); if(location.hash==='#/trips') route(); }
+const homeSkeleton=()=>`<div class="wrap"><div class="h-hero h-skel" aria-hidden="true"></div><div class="h-cats"><i class="h-skel"></i><i class="h-skel"></i><i class="h-skel"></i></div></div>`;
 function home(){
- const dests=new Set(TRIPS.map(x=>x.dest)).size;
+ const ar=L==='ar', live=TRIPS.filter(x=>!x.expired);
+ const tn=n=>`${nf(n)} ${ar?'رحلة':(n===1?'trip':'trips')}`;
+ const minEgp=arr=>{ const v=arr.map(x=>{const k=priceRows(x)[0];return k?egpOf(x,k[0]):null}).filter(v=>v!=null&&isFinite(v)&&v>0); return v.length?Math.min(...v):null; };
+ const verified=COS.filter(c=>c.verified).length;
  const feat=pickFeatured();
- document.getElementById('app').innerHTML=`<div class="wrap">
-  <div class="hero">
-   <div>
-    <div class="drop"><i></i>${TRIPS.filter(x=>x.cat==='abroad').length} ${L==='ar'?'رحلة خارجية منشورة الآن':'trips abroad live now'}</div>
-    <h1>${t('hero_h')}</h1><p>${t('hero_p')}</p>
-    <div class="ctas"><a class="btn btn-primary" href="#/trips">${t('hero_c1')} →</a><a class="btn btn-ghost" href="#/trips/umrah">${t('hero_c2')}</a></div>
+ /* popular destinations: computed from live trips abroad, most offers first */
+ const dc={}; live.filter(x=>x.cat==='abroad').forEach(x=>{const d=(ar?x.destAr:x.dest)||''; if(d&&d.length<=26) dc[d]=(dc[d]||0)+1;});
+ const pops=Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,5).map(e=>e[0]);
+ const kinds={abroad:['fjord',201],umrah:['haram',202],hajj:['madinah',203]};
+ const coRows=COS.map(c=>({c,n:live.filter(x=>x.co===c.id).length})).filter(r=>r.n>0).sort((a,b)=>b.n-a.n||(b.c.verified-a.c.verified)).slice(0,8);
+ const cmpN=CMP.length;
+ document.getElementById('app').innerHTML=`<div class="wrap h-page">
+  <section class="h-hero" aria-labelledby="hTitle">
+   <div class="h-hero-art" aria-hidden="true">${art('fjord',99)}</div>
+   <div class="h-hero-in">
+    <h1 id="hTitle">${t('h_title')}</h1>
+    <p class="h-sub">${t('h_sub')}</p>
+    <form class="h-search" onsubmit="homeSearch(event)" role="search" aria-label="${t('h_q_lbl')}">
+     <label class="h-f h-f-q"><span class="sr">${t('h_q_lbl')}</span>${HI.search}<input name="q" type="search" autocomplete="off" placeholder="${t('h_q_ph')}"></label>
+     <label class="h-f h-f-t"><span class="sr">${t('h_type_lbl')}</span><select name="cat"><option value="">${t('h_type_lbl')}: ${t('all')}</option>${Object.keys(CATS).map(k=>`<option value="${k}">${ar?CATS[k].ar:CATS[k].en}</option>`).join('')}</select></label>
+     <button class="btn btn-primary h-go" type="submit">${t('h_go')}</button>
+    </form>
+    ${pops.length?`<div class="h-pops"><span>${t('h_pop')}</span>${pops.map(p=>`<button type="button" data-q="${esc(p)}" onclick="homeQ(this.dataset.q)">${esc(p)}</button>`).join('')}</div>`:''}
+    ${live.length?`<p class="h-facts"><b>${nf(live.length)}</b> ${ar?t('h_live'):(live.length===1?'trip available now':t('h_live'))}${verified?` <i></i> <b>${nf(verified)}</b> ${t('h_lic')}`:''}</p>`:''}
    </div>
-   <div class="hero-art">${art('fjord',99)}<div class="ovl"><b>${L==='ar'?'كل الأسعار بالجنيه المصري':'Every price in Egyptian pounds'}</b><span>1 EUR = ${FX.EUR} EGP · 1 USD = ${FX.USD} EGP · 1 GBP = ${FX.GBP} EGP</span></div></div>
-  </div>
-  <div class="stats">
-   <div class="stat">🧳<div><b>${TRIPS.length}</b><small>${t('st_trips')}</small></div></div>
-   <div class="stat">🏢<div><b>${COS.length}</b><small>${t('st_cos')}</small></div></div>
-   <div class="stat">🏨<div><b>${Object.keys(HOTELS).length}</b><small>${t('st_hotels')}</small></div></div>
-   <div class="stat">📍<div><b>${dests}</b><small>${t('st_dest')}</small></div></div>
-  </div>
-  <section class="sec"><h2>${L==='ar'?'تصفّح حسب النوع':'Browse by type'}</h2>
-   <div class="cats">${Object.entries(CATS).map(([k,c])=>`<a class="catcard" href="#/trips/${k}">
-     <span class="ic">${c.icon}</span><b>${L==='ar'?c.ar:c.en}</b>
-     <small>${TRIPS.filter(x=>x.cat===k).length} ${t('results')}</small>
-     <div class="subs">${Object.entries(c.subs).map(([sk,sv])=>`<span>${L==='ar'?sv.ar:sv.en}</span>`).join('')}</div></a>`).join('')}</div></section>
-  <section class="sec"><div class="sec-head"><h2>${t('featured')}</h2><a href="#/trips">${t('viewall')} →</a></div>
-   <div class="grid">${feat.map(card).join('')}</div></section>
-  <section class="sec"><h2>${t('cos_title')}</h2><div class="cos">${COS.map(c=>`<a class="co-card" href="#/trips?co=${c.id}">
-    <div class="lg">${esc((L==='ar'?c.ar:c.en).slice(0,1))}</div>
-    <div><b>${esc(L==='ar'?c.ar:c.en)}</b><small>${TRIPS.filter(x=>x.co===c.id).length} ${t('results')} ${c.reviews>0&&c.rating?' · ★ '+c.rating:''}</small>
-    ${c.verified?`<span class="vf-pill">✓ ${t('verified')} · ${c.lic}</span>`:''}</div></a>`).join('')}</div></section>
-  <section class="sec"><h2>${t('how_title')}</h2><div class="how">${[1,2,3,4].map(i=>
-   `<div><span class="num">0${i}</span><b>${t('how'+i)}</b><small>${t('how'+i+'s')}</small></div>`).join('')}</div></section>
+  </section>
+
+  <section class="h-sec" aria-labelledby="hCats"><h2 id="hCats" class="h-h2">${t('h_cats')}</h2>
+   <div class="h-cats">${Object.entries(CATS).map(([k,c])=>{ const rows=live.filter(x=>x.cat===k), m=minEgp(rows), [ak,as]=kinds[k]||['metro',204];
+    return `<a class="h-cat" href="#/trips/${k}" onclick="F.q=''">
+     <span class="h-cat-art" aria-hidden="true">${art(ak,as)}</span>
+     <span class="h-cat-body"><b>${ar?c.ar:c.en}</b>
+      <small>${rows.length?`${tn(rows.length)}${m?` · ${t('h_from')} ${nf(m)} ${t('h_egp')}`:''}`:t('h_nocat')}</small></span>
+     <span class="h-cat-go" aria-hidden="true">${HI.arr}</span></a>`;}).join('')}</div></section>
+
+  <section class="h-sec" aria-labelledby="hFeat">
+   <div class="h-head"><div><h2 id="hFeat" class="h-h2">${t('featured')}</h2><p class="h-lead">${t('h_feat_sub')}</p></div><a class="h-more" href="#/trips">${t('viewall')} ${HI.arr}</a></div>
+   ${feat.length?`<div class="grid h-feat">${feat.map(card).join('')}</div>`:
+   `<div class="h-empty"><b>${t('h_empty_t')}</b><p>${t('h_empty_p')}</p><a class="btn btn-ghost" href="#/trips">${t('nav_offers')}</a></div>`}
+  </section>
+
+  <section class="h-trust" aria-labelledby="hTrust"><h2 id="hTrust" class="h-h2">${t('h_trust')}</h2>
+   <div class="h-pillars">
+    <div><span class="h-ic">${HI.shield}</span><h3>${t('h_t1')}</h3><p>${t('h_t1p')}</p>${verified?`<p class="h-calc"><b>${nf(verified)}</b> ${t('h_t_of')} <b>${nf(COS.length)}</b> ${t('h_t_cos')}</p>`:''}</div>
+    <div><span class="h-ic">${HI.tag}</span><h3>${t('h_t2')}</h3><p>${t('h_t2p')}</p></div>
+    <div><span class="h-ic">${HI.cmp}</span><h3>${t('h_t3')}</h3><p>${t('h_t3p')}</p>
+     <a class="h-link" href="${cmpN>=2?'#/compare':'#/trips'}">${cmpN>=2?`${t('h_t3o')} (${cmpN})`:t('h_t3c')} ${HI.arr}</a></div>
+   </div></section>
+
+  ${coRows.length?`<section class="h-sec" aria-labelledby="hCos"><h2 id="hCos" class="h-h2">${t('cos_title')}</h2><p class="h-lead">${t('h_cos_sub')}</p>
+   <ul class="h-cos">${coRows.map(({c,n})=>`<li><a href="#/trips?co=${esc(c.id)}"><span class="lg" aria-hidden="true">${esc((ar?c.ar:c.en).slice(0,1))}</span>
+     <span><b>${esc(ar?c.ar:c.en)}</b><small>${tn(n)}</small>${c.verified?`<em>✓ ${t('verified')}${c.lic&&c.lic!=='—'?` · <bdi>${esc(c.lic)}</bdi>`:''}</em>`:''}</span></a></li>`).join('')}</ul></section>`:''}
+
+  <section class="h-sec" aria-labelledby="hHow"><h2 id="hHow" class="h-h2">${t('how_title')}</h2><p class="h-lead">${t('h_how_sub')}</p>
+   <ol class="h-how">${[1,2,3,4].map(i=>`<li><span class="h-n" aria-hidden="true">${ar?['١','٢','٣','٤'][i-1]:i}</span><b>${t('how'+i)}</b><small>${t('how'+i+'s')}</small></li>`).join('')}</ol></section>
+
+  <section class="h-co" aria-labelledby="hCo"><div><h2 id="hCo">${t('h_co_t')}</h2><p>${t('su_co_p')}</p></div>
+   <a class="btn btn-primary" href="${CO?'#/company':'#/company/signup'}">${CO?t('h_co_d'):t('h_co_c')}</a></section>
  </div>`;
 }
 
 /* ══════════════ LIST ══════════════ */
 let F={cat:'',sub:'',co:'',sort:'asc',q:''};
 function list(cat){
- F.cat=cat||''; F.sub=''; const m=location.hash.match(/co=(\w+)/); F.co=m?m[1]:'';
+ F.cat=cat||''; F.sub=''; const m=location.hash.match(/co=([0-9a-zA-Z_-]{3,})/); F.co=m?m[1]:'';
  const subs=F.cat?CATS[F.cat].subs:null;
  document.getElementById('app').innerHTML=`<div class="wrap">
   <div class="head"><h1>${F.cat?(L==='ar'?CATS[F.cat].ar:CATS[F.cat].en):t('nav_offers')}</h1></div>
@@ -1317,7 +1523,7 @@ function list(cat){
    <span class="divider"></span>
    <select onchange="F.co=this.value;draw()"><option value="">${t('company')}: ${t('all')}</option>${COS.map(c=>`<option value="${c.id}" ${F.co===c.id?'selected':''}>${esc(L==='ar'?c.ar:c.en)}</option>`).join('')}</select>
    <select onchange="F.sort=this.value;draw()"><option value="asc">${t('sort_low')}</option><option value="desc">${t('sort_high')}</option><option value="soon">${t('sort_soon')}</option></select>
-   <input placeholder="${t('search')}" oninput="F.q=this.value;draw()">
+   <input value="${esc(F.q)}" placeholder="${t('search')}" oninput="F.q=this.value;draw();logSearch()">
    <span class="count" id="cnt"></span>
   </div>
   ${subs?`<div class="filters subrow"><button class="chip sm ${!F.sub?'on':''}" onclick="F.sub='';draw();document.querySelectorAll('.chip.sm').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${t('all')}</button>
@@ -1333,7 +1539,7 @@ function draw(){
    F.sort==='asc'?(egpOf(a,priceRows(a)[0]?.[0])??9e9)-(egpOf(b,priceRows(b)[0]?.[0])??9e9)
                  :(egpOf(b,priceRows(b)[0]?.[0])??0)-(egpOf(a,priceRows(a)[0]?.[0])??0)));
  document.getElementById('grid').innerHTML=rows.map(card).join('')||`<p class="lead">${t('nores')}</p>`;
- document.getElementById('cnt').textContent=rows.length+' '+t('results');
+ document.getElementById('cnt').textContent=rows.length+' '+t('results'); window.__rowsN=rows.length;
 }
 
 function allDays(open){ document.querySelectorAll('.day').forEach(d=>d.classList.toggle('open',open)); }
@@ -1365,7 +1571,7 @@ function drawCmpBar(){
 }
 function compareView(){
  const items=CMP.map(trip).filter(Boolean);
- if(items.length<2){ go('#/trips'); return; }
+ if(items.length<2){ document.getElementById('app').innerHTML=`<div class="wrap narrow"><div class="panel" style="text-align:center;padding:40px 20px"><h1>${L==='ar'?'المقارنة':'Compare'}</h1><p class="lead">${L==='ar'?'اختر رحلتين على الأقل للمقارنة بينهما.':'Pick at least two trips to compare them.'}</p><div class="acts" style="justify-content:center"><a class="btn btn-primary" href="#/trips">${t('nav_offers')}</a></div></div></div>`; return; }
  const money=x=>{const k=priceRows(x)[0];return k?egpOf(x,k[0]):null};
  const best=(vals,dir)=>{const nums=vals.filter(v=>v!=null);if(!nums.length)return null;return dir==='min'?Math.min(...nums):Math.max(...nums)};
  const cheap=best(items.map(money),'min');
@@ -1432,7 +1638,7 @@ const paxOf=()=>qtyOf().reduce((a,[k,n])=>a+n,0);
 const mixLabel=()=>qtyOf().map(([k,n])=>t(k)+' × '+n).join(' + ');
 const mixTotal=x=>qtyOf().reduce((a,[k,n])=>a+(egpOf(x,k)||0)*n,0)+(x.ferry||0)*paxOf();
 function detail(id){
- const x=trip(id); if(!x){go('#/trips');return;}
+ const x=trip(id); if(!x){notFound(L==='ar'?'هذه الرحلة غير موجودة أو لم تعد منشورة.':'This trip does not exist or is no longer published.');return;}
  CUR=x; const rows=priceRows(x); B={q:{}}; if(rows[0]) B.q[rows[0][0]]=1;
  const c=co(x.co), s=nextSeed(), sims=similar(x);
  const total=x.seats||0, taken=x.taken||0, pct=total?Math.round(taken/total*100):0;
@@ -1450,7 +1656,7 @@ function detail(id){
    <h1>${esc(tripName(x,L))}</h1>
    <div class="head-row"><div class="sub">
      <a href="#/trips?co=${c.id}">${esc(L==='ar'?c.ar:c.en)}</a>
-     ${c.verified?`<span class="vf-pill">✓ ${t('verified')} · ${c.lic}</span>`:''}
+     ${c.verified?`<span class="vf-pill">✓ ${t('verified')}${c.lic&&c.lic!=='—'?' · '+esc(c.lic):''}</span>`:''}
      ${c.reviews>0&&c.rating?`<span class="rating"><b>★</b> ${c.rating} · ${c.reviews} ${t('reviews')}</span>`:''}
      ${isSoon(x)?`<span class="scarce">${t('soon')} · ${soonDays(x)} ${L==='ar'?'يوم':'days'}</span>`:''}
    </div>
@@ -1547,7 +1753,7 @@ function detail(id){
 
    <section><h2>${t('d_about')}</h2><div class="co-box">
      <div class="lg">${esc((L==='ar'?c.ar:c.en).slice(0,1))}</div>
-     <div><b>${esc(L==='ar'?c.ar:c.en)}</b>${c.verified?`<span class="vf-pill">✓ ${t('verified')} · ${c.lic}</span>`:''}
+     <div><b>${esc(L==='ar'?c.ar:c.en)}</b>${c.verified?`<span class="vf-pill">✓ ${t('verified')}${c.lic&&c.lic!=='—'?' · '+esc(c.lic):''}</span>`:''}
        <small>${esc(L==='ar'?c.aboutAr:c.aboutEn)}</small>
        ${c.addr?`<small class="dim">📍 ${esc(L==='ar'?c.addr:c.addrEn)}</small>`:''}
        ${c.hours?`<small class="dim">🕐 ${esc(L==='ar'?c.hours:c.hoursEn)}</small>`:''}
@@ -1560,9 +1766,9 @@ function detail(id){
 
   <aside class="side" id="side" onclick="if(event.target===this)sheet(false)"><div class="bcard">
     <button class="sheet-x" aria-label="${L==='ar'?'إغلاق':'Close'}" onclick="sheet(false)">✕</button>
-    <div class="pl">${priceBlock(x)}</div>
+    <div class="pl">${rows.length?priceBlock(x):`<div class="pr-egp" style="font-size:20px">${L==='ar'?'السعر عند الاستفسار':'Price on enquiry'}</div>`}</div>
     <div class="gst">${esc(L==='ar'?x.dates.ar:x.dates.en)}${x.priceNote?` · ${esc(L==='ar'?x.priceNote.ar:x.priceNote.en)}`:''}</div>
-    <div class="field"><div class="k">${L==='ar'?'اختر الغرف وعدد المسافرين':'Choose rooms & travellers'}</div>
+    ${rows.length?`<div class="field"><div class="k">${L==='ar'?'اختر الغرف وعدد المسافرين':'Choose rooms & travellers'}</div>
       <div class="rooms">${rows.map(([k,v])=>
       `<div class="room" data-k="${k}">
         <span class="n">${t(k)}</span>
@@ -1573,13 +1779,17 @@ function detail(id){
       </div>`).join('')}</div>
       <div class="paxsum" id="paxL"></div></div>
     <div class="total"><span class="k">${t('total')}</span><span class="v" id="tot"></span></div>
-    <details class="mini"><summary>${t('breakdown')}</summary><div class="breakdown" id="bd"></div></details>
-    ${x.expired?`<div class="note-box">${L==='ar'?'انتهى موعد هذا العرض':'This offer has ended'}</div>`:`<button class="btn btn-primary" onclick="sendEnq()">${t('enquire')}</button>`}
+    <details class="mini"><summary>${t('breakdown')}</summary><div class="breakdown" id="bd"></div></details>`:`<div class="note-box" style="margin:10px 0">${L==='ar'?'لم تنشر الشركة سعراً لهذا العرض بعد — اسألها مباشرة عبر المحادثة.':'The company has not published a price for this offer yet. Ask it directly through the chat.'}</div><span id="paxL" hidden></span><span id="tot" hidden></span><div id="bd" hidden></div>`}
+    ${x.expired?`<div class="note-box">${L==='ar'?'انتهى موعد هذا العرض':'This offer has ended'}</div>`:(rows.length?`<button class="btn btn-primary" onclick="sendEnq()">${t('enquire')}</button>`:'')}
     <a class="btn btn-ghost" href="#/chat/${threadFor(x.id)}">💬 ${t('chat')}</a>
     <p class="note">${t('pricenote')}</p>
   </div></aside></div></div>`;
  document.getElementById('mbar').classList.remove('hidden');
  document.getElementById('mBtn').textContent=L==='ar'?'اختر الغرف':'Choose rooms';
+ if(!rows.length){ /* no published price: say so instead of a dash and an unusable room picker */
+   document.getElementById('mBtn').textContent=t('enquire');
+   document.getElementById('mBtn').onclick=()=>{ if(x.expired){toast(L==='ar'?'هذا العرض منتهٍ — اختر عرضاً آخر':'This offer has ended — please choose another');return} go('#/chat/'+threadFor(x.id)); };
+ } else document.getElementById('mBtn').onclick=()=>sheet(true);
  calc();
 }
 function sheet(on){ document.getElementById('side')?.classList.toggle('open',on); document.body.style.overflow=on?'hidden':''; }
@@ -1602,7 +1812,7 @@ function calc(){
  if(x.deposit&&n) bd+=`<div class="dim"><span>${t('dep')}</span><span>${nf(x.deposit)} ج.م ${t('person')}</span></div>`;
  bd+=`<div class="sum"><span>${t('total')}</span><span>${nf(tot)} ج.م</span></div>`;
  document.getElementById('bd').innerHTML=bd;
- document.getElementById('mTotal').innerHTML=n?`${nf(tot)} <em>ج.م</em>`:'—';
+ document.getElementById('mTotal').innerHTML=n?`${nf(tot)} <em>ج.م</em>`:(priceRows(x).length?'—':(L==='ar'?'السعر عند الاستفسار':'Price on enquiry'));
  document.getElementById('mSub').textContent=n?mixLabel():'';
 }
 function toggleSave(id){ const i=SAVED.indexOf(id); i<0?SAVED.push(id):SAVED.splice(i,1); persist();
@@ -1618,7 +1828,7 @@ function toast(m){ const d=document.createElement('div'); d.className='toast'; d
 
 /* ══════════════ HOTEL + REVIEWS ══════════════ */
 function hotelPage(id){
- const h=HOTELS[id]; if(!h){go('#/trips');return}
+ const h=HOTELS[id]; if(!h){notFound(L==='ar'?'هذا الفندق غير موجود.':'This hotel does not exist.');return}
  const used=TRIPS.filter(x=>(x.hotels||[]).some(k=>k.h===id));
  const bar=(k,v)=>`<div class="srow"><span>${t('score_'+k)}</span><div class="sbar"><i style="width:${v*10}%"></i></div><b>${v}</b></div>`;
  document.getElementById('app').innerHTML=`<div class="wrap">
@@ -1883,7 +2093,7 @@ function makeApi(url,key){
  return {
   async select(p){const r=await fetch(base+'/'+p,{headers:H});
     if(!r.ok)throw new Error((await r.text())||('HTTP '+r.status));return r.json()},
-  async insert(tb,row){try{await fetch(base+'/'+tb,{method:'POST',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(row)})}catch(e){}}
+  async insert(tb,row){try{const r=await fetch(base+'/'+tb,{method:'POST',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(row)}); if(!r.ok) console.warn('[wijha] insert',tb,r.status)}catch(e){console.warn('[wijha] insert',tb,e.message)}}
  };
 }
 
@@ -1913,8 +2123,8 @@ function gate(msg){
    </div>`:''}
   ${LIVE?`<button class="btn btn-ghost" onclick="useDemo()">${L==='ar'?'العودة للنسخة التجريبية':'Switch back to demo'}</button>`:''}
   <p class="note">${L==='ar'
-    ?'شغّل ملفي SQL أولاً: 01-schema-upgrade.sql ثم 02-seed-europe.sql.'
-    :'Run the two SQL files first: 01-schema-upgrade.sql then 02-seed-europe.sql.'}</p>
+    ?'تأكد من صحة الرابط والمفتاح ثم اضغط اتصال.'
+    :'Check the URL and key, then press Connect.'}</p>
  </div></div>`;
 }
 /* ── diagnostic: exactly what the API returns, shown on screen ── */
@@ -1970,7 +2180,7 @@ function useDemo(){ API=null; LIVE=false;
  TRIPS.length=0; DEMO_TRIPS.forEach(x=>TRIPS.push(x));
  COS.length=0; DEMO_COS.forEach(x=>COS.push(x));
  Object.keys(HOTELS).forEach(k=>delete HOTELS[k]); Object.assign(HOTELS,DEMO_HOTELS);
- bindThreads(); localStorage.setItem('wijha_demo','1'); setConn(); go('#/'); route();
+ bindThreads(); localStorage.setItem('wijha_demo','1'); window.__demoOk=true; window.__bootErr=null; setConn(); go('#/'); route();
 }
 function setConn(){
  const el=document.getElementById('connPill'); if(!el)return;
@@ -2048,6 +2258,12 @@ async function loadCatalogue(){
    verified:!!c.etaa_verified, rating:null, reviews:0,
    aboutAr:c.about_ar||'', aboutEn:c.about_en||c.about_ar||'',
    pay:DEMO_COS[0].pay, payEn:DEMO_COS[0].payEn}));
+ /* offers whose company row anon cannot read: rebuild a minimal entry from the public_offers columns (audit F1) */
+ offers.forEach(o=>{ if(o.company_id && !COS.some(c=>c.id===o.company_id))
+   COS.push({id:o.company_id, ar:o.company_ar||'—', en:o.company_en||o.company_ar||'—', lic:o.license_no||'—',
+     gov:'', govEn:'', addr:'', addrEn:'', hotline:o.hotline||'—', wa:(o.whatsapp||'').replace(/\D/g,''),
+     verified:!!o.etaa_verified, rating:null, reviews:0, aboutAr:'', aboutEn:'',
+     pay:DEMO_COS[0].pay, payEn:DEMO_COS[0].payEn}); });
  Object.keys(HOTELS).forEach(k=>delete HOTELS[k]);
  hotels.forEach(h=>{ HOTELS[h.id]={name:h.name, city:h.city_en||h.city_ar, cityAr:h.city_ar||h.city_en,
    stars:h.stars||0, art:h.art_key||'medcity', descAr:h.desc_ar||'', descEn:h.desc_en||h.desc_ar||'',
@@ -2071,7 +2287,7 @@ async function loadCatalogue(){
 async function hydrate(x){
  if(x._hydrated||!API)return x;
  const [stages,items,notes,ohotels,photos]=await Promise.all([
-  API.select(`offer_stages?offer_id=eq.${x.id}&select=id,sort_order,title_ar,title_en,day_label,description_ar,description_en,art_key&order=sort_order`),
+  API.select(`offer_stages?offer_id=eq.${x.id}&select=id,sort_order,title_ar,title_en,day_label,description_ar,description_en,art_key,photo_url&order=sort_order`),
   API.select(`offer_items?offer_id=eq.${x.id}&select=kind,item_cat,text_ar,text_en,price_text,sort_order&order=sort_order`),
   API.select(`offer_notes?offer_id=eq.${x.id}&select=kind,label_ar,label_en,text_ar,text_en,sort_order&order=sort_order`).catch(()=>[]),
   API.select(`offer_hotels?offer_id=eq.${x.id}&select=hotel_id,sort_order,city_ar,city_en,hotel_name,date_range,nights,note_ar,note_en&order=sort_order`),
@@ -2121,7 +2337,8 @@ async function hydrate(x){
 /* ── make detail() async: hydrate from the DB before rendering ── */
 const _detail=detail;
 detail=function(id){
- const x=trip(id); if(!x){go('#/trips');return}
+ const x=trip(id); if(!x){notFound(L==='ar'?'هذه الرحلة غير موجودة أو لم تعد منشورة.':'This trip does not exist or is no longer published.');return}
+ logView(x);
  if(!API||x._hydrated) return _detail(id);
  document.getElementById('app').innerHTML=`<div class="wrap"><p class="lead" style="padding:60px 0">…</p></div>`;
  hydrate(x).then(()=>_detail(id)).catch(e=>{
@@ -2136,6 +2353,12 @@ sendEnq=function(){ _sendEnq();
 const _toggleSave=toggleSave;
 toggleSave=function(id){ _toggleSave(id);
  if(API&&SAVED.includes(id)) API.insert('offer_events',{offer_id:id,company_id:trip(id)?.co,kind:'save',session_id:sid()}); };
+/* analytics: one 'view' per offer per page load, and debounced search terms (audit F12) */
+const _VIEWED=new Set();
+function logView(x){ if(!API||!x||_VIEWED.has(x.id)) return; _VIEWED.add(x.id); API.insert('offer_events',{offer_id:x.id,company_id:x.co,kind:'view',session_id:sid()}); }
+let _stT=null, _stLast='';
+function logSearch(){ clearTimeout(_stT); _stT=setTimeout(()=>{ const q=(F.q||'').trim(); if(!API||q.length<3||q===_stLast) return; _stLast=q;
+  API.insert('search_terms',{term:q.slice(0,80),lang:L,results:window.__rowsN||0,session_id:sid()}); },800); }
 function sid(){   // a stored visitor id only if the visitor accepted statistics; otherwise a throw-away id that lives until the page closes
  if(localStorage.getItem('wijha_consent')!=='all'){ return window.__sidMem||(window.__sidMem='s_'+Math.random().toString(36).slice(2)); }
  let s=localStorage.getItem('wijha_sid');
@@ -2149,10 +2372,28 @@ const DEFAULT_URL='https://ejxndvelxocklapmiuvu.supabase.co', DEFAULT_KEY='eyJhb
  if(u&&k){
   try{ const api=makeApi(u,k); await api.select('public_offers?select=id&limit=1');
     API=api; await loadCatalogue(); LIVE=true; }
-  catch(e){ /* fall through to demo, gate is one click away */ }
+  catch(e){ window.__bootErr=e.message||String(e); }
  }
  setConn(); applyLang(); route();
 })();
+/* connection failed: never show demo trips as if they were real offers (audit F9). ?demo=1 keeps the demo set for previews. */
+function DEMO_OK(){ return /[?&]demo=1/.test(location.search+location.hash)||!!window.__demoOk; }
+function bootFail(){
+ if(DEMO_OK()){ if(!document.getElementById('demoBar')){ const b=document.createElement('div'); b.id='demoBar'; b.className='note-box'; b.style.cssText='position:sticky;top:0;z-index:60;text-align:center;margin:0';
+   b.textContent=L==='ar'?'نسخة تجريبية: الرحلات المعروضة نموذجية وليست عروضاً حقيقية.':'Demo mode: the trips shown are samples, not real offers.'; document.body.prepend(b);} return false; }
+ TRIPS.length=0; COS.length=0;
+ document.getElementById('app').innerHTML=`<div class="wrap narrow"><div class="panel" role="alert" style="text-align:center;padding:40px 20px">
+  <h1>${L==='ar'?'تعذّر الاتصال بالخادم':'Could not reach the server'}</h1>
+  <p class="lead">${L==='ar'?'لا نعرض رحلات نموذجية كي لا تختلط بالعروض الحقيقية. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.':'We do not show sample trips so they are never mistaken for real offers. Check your connection and try again.'}</p>
+  <div class="acts" style="justify-content:center"><button class="btn btn-primary" onclick="retryBoot()">${L==='ar'?'إعادة المحاولة':'Try again'}</button></div>
+  ${window.__bootErr?`<p class="note dim" style="direction:ltr" dir="ltr">${esc(String(window.__bootErr).slice(0,160))}</p>`:''}</div></div>`;
+ return true;
+}
+async function retryBoot(){
+ const u=localStorage.getItem('wijha_url')||DEFAULT_URL, k=localStorage.getItem('wijha_key')||DEFAULT_KEY;
+ try{ const api=makeApi(u,k); await api.select('public_offers?select=id&limit=1'); API=api; await loadCatalogue(); LIVE=true; window.__bootErr=null; setConn(); route(); }
+ catch(e){ window.__bootErr=e.message||String(e); bootFail(); }
+}
 
 </script>
 <script>
@@ -2207,10 +2448,12 @@ let PROF=null, MYTHREADS=[], POLL=null, LASTSEEN={};
 const authed=()=>!!(AU&&AU.access_token);
 /* your enum: client | company_staff | company_admin | wijha_admin | admin | company */
 const ADMIN_ROLES=['admin','wijha_admin'], CO_ROLES=['company','company_admin','company_staff'];
-const isAdminRole=r=>ADMIN_ROLES.includes(r), isCoRole=r=>CO_ROLES.includes(r)||ADMIN_ROLES.includes(r);
-const AH=()=>({apikey:localStorage.getItem('wijha_key')||'',Authorization:'Bearer '+(authed()?AU.access_token:(localStorage.getItem('wijha_key')||'')),'Content-Type':'application/json'});
+const isAdminRole=r=>ADMIN_ROLES.includes(r), isCoRole=r=>CO_ROLES.includes(r);
+/* the public project URL/key also work for sign-in when the visitor never opened the connect gate */
+const SBU=()=>localStorage.getItem('wijha_url')||DEFAULT_URL, SBK=()=>localStorage.getItem('wijha_key')||DEFAULT_KEY;
+const AH=()=>({apikey:SBK(),Authorization:'Bearer '+(authed()?AU.access_token:(SBK())),'Content-Type':'application/json'});
 async function areq(path,opt={}){
- const base=(localStorage.getItem('wijha_url')||'').replace(/\/$/,'');
+ const base=(SBU()).replace(/\/$/,'');
  const r=await fetch(base+'/rest/v1/'+path,{...opt,headers:{...AH(),...(opt.headers||{})}});
  if(r.status===401&&AU?.refresh_token&&!opt._r){ await arefresh(); return areq(path,{...opt,_r:1}); }
  const t=await r.text(); let b; try{b=t?JSON.parse(t):null}catch{b=t}
@@ -2218,11 +2461,17 @@ async function areq(path,opt={}){
 }
 const aget=p=>areq(p), apost=(p,b,pref='return=representation')=>areq(p,{method:'POST',body:JSON.stringify(b),headers:{Prefer:pref}}),
       apatch=(p,b)=>areq(p,{method:'PATCH',body:JSON.stringify(b),headers:{Prefer:'return=representation'}}), arpc=(f,a)=>areq('rpc/'+f,{method:'POST',body:JSON.stringify(a||{})});
+function authMsg(m){ m=String(m||''); if(L!=='ar') return m;
+ const T=[[/invalid login credentials/i,'البريد الإلكتروني أو كلمة المرور غير صحيحة.'],[/user already registered|already been registered/i,'هذا البريد مسجّل مسبقاً — سجّل الدخول بدلاً من إنشاء حساب.'],
+  [/password should be at least|password.*(short|weak)|weak_password/i,'كلمة المرور قصيرة أو ضعيفة — استخدم ٦ أحرف على الأقل.'],[/email not confirmed/i,'لم يتم تأكيد بريدك بعد — افتح الرابط المرسل إلى بريدك.'],
+  [/unable to validate email|invalid.*email|email.*invalid/i,'صيغة البريد الإلكتروني غير صحيحة.'],[/rate limit|too many|over_.*_rate/i,'محاولات كثيرة — انتظر قليلاً ثم أعد المحاولة.'],
+  [/signup.*disabled|signups not allowed/i,'التسجيل متوقف مؤقتاً.'],[/failed to fetch|networkerror|load failed/i,'تعذّر الاتصال بالخادم، تحقق من الإنترنت.']];
+ for(const [re,ar] of T) if(re.test(m)) return ar; return m; }
 async function authCall(path,body){
- const base=(localStorage.getItem('wijha_url')||'').replace(/\/$/,'');
+ const base=(SBU()).replace(/\/$/,'');
  if(/^(signup|recover|token\?grant_type=password)/.test(path)){ const ct=await captchaToken(); if(ct) body={...body,gotrue_meta_security:{captcha_token:ct}}; }
- const r=await fetch(base+'/auth/v1/'+path,{method:'POST',headers:{apikey:localStorage.getItem('wijha_key')||'','Content-Type':'application/json'},body:JSON.stringify(body)});
- const b=await r.json().catch(()=>({})); if(!r.ok) throw new Error(b.error_description||b.msg||b.error||('HTTP '+r.status)); return b;
+ const r=await fetch(base+'/auth/v1/'+path,{method:'POST',headers:{apikey:SBK(),'Content-Type':'application/json'},body:JSON.stringify(body)});
+ const b=await r.json().catch(()=>({})); if(!r.ok) throw new Error(authMsg(b.error_description||b.msg||b.message||b.error||('HTTP '+r.status))); return b;
 }
 async function arefresh(){ try{ const b=await authCall('token?grant_type=refresh_token',{refresh_token:AU.refresh_token}); setAuth(b); }catch(e){ setAuth(null); } }
 function setAuth(b){ AU=b&&b.access_token?{access_token:b.access_token,refresh_token:b.refresh_token,user:b.user}:null; if(AU)localStorage.setItem('wijha_auth',JSON.stringify(AU)); else localStorage.removeItem('wijha_auth'); }
@@ -2290,26 +2539,48 @@ signupClient=function(){
 async function doClientSignupLive(){
  const email=v('cEmail'),pass=v('cPass');
  if(!email||!pass){showErr('cErr',L==='ar'?'البريد وكلمة المرور مطلوبان.':'Email and password are required.');return}
+ if(!/^\S+@\S+\.\S+$/.test(email)){showErr('cErr',L==='ar'?'صيغة البريد الإلكتروني غير صحيحة.':'The email address looks wrong.');return}
+ if(pass.length<6){showErr('cErr',L==='ar'?'كلمة المرور يجب ألا تقل عن ٦ أحرف.':'The password must be at least 6 characters.');return}
  const dial=document.getElementById('cDial')?.value||'';
  const localNum=v('cPhone').replace(/^0+/,'');
  const hasVisa=document.getElementById('cHasVisa')?.value==='yes';
  const visas=hasVisa?(window.__visas||[]).filter(x=>x.country&&x.expiry):[];
  try{
-  const r=await signUp(email,pass,{name:v('cName'),phone:dial+localNum});
-  if(!r.session){ document.getElementById('cErr').innerHTML=`<div class="note-box">${L==='ar'?'تم إنشاء الحساب — افتح بريدك وأكّد الرابط ثم سجّل الدخول.':'Account created — confirm the link in your email, then sign in.'}</div>`; return; }
-  await apatch('profiles?id=eq.'+AU.user.id,{
-    name:v('cName')||null, dial_code:dial||null, phone:localNum?dial+localNum:null,
+  const pdata={ name:v('cName')||null, dial_code:dial||null, phone:localNum?dial+localNum:null,
     age_range:document.getElementById('cAge')?.value||null,
     nationality:document.getElementById('cNat')?.value||null,
-    has_visa:hasVisa, travel_visas:visas});
+    has_visa:hasVisa, travel_visas:visas };
+  /* every profile field travels in the signup metadata, so nothing is lost when email confirmation delays the session (audit F5) */
+  const r=await signUp(email,pass,{name:v('cName'),phone:dial+localNum,dial_code:dial,age_range:pdata.age_range,nationality:pdata.nationality,has_visa:hasVisa,travel_visas:visas});
+  if(!r.session){
+    try{ localStorage.setItem('wijha_pending_profile',JSON.stringify({email:email.toLowerCase(),data:pdata})); }catch(e){}
+    document.getElementById('cErr').innerHTML=`<div class="note-box">${L==='ar'?'تم إنشاء الحساب — افتح بريدك وأكّد الرابط ثم سجّل الدخول.':'Account created — confirm the link in your email, then sign in.'}</div>`; return; }
+  await apatch('profiles?id=eq.'+AU.user.id,pdata);
   await loadProfile();
   ME={name:PROF?.name||email}; localStorage.setItem('wijha_me',JSON.stringify(ME));
   window.__visas=null; window.__hasVisa=false;
   syncNav(); startPoll(); go('#/account');
  }catch(e){showErr('cErr',e.message)}
 }
+const slugOf=name=>name.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF]+/g,'-').replace(/^-|-$/g,'')||('co-'+Date.now());
+/* first sign-in after email confirmation: finish what signup could not (audit F4, F5) */
+async function finishPending(){
+ if(!PROF||!authed()) return; const em=(PROF.email||AU.user?.email||'').toLowerCase();
+ try{ const pp=JSON.parse(localStorage.getItem('wijha_pending_profile')||'null');
+  if(pp&&pp.email===em){ await apatch('profiles?id=eq.'+AU.user.id,pp.data); localStorage.removeItem('wijha_pending_profile'); await loadProfile(); } }catch(e){ console.warn('[wijha] pending profile',e.message); }
+ try{ const pc=JSON.parse(localStorage.getItem('wijha_pending_co')||'null');
+  if(pc&&pc.email===em&&PROF&&!PROF.company_id&&!isAdminRole(PROF.role)){
+    await apost('rpc/wijha_register_company',{p_name:pc.name,p_slug:slugOf(pc.name),p_email:PROF.email||em,p_phone:pc.phone||null,p_iata:!!pc.iata,
+      p_license:pc.iata?(pc.lic||null):null,p_category:pc.iata?(pc.cat||null):null,p_registry_path:null});
+    localStorage.removeItem('wijha_pending_co'); await loadProfile(); await loadCatalogue();
+    toast(L==='ar'?'اكتمل تسجيل الشركة — أرفق السجل التجاري من لوحة الشركة (بيانات الشركة)':'Company registered — attach the commercial registry from the company console (company details)'); } }
+ catch(e){ toast(e.message); }
+}
 async function doLoginLive(eid,pid,errId){
- try{ await signIn(v(eid),v(pid)); if(!PROF) throw new Error(L==='ar'?'لا يوجد ملف شخصي — شغّل 04-admin-auth-chat.sql':'No profile row — run 04-admin-auth-chat.sql');
+ try{ await signIn(v(eid),v(pid)); if(!PROF) throw new Error(L==='ar'?'تعذّر تحميل ملفك الشخصي، حاول مرة أخرى.':'Could not load your profile, please try again.');
+  /* staff accounts belong in the console, not on the public site (audit F19) */
+  if(isAdminRole(PROF.role)||PROF.role==='wijha_scout'){ location.href='./admin.html'; return; }
+  await finishPending();
   ME={name:PROF.name||PROF.email}; localStorage.setItem('wijha_me',JSON.stringify(ME));
   if(isCoRole(PROF.role)){ CO={id:PROF.company_id,name:coName(PROF.company_id),emp:PROF.name||PROF.email,role:PROF.role,lic:co(PROF.company_id)?.lic||'',verified:!!co(PROF.company_id)?.verified}; localStorage.setItem('wijha_co',JSON.stringify(CO)); }
   syncNav(); startPoll(); go(isCoRole(PROF.role)?'#/company':'#/account');
@@ -2334,9 +2605,9 @@ account=async function(){
     <div class="kv"><span>${L==='ar'?'الجنسية':'Nationality'}</span><b>${esc(cName(PROF?.nationality,L))}</b></div>
     <div class="kv"><span>${L==='ar'?'تأشيرات سارية':'Current visas'}</span><b>${(PROF?.travel_visas||[]).length?(PROF.travel_visas).map(v=>`<span class="tag sm">${esc(cName(v.country,L))} · ${esc(v.expiry)}</span>`).join(' '):(L==='ar'?'لا يوجد':'None')}</b></div>
     <div class="kv"><span>${t('f_interests')}</span><b>${(PROF?.interests||[]).map(i=>`<span class="tag sm">${esc(CATS[i]?(L==='ar'?CATS[i].ar:CATS[i].en):i)}</span>`).join(' ')||'—'}</b></div>
-    <p class="note">${L==='ar'?'تعديل هذه البيانات يتم عبر الإدارة أو من صفحة الحساب لاحقاً.':'Edits to these details are made by the admin, or from this page later.'}</p></div>
+    <p class="note">${L==='ar'?'بياناتك محفوظة في حسابك وتُستخدم لترشيح رحلات تناسبك.':'Your details are stored in your account and used to suggest suitable trips.'}</p></div>
    <div class="panel"><h3>${t('acc_chats')} <span class="pillnum">${MYTHREADS.reduce((a,x)=>a+(x.client_unread||0),0)}</span></h3>
-    ${MYTHREADS.map(th=>{const x=trip(th.offer_id);return `<a class="rowitem" href="#/chat/${th.id}"><div><b>${esc(coName(th.company_id))}</b><small>${x?esc(tripName(x,L)):'—'}</small><small class="dim">${th.last_message_from==='client'?(L==='ar'?'بانتظار رد الشركة':'Awaiting company reply'):(L==='ar'?'ردّت الشركة':'Company replied')} · ${(th.last_message_at||'').replace('T',' ').slice(0,16)}</small></div>${th.client_unread?`<span class="pillnum">${th.client_unread}</span>`:''}</a>`}).join('')||`<p class="lead">${L==='ar'?'لا محادثات بعد — أرسل استفساراً من أي رحلة.':'No chats yet — send an enquiry from any trip.'}</p>`}</div>
+    ${MYTHREADS.map(th=>{const x=trip(th.offer_id);return `<a class="rowitem" href="#/chat/${th.id}"><div><b>${esc(coName(th.company_id))}</b><small>${x?esc(tripName(x,L)):'—'}</small><small class="dim">${th.last_message_from==='client'?(L==='ar'?'بانتظار رد الشركة':'Awaiting company reply'):(L==='ar'?'ردّت الشركة':'Company replied')} · ${(th.last_message_at||'').replace('T',' ').slice(0,16)}</small></div>${th.client_unread?`<span class="pillnum">${th.client_unread}</span>`:''}</a>`}).join('')||(LOADERR?threadsErr():`<p class="lead">${L==='ar'?'لا محادثات بعد — أرسل استفساراً من أي رحلة.':'No chats yet — send an enquiry from any trip.'}</p>`)}</div>
    <div class="panel"><h3>${t('acc_enq')} <span class="pillnum">${MYTHREADS.length}</span></h3>
     ${MYTHREADS.map(th=>{const x=trip(th.offer_id);return x?`<a class="rowitem" href="#/trip/${x.id}"><div><b>${esc(tripName(x,L))}</b><small>${esc(coName(th.company_id))}</small></div><span class="tag ${th.status==='open'?'ok':''}">${th.status}</span></a>`:''}).join('')||`<p class="lead">—</p>`}</div>
   </div>
@@ -2365,17 +2636,23 @@ signupCo=function(){
   <p class="note">${L==='ar'?'PDF أو صورة حتى ١٠ ميجابايت. يُحفظ في مخزن خاص ولا يظهر للعملاء.':'PDF or image up to 10 MB. Stored privately, never shown to travellers.'}</p>
   ${inp('oPass',L==='ar'?'كلمة مرور الحساب':'Account password','password','••••••••')}
   <div class="acts"><button class="btn btn-primary" onclick="doCoSignupLive()">${t('create')}</button></div>${errBox('oErr')}
-  <p class="note">${L==='ar'?'تُراجع وجهة الطلب وتظهر رحلاتك بعد الاعتماد. ستصلك النتيجة على بريدك.':'Wijha reviews your application; your trips go live once approved. You will be notified by email.'}</p>
+  <p class="note">${L==='ar'?'تُراجع وجهة الطلب وتظهر رحلاتك بعد الاعتماد. تجد حالة الطلب في لوحة الشركة عند تسجيل الدخول.':'Wijha reviews your application; your trips go live once approved. You will see the status on your company dashboard when you sign in.'}</p>
   <div class="sec" style="border-top:1px solid var(--line);margin-top:22px;padding-top:18px"><h3>${t('haveacc')}</h3><div class="form2">${inp('lEmail',t('f_email'),'email')}${inp('lPass',t('f_pass'),'password')}</div><div class="acts"><button class="btn btn-ghost" onclick="doLoginLive('lEmail','lPass','lErr')">${L==='ar'?'دخول':'Sign in'}</button></div>${errBox('lErr')}</div>
  </div></div>`;
 };
+function checkRegistry(file){
+ if(!file) return;
+ if(file.size>10*1024*1024) throw new Error(L==='ar'?'الملف أكبر من ١٠ ميجابايت':'File is larger than 10 MB');
+ if(!/^(application\/pdf|image\/)/.test(file.type||'')) throw new Error(L==='ar'?'PDF أو صورة فقط':'PDF or image only');
+}
 async function uploadRegistry(file){
  if(!file) return null;
- const base=(localStorage.getItem('wijha_url')||'').replace(/\/$/,'');
+ checkRegistry(file);
+ const base=(SBU()).replace(/\/$/,'');
  const ext=((file.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5))||'bin';
  const path=`${AU.user.id}/registry-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
  const r=await fetch(base+'/storage/v1/object/company-docs/'+path,{method:'POST',
-   headers:{apikey:localStorage.getItem('wijha_key')||'',Authorization:'Bearer '+AU.access_token,'Content-Type':file.type||'application/octet-stream'},body:file});
+   headers:{apikey:SBK(),Authorization:'Bearer '+AU.access_token,'Content-Type':file.type||'application/octet-stream'},body:file});
  if(!r.ok) throw new Error((L==='ar'?'رفع السجل التجاري فشل: ':'Registry upload failed: ')+(await r.text()).slice(0,140));
  return path;
 }
@@ -2383,12 +2660,14 @@ async function doCoSignupLive(){
  const email=v('oEmail'),pass=v('oPass'),name=v('oName');
  if(!email||!pass||!name){showErr('oErr',L==='ar'?'اسم الشركة والبريد وكلمة المرور مطلوبة.':'Company name, email and password are required.');return}
  try{
-  const r=await signUp(email,pass,{name});
-  if(!r.session){ document.getElementById('oErr').innerHTML=`<div class="note-box">${L==='ar'?'أكّد بريدك ثم سجّل الدخول لإكمال التسجيل.':'Confirm your email, then sign in to finish registering.'}</div>`; return; }
-  let doc=null; const f=document.getElementById('oDoc')?.files?.[0];
-  if(f) doc=await uploadRegistry(f);
+  const f=document.getElementById('oDoc')?.files?.[0]; checkRegistry(f);   /* validate before the account exists */
   const iata=document.getElementById('oIata')?.value==='yes';
-  const slug=name.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF]+/g,'-').replace(/^-|-$/g,'')||('co-'+Date.now());
+  const r=await signUp(email,pass,{name});
+  if(!r.session){
+    try{ localStorage.setItem('wijha_pending_co',JSON.stringify({email:email.toLowerCase(),name,phone:v('oPhone'),iata,lic:v('oLic'),cat:document.getElementById('oCat')?.value||''})); }catch(e){}
+    document.getElementById('oErr').innerHTML=`<div class="note-box">${L==='ar'?'أكّد بريدك ثم سجّل الدخول — يكتمل تسجيل الشركة تلقائياً عند أول دخول.':'Confirm your email, then sign in — the company registration completes automatically on your first sign-in.'}</div>`; return; }
+  let doc=null; if(f) doc=await uploadRegistry(f);
+  const slug=slugOf(name);
   /* the server creates the company as "pending" and links this user; role/status can't be chosen from the browser */
   const cid=await apost('rpc/wijha_register_company',{p_name:name,p_slug:slug,p_email:email,p_phone:v('oPhone')||null,p_iata:iata,
     p_license:iata?(v('oLic')||null):null,p_category:iata?(document.getElementById('oCat')?.value||null):null,p_registry_path:doc});
@@ -2400,20 +2679,23 @@ async function doCoSignupLive(){
 const _dash=dash;
 dash=async function(){
  if(!API) return _dash();
- if(!authed()||!PROF||!isCoRole(PROF.role)){go('#/company/signup');return}
+ if(authed()&&!PROF) await loadProfile();   /* a reload on #/company must not bounce to signup before the profile arrives */
+ if(authed()&&PROF&&(isAdminRole(PROF.role)||PROF.role==='wijha_scout')){ location.href='./admin.html'; return; }
+ if(!authed()||!PROF||!isCoRole(PROF.role)||!PROF.company_id){go('#/company/signup');return}
  const cid=PROF.company_id; const c=co(cid)||{}; await loadThreads();
+ let rev=null; try{ rev=(await aget('companies?select=wijha_review,wijha_review_note&id=eq.'+cid))[0]||null; }catch(e){}
  const mine=TRIPS.filter(x=>x.co===cid); let imports=[]; try{imports=await aget('wijha_imports?select=*&company_id=eq.'+cid+'&order=created_at.desc')}catch(e){}
  document.getElementById('app').innerHTML=`<div class="wrap">
-  <div class="head"><div class="crumbs"><span class="tag">🏢 ${esc(c.ar||CO?.name||'')}</span>${c.verified?`<span class="vf-pill">✓ ${t('verified')}${c.lic?' · '+esc(c.lic):''}</span>`:`<span class="tag warn">${L==='ar'?'الطلب قيد المراجعة — رحلاتك تظهر بعد الاعتماد':'Under review — your trips go live once approved'}</span>`}<span class="tag">${esc(PROF.name||PROF.email)}</span><button class="tag" onclick="signOutAll()">${t('signout')}</button></div><h1>${t('dash')}</h1></div>
+  <div class="head"><div class="crumbs"><span class="tag">🏢 ${esc(c.ar||CO?.name||'')}</span>${c.verified?`<span class="vf-pill">✓ ${t('verified')}${c.lic?' · '+esc(c.lic):''}</span>`:`<span class="tag warn">${rev?.wijha_review==='rejected'?(L==='ar'?'الطلب مرفوض':'Application rejected'):(L==='ar'?'الطلب قيد المراجعة — رحلاتك تظهر بعد الاعتماد':'Under review — your trips go live once approved')}</span>${rev?.wijha_review_note?`<span class="tag">${esc(rev.wijha_review_note)}</span>`:''}`}<span class="tag">${esc(PROF.name||PROF.email)}</span><button class="tag" onclick="signOutAll()">${t('signout')}</button></div><h1>${t('dash')}</h1></div>
   <div class="kpis"><div class="kpi"><b>${mine.length}</b><small>${L==='ar'?'رحلة منشورة':'live trips'}</small></div><div class="kpi"><b>${MYTHREADS.length}</b><small>${L==='ar'?'محادثة':'conversations'}</small></div><div class="kpi"><b>${MYTHREADS.reduce((a,x)=>a+(x.company_unread||0),0)}</b><small>${L==='ar'?'بانتظار ردّك':'awaiting your reply'}</small></div><div class="kpi"><b>${imports.filter(i=>i.status!=='imported').length}</b><small>${L==='ar'?'رابط قيد الاستيراد':'URLs importing'}</small></div></div>
   <div class="acctgrid">
    <div class="panel"><h3>${L==='ar'?'أضف رحلة من رابط':'Add a trip from a URL'}</h3><p class="lead" style="font-size:13px">${L==='ar'?'الصق رابط صفحة الرحلة على موقعك أو النشرة. تُستخرج البيانات وتُراجع ثم تُنشر باسمك.':'Paste the trip page or brochure link. We extract the data, review it, and publish under your name.'}</p>
     <input id="impUrl" placeholder="https://…" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:14px"><input id="impNote" placeholder="${L==='ar'?'ملاحظة (اختياري)':'Note (optional)'}" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:14px">
     <button class="btn btn-primary" onclick="submitImport('${cid}')">${L==='ar'?'إرسال الرابط':'Submit URL'}</button><div id="impErr"></div>
-    <div style="margin-top:14px">${imports.map(i=>`<div class="rowitem"><div><b class="mono" style="font-size:11px">${esc(i.url.slice(0,48))}</b><small>${(i.created_at||'').slice(0,10)}</small></div><span class="tag ${i.status==='imported'?'ok':i.status==='failed'?'':'warn'}">${esc(i.status)}</span></div>`).join('')}</div>
+    <div style="margin-top:14px">${imports.map(i=>`<div class="rowitem"><div><b class="mono" style="font-size:11px">${esc(String(i.url||i.file_path||i.kind||'').slice(0,48))}</b><small>${(i.created_at||'').slice(0,10)}</small></div><span class="tag ${i.status==='imported'?'ok':i.status==='failed'?'':'warn'}">${esc(i.status)}</span></div>`).join('')}</div>
     <p class="note" style="margin-top:12px"><a href="./admin.html" target="_blank" rel="noopener" style="text-decoration:underline">${L==='ar'?'تعديل رحلاتك يدوياً (لوحة الشركة) ↗':'Edit your trips manually (company console) ↗'}</a></p></div>
    <div class="panel"><h3>${t('dash_inbox')} <span class="pillnum">${MYTHREADS.reduce((a,x)=>a+(x.company_unread||0),0)}</span></h3>
-    ${MYTHREADS.map(th=>{const x=trip(th.offer_id);return `<a class="rowitem" href="#/chat/${th.id}"><div><b>${esc(L==='ar'?'عميل':'Client')}</b><small>${x?esc(tripName(x,L)):'—'}</small><small class="dim">${(th.last_message_at||'').replace('T',' ').slice(0,16)}</small></div>${th.company_unread?`<span class="pillnum">${th.company_unread}</span>`:`<span class="tag">✓</span>`}</a>`}).join('')||`<p class="lead">${L==='ar'?'لا استفسارات بعد.':'No enquiries yet.'}</p>`}</div>
+    ${MYTHREADS.map(th=>{const x=trip(th.offer_id);return `<a class="rowitem" href="#/chat/${th.id}"><div><b>${esc(L==='ar'?'عميل':'Client')}</b><small>${x?esc(tripName(x,L)):'—'}</small><small class="dim">${(th.last_message_at||'').replace('T',' ').slice(0,16)}</small></div>${th.company_unread?`<span class="pillnum">${th.company_unread}</span>`:`<span class="tag">✓</span>`}</a>`}).join('')||(LOADERR?threadsErr():`<p class="lead">${L==='ar'?'لا استفسارات بعد.':'No enquiries yet.'}</p>`)}</div>
    <div class="panel"><h3>${t('dash_trips')} <span class="pillnum">${mine.length}</span></h3>${mine.slice(0,12).map(x=>`<a class="rowitem" href="#/trip/${x.id}"><div><b>${esc(tripName(x,L))}</b><small>${nf(egpOf(x,priceRows(x)[0]?.[0]))} ج.م · ${x.taken||0}/${x.seats||'—'}</small></div><span class="tag ${x.detail==='full'?'ok':'warn'}">${x.detail==='full'?(L==='ar'?'مكتملة':'Complete'):(L==='ar'?'ناقصة':'Pending')}</span></a>`).join('')||`<p class="lead">${L==='ar'?'لم تُنشر رحلات بعد.':'No trips published yet.'}</p>`}
     <a href="./emails.html" target="_blank" rel="noopener" class="note" style="display:block;margin-top:10px;text-decoration:underline">✉ ${t('dash_emails')} →</a></div>
   </div></div>`;
@@ -2422,7 +2704,9 @@ async function submitImport(cid){ const url=v('impUrl'); if(!/^https?:\/\//.test
  try{ await apost('wijha_imports',{company_id:cid,url,note:v('impNote')||null,kind:'offer',submitted_by:AU.user.id},'return=minimal'); toast(L==='ar'?'تم — سيظهر في طابور الاستيراد':'Submitted — queued for import'); dash(); }catch(e){showErr('impErr',e.message)} }
 
 /* ══════════════ REAL CHAT ══════════════ */
-async function loadThreads(){ if(!authed())return MYTHREADS=[]; try{ MYTHREADS=await aget('wijha_threads?select=*&order=last_message_at.desc'); }catch(e){MYTHREADS=[]} return MYTHREADS; }
+let LOADERR=null;
+async function loadThreads(){ if(!authed())return MYTHREADS=[]; try{ MYTHREADS=await aget('wijha_threads?select=*&order=last_message_at.desc'); LOADERR=null; }catch(e){ MYTHREADS=[]; LOADERR=e.message||'error'; console.warn('[wijha] threads',LOADERR); } return MYTHREADS; }
+const threadsErr=()=>`<div class="note-box" style="background:var(--red-soft);color:var(--red)">${L==='ar'?'تعذّر تحميل المحادثات.':'Could not load your chats.'} <button class="btn btn-ghost" onclick="LOADERR=null;route()">${L==='ar'?'إعادة المحاولة':'Retry'}</button></div>`;
 const _sendEnqDemo=sendEnq;
 sendEnq=async function(){
  if(!API) return _sendEnqDemo();
@@ -2431,7 +2715,9 @@ sendEnq=async function(){
  try{
   let th=(await aget(`wijha_threads?select=id&client_id=eq.${AU.user.id}&company_id=eq.${x.co}&offer_id=eq.${x.id}`))[0];
   if(!th){ th=(await apost('wijha_threads',{client_id:AU.user.id,company_id:x.co,offer_id:x.id}))[0]; }
-  const body=(L==='ar'?`استفسار عن: ${tripName(x,'ar')} — ${mixLabel()} — الإجمالي ${nf(mixTotal(x))} ج.م`:`Enquiry: ${tripName(x,'en')} — ${mixLabel()} — total ${nf(mixTotal(x))} EGP`);
+  const priced=priceRows(x).length>0&&paxOf()>0;
+  const body=priced?(L==='ar'?`استفسار عن: ${tripName(x,'ar')} — ${mixLabel()} — الإجمالي ${nf(mixTotal(x))} ج.م`:`Enquiry: ${tripName(x,'en')} — ${mixLabel()} — total ${nf(mixTotal(x))} EGP`)
+    :(L==='ar'?`استفسار عن: ${tripName(x,'ar')} — أرجو إرسال السعر والتفاصيل`:`Enquiry: ${tripName(x,'en')} — please send the price and details`);
   await apost('wijha_messages',{thread_id:th.id,sender_id:AU.user.id,sender_role:'client',body},'return=minimal');
   API.insert('offer_events',{offer_id:x.id,company_id:x.co,kind:'enquiry',session_id:sid()});
   toast(L==='ar'?'تم إرسال الاستفسار — ستصلك الردود هنا':'Enquiry sent — replies arrive here'); go('#/chat/'+th.id);
@@ -2444,12 +2730,15 @@ chatPage=async function(id){
  if(!API) return _chatPage(id);
  if(!authed()){go('#/signup');return}
  if(String(id).startsWith('new-')){ const x=trip(id.slice(4)); if(x){CUR=x;B={room:priceRows(x)[0]?.[0],pax:1};return sendEnq();} go('#/account');return; }
- await loadThreads(); const th=MYTHREADS.find(x=>x.id===id); if(!th){go(isCoRole(PROF?.role)?'#/company':'#/account');return}
- let msgs=[]; try{ msgs=await aget('wijha_messages?select=*&thread_id=eq.'+id+'&order=created_at'); await arpc('wijha_mark_read',{p_thread:id}); }catch(e){}
+ if(!PROF) await loadProfile();
+ await loadThreads(); const th=MYTHREADS.find(x=>x.id===id);
+ if(!th){ if(LOADERR){ document.getElementById('app').innerHTML=`<div class="wrap narrow">${threadsErr()}</div>`; return; } go(isCoRole(PROF?.role)?'#/company':'#/account'); return; }
+ let msgs=[], msgErr=null; try{ msgs=await aget('wijha_messages?select=*&thread_id=eq.'+id+'&order=created_at'); }catch(e){ msgErr=e.message||'error'; }
+ if(!msgErr){ try{ await arpc('wijha_mark_read',{p_thread:id}); }catch(e){ console.warn('[wijha] mark_read',e.message); } }
  LASTSEEN[id]=msgs.length; const x=trip(th.offer_id)||{destAr:'—',dest:'—',id:''}; const mine=isCoRole(PROF?.role)?'company':'client';
  document.getElementById('app').innerHTML=`<div class="wrap narrow"><a class="back" href="javascript:history.back()">← ${t('back')}</a>
   <div class="chatwrap"><div class="chead"><div class="lg">${esc((coName(th.company_id)||'?').slice(0,1))}</div><div><b>${esc(mine==='client'?coName(th.company_id):(L==='ar'?'عميل':'Client'))}</b><small>${x.id?esc(tripName(x,L)):''}</small></div>${x.id?`<a class="tag" href="#/trip/${x.id}">${esc(L==='ar'?x.destAr:x.dest)} →</a>`:''}</div>
-   <div class="cbody" id="cbody">${msgs.map(m=>msgHtmlLive(m,mine)).join('')||`<p class="note" style="text-align:center">${L==='ar'?'ابدأ المحادثة':'Start the conversation'}</p>`}</div>
+   <div class="cbody" id="cbody">${msgErr?`<div class="note-box" style="background:var(--red-soft);color:var(--red)">${L==='ar'?'تعذّر تحميل الرسائل.':'Could not load the messages.'} <button class="btn btn-ghost" onclick="chatPage('${id}')">${L==='ar'?'إعادة المحاولة':'Retry'}</button></div>`:(msgs.map(m=>msgHtmlLive(m,mine)).join('')||`<p class="note" style="text-align:center">${L==='ar'?'ابدأ المحادثة':'Start the conversation'}</p>`)}</div>
    <div class="cfoot"><input id="cin" placeholder="${t('typemsg')}" onkeydown="if(event.key==='Enter')sendMsgLive('${id}')"><button class="btn btn-primary" onclick="sendMsgLive('${id}')">${t('send')}</button></div>
    <p class="note">${L==='ar'?'الأرقام والبريد تُحجب تلقائياً. الردود تصلك بإشعار أعلى الصفحة وفي صفحة المحادثات.':'Phone numbers and emails are blocked automatically. Replies appear as a notification at the top and in your chats page.'}</p></div>
   <div class="chatlist">${MYTHREADS.map(o=>{const ox=trip(o.offer_id);return `<a class="rowitem ${o.id===id?'on':''}" href="#/chat/${o.id}"><div><b>${esc(mine==='client'?coName(o.company_id):(L==='ar'?'عميل':'Client'))}</b><small>${ox?esc(tripName(ox,L)):'—'}</small></div>${(mine==='client'?o.client_unread:o.company_unread)?`<span class="pillnum">${mine==='client'?o.client_unread:o.company_unread}</span>`:''}</a>`}).join('')}</div></div>`;
@@ -2493,8 +2782,8 @@ terms:{ar:['الشروط والأحكام',[
  ['العلاقة التعاقدية','عقد الرحلة يكون بينك وبين الشركة المنظِّمة مباشرة وفق شروطها المعلنة في العرض. وجهة ليست طرفاً في هذا العقد ولا تتقاضى أي نسبة من سعر الرحلة، ولا تستلم أموال الحجز.'],
  ['دقة العروض','الأسعار والبرامج والتواريخ كما نشرتها الشركات. قد تعرض وجهة عروضاً جمعتها من المواد المنشورة علناً للشركة، وتُعلَّم بوضوح بعبارة "جمعته وجهة" إلى أن تتبناها الشركة. تأكّد دائماً من التفاصيل ومن توفر المقاعد مع الشركة قبل الدفع.'],
  ['حسابك','أنت مسؤول عن صحة بياناتك وعن سرية كلمة المرور. يجوز لنا إيقاف أي حساب يسيء استخدام المنصة أو يرسل محتوى مخالفاً أو مضللاً.'],
- ['المراسلات','المحادثة بين العميل والشركة عبر المنصة قد تتضمن أرقام الهواتف عمداً لتسهيل التواصل. لا تُرسل عبر المحادثة صور جواز السفر أو بيانات البطاقات المصرفية.'],
- ['حدود المسؤولية','لا تتحمل وجهة مسؤولية التزام الشركة بتنفيذ الرحلة أو الاسترداد، لكنها تتيح وسيلة لتقديم شكوى وتمريرها للشركة ومتابعتها، وللشركات المرخّصة صفة التحقق المعروضة على صفحتها.'],
+ ['المراسلات','تُحجب أرقام الهواتف والبريد الإلكتروني تلقائياً داخل المحادثة بين العميل والشركة. لا تُرسل عبر المحادثة صور جواز السفر أو بيانات البطاقات المصرفية.'],
+ ['حدود المسؤولية','لا تتحمل وجهة مسؤولية التزام الشركة بتنفيذ الرحلة أو الاسترداد؛ تواصل مع الشركة أولاً عبر المحادثة في صفحة عرضها. وصفة التحقق المعروضة على صفحة الشركة تعكس بيانات الترخيص المتوفرة لدينا.'],
  ['القانون واختصاص القضاء','تخضع هذه الشروط لقوانين جمهورية مصر العربية، وتختص محاكم القاهرة بالنظر في أي نزاع، مع عدم الإخلال بحقوقك كمستهلك.'],
  ['التعديل','قد نحدّث هذه الشروط، وتاريخ آخر تحديث مذكور أعلاه. استمرار استخدامك للموقع بعد التحديث يعني قبوله.']]],
  en:['Terms of use',[
@@ -2502,24 +2791,24 @@ terms:{ar:['الشروط والأحكام',[
  ['The contract','Your trip contract is directly between you and the organising company, on the terms shown in the offer. Wijha is not a party to it, takes no percentage of the trip price and does not receive booking money.'],
  ['Accuracy of offers','Prices, programmes and dates are as published by the companies. Wijha may list offers it collected from a company\'s public material; these are clearly labelled "collected by Wijha" until the company adopts them. Always confirm details and availability with the company before paying.'],
  ['Your account','You are responsible for the accuracy of your details and the secrecy of your password. We may suspend accounts that abuse the platform or post misleading or unlawful content.'],
- ['Messages','Chat between a client and a company may include phone numbers on purpose, to make contact easy. Do not send passport images or bank-card details through chat.'],
- ['Limits of responsibility','Wijha is not responsible for a company delivering the trip or issuing refunds, but offers a way to file a complaint, pass it to the company and follow it up. The verification badge shown on a company page reflects the licence information we hold.'],
+ ['Messages','Phone numbers and emails are blocked automatically in the chat between a client and a company. Do not send passport images or bank-card details through chat.'],
+ ['Limits of responsibility','Wijha is not responsible for a company delivering the trip or issuing refunds; raise any problem with the company first, through the chat on its offer page. The verification badge shown on a company page reflects the licence information we hold.'],
  ['Governing law','These terms are governed by the laws of the Arab Republic of Egypt and the Cairo courts have jurisdiction, without affecting your rights as a consumer.'],
  ['Changes','We may update these terms; the date of the latest update is shown above. Continuing to use the site after an update means you accept it.']]]},
 privacy:{ar:['سياسة الخصوصية',[
  ['ما الذي نجمعه','بيانات الحساب (الاسم، البريد الإلكتروني، رقم الهاتف)، وما تحفظه أو تقارنه من رحلات، ورسائلك للشركات، وإحصاءات استخدام مجهولة الهوية إذا وافقت عليها.'],
  ['من يرى بياناتك','بيانات تسجيلك لا يطّلع عليها موظفو وجهة. عندما ترسل استفساراً أو رسالة لشركة، تصل بياناتك اللازمة للتواصل (الاسم ورقم الهاتف ومحتوى الرسالة) إلى تلك الشركة وحدها. لا نبيع بياناتك ولا نشاركها لأغراض إعلانية.'],
  ['المستندات','إن طلبت منك شركة مستندات للسفر (جواز، هوية، كشف حساب…) فستُرفع عبر رابط خاص بعيد عن الموقع الرئيسي، وتُخزَّن مشفّرة في مساحة منفصلة، ولا يراها إلا من تتولى حجزك، وتُحذف تلقائياً بعد ٣٠ يوماً من انتهاء الرحلة. كل فتح أو تنزيل لمستند يُسجَّل.'],
- ['مدة الاحتفاظ','نحتفظ ببيانات الحساب ما دام الحساب قائماً، ويمكنك طلب حذفه. المحادثات والاستفسارات تُحفظ للمدة اللازمة لمتابعة الحجز والشكاوى.'],
- ['حقوقك','وفق قانون حماية البيانات الشخصية المصري رقم ١٥١ لسنة ٢٠٢٠ يحق لك الاطلاع على بياناتك وتصحيحها وطلب حذفها أو الاعتراض على معالجتها، بمراسلتنا من حسابك.'],
+ ['مدة الاحتفاظ','نحتفظ ببيانات الحساب ما دام الحساب قائماً، ويحق لك طلب حذفه (انظر «حقوقك»). المحادثات والاستفسارات تُحفظ للمدة اللازمة لمتابعة الحجز والشكاوى.'],
+ ['حقوقك','وفق قانون حماية البيانات الشخصية المصري رقم ١٥١ لسنة ٢٠٢٠ يحق لك الاطلاع على بياناتك وتصحيحها وطلب حذفها أو الاعتراض على معالجتها. قناة تقديم هذه الطلبات قيد الإعداد وستُعلَن في هذه الصفحة.'],
  ['الأمان','نستخدم اتصالاً مشفراً، وقواعد صلاحيات صارمة على قاعدة البيانات، وفصلاً بين المستندات وبقية بيانات الموقع. لا يوجد نظام آمن بنسبة ١٠٠٪؛ نبلغك ونبلغ الجهات المختصة عند أي حادث يمس بياناتك وفق القانون.'],
  ['مزودو الخدمة','نستخدم مزودي بنية تحتية موثوقين لاستضافة الموقع وقاعدة البيانات، وأدوات حماية من الإساءة (كابتشا). قد تُعالج أدوات ذكاء اصطناعي محتوى العروض التي ترفعها الشركات، ولا تُرسل إليها مستندات العملاء الشخصية.']]],
  en:['Privacy policy',[
  ['What we collect','Account details (name, email, phone), the trips you save or compare, your messages to companies, and anonymous usage statistics if you accept them.'],
  ['Who sees your data','Wijha staff do not see your sign-up details. When you send an enquiry or message to a company, the details needed to reach you (name, phone, message) go to that company only. We do not sell your data or share it for advertising.'],
  ['Documents','If a company asks you for travel documents (passport, ID, bank statement…), you upload them through a private link on a separate site, stored in a separate vault, visible only to the person handling your booking, and deleted automatically 30 days after the trip ends. Every opening or download is logged.'],
- ['Retention','We keep account data while the account exists, and you can ask for deletion. Chats and enquiries are kept as long as needed to follow up bookings and complaints.'],
- ['Your rights','Under Egypt\'s Personal Data Protection Law No. 151 of 2020 you may access, correct, request deletion of, or object to processing of your data, by contacting us from your account.'],
+ ['Retention','We keep account data while the account exists, and you have the right to ask for deletion (see "Your rights"). Chats and enquiries are kept as long as needed to follow up bookings and complaints.'],
+ ['Your rights','Under Egypt\'s Personal Data Protection Law No. 151 of 2020 you may access, correct, request deletion of, or object to processing of your data. The channel for submitting these requests is being set up and will be announced on this page.'],
  ['Security','We use encrypted connections, strict database access rules, and keep documents apart from the rest of the site data. No system is 100% secure; we notify you and the authorities of any incident affecting your data as the law requires.'],
  ['Service providers','We use trusted infrastructure providers for hosting and the database, and abuse-protection tools (captcha). AI tools may process the offer material that companies upload; clients\' personal documents are never sent to them.']]]},
 cookies:{ar:['ملفات تعريف الارتباط والتخزين',[
@@ -2533,11 +2822,11 @@ cookies:{ar:['ملفات تعريف الارتباط والتخزين',[
 refund:{ar:['الاسترداد والإلغاء',[
  ['من يحدد الشروط','الاسترداد والإلغاء تحكمهما شروط الشركة المنظِّمة المعلنة في العرض (قسم "الإلغاء والاسترداد") وعقدك معها، لأن الدفع يتم لها مباشرة.'],
  ['قبل أن تدفع','اقرأ قسم الإلغاء في العرض، واطلب من الشركة توضيح أي نقطة كتابةً عبر المحادثة، واحتفظ بإيصال الدفع وعقد الحجز.'],
- ['إن حدثت مشكلة','تواصل مع الشركة أولاً. إن لم تصل لحل، قدّم شكوى من حسابك وسنمررها إلى الشركة ونتابعها معك.']]],
+ ['إن حدثت مشكلة','تواصل مع الشركة أولاً. إن لم تصلا إلى حل فاحتفظ بالإيصال والعقد والمراسلات، ويمكنك اللجوء إلى جهاز حماية المستهلك.']]],
  en:['Cancellation & refunds',[
  ['Who sets the terms','Cancellation and refunds follow the organising company\'s terms shown in the offer ("Cancellation & refund" section) and your contract with it, because payment is made directly to the company.'],
  ['Before you pay','Read the cancellation section of the offer, ask the company in writing via chat to clarify anything unclear, and keep your payment receipt and booking contract.'],
- ['If something goes wrong','Contact the company first. If you cannot agree, file a complaint from your account and we will pass it to the company and follow it up with you.']]]}
+ ['If something goes wrong','Contact the company first. If you cannot agree, keep your receipt, contract and messages; you may also turn to the Consumer Protection Agency.']]]}
 };
 function legalPage(k){
   const pg=LEGAL[k]||LEGAL.terms, d=pg[L]||pg.ar, app=document.getElementById('app');

@@ -84,7 +84,7 @@ tr.sel{background:var(--amber-soft)}
 .tabs{display:flex;gap:6px;margin-bottom:12px}.tabs button{padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:12.5px;color:var(--muted)}.tabs button.on{background:var(--amber-soft);border-color:var(--amber);color:var(--amber-ink)}
 .chip{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--line);font-size:11px;margin:2px 2px 0 0}
 pre.json{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px;font-size:11px;direction:ltr;text-align:start;overflow:auto;max-height:260px}
-@media(max-width:900px){.shell{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap}.who{margin:0;border:0}.chatgrid{grid-template-columns:1fr;height:auto}}
+@media(max-width:900px){.shell{grid-template-columns:1fr}.side{position:sticky;top:0;z-index:30;height:auto;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;padding:10px;gap:4px;align-items:center}.nav{display:flex;flex-direction:row;gap:4px}.nav a{flex:0 0 auto}.who{margin:0;border:0;flex:0 0 auto}.who{padding:0 6px;white-space:nowrap}.who b,.who .pill,.who>div{display:none}.brand{flex:0 0 auto;margin:0 6px}.chatgrid{grid-template-columns:1fr;height:auto}}
 .drop{display:flex;flex-direction:column;align-items:center;gap:6px;border:2px dashed var(--line,#ddd);border-radius:16px;padding:34px 16px;cursor:pointer;text-align:center;background:#fffdf8}
 .drop.over,.drop:hover{border-color:#e0961d;background:#fff4dd}
 .btn.danger{background:#fdeaea;color:#c23b3b}
@@ -203,27 +203,50 @@ function logout(){S.tok=null;S.me=null;localStorage.removeItem('wijha_admin_tok'
 async function boot(){
  if(!S.url||!S.key||!S.tok){render();return}
  try{ const p=await get('profiles?select=*&id=eq.'+S.tok.user.id); S.me=p[0]||null;
-  if(!S.me||!(isAdminRole(S.me.role)||isCoRole(S.me.role)||isScout(S.me.role))){ render(`<div class="login"><h1>ليس حساب مدير أو شركة</h1><p class="sub">هذا الحساب (${esc(S.tok.user.email)}) دوره <b>${esc(S.me?.role||'—')}</b>. شغّل في SQL:</p><pre class="json">update profiles set role='admin' where email='${esc(S.tok.user.email)}';</pre><button class="btn" onclick="logout()">خروج</button></div>`); return; }
+  if(!S.me||!(isAdminRole(S.me.role)||isCoRole(S.me.role)||isScout(S.me.role))){ render(`<div class="login"><h1>ليس حساب مدير أو شركة</h1><p class="sub">هذا الحساب (${esc(S.tok.user.email)}) دوره <b>${esc(S.me?.role||'—')}</b>. اطلب من مدير وجهة منحك الصلاحية المناسبة.</p><button class="btn" onclick="logout()">خروج</button></div>`); return; }
   await loadAll(); render();
  }catch(e){ toast(e.message,true); render(); }
 }
+const LERR=[];
+/* a failed load is reported, never turned into a silent empty list (audit F2) */
+const safe=(name,path,adminOnly)=>get(path).catch(e=>{ console.warn('[admin] load',name,e.message); if(!adminOnly||isAdminRole(S.me?.role)) LERR.push(name+': '+String(e.message||'').slice(0,90)); return []; });
 async function loadAll(){
+ LERR.length=0;
  const R=await Promise.all([
   get('admin_offers?select=*&order=updated_at.desc.nullslast').catch(()=>get('offers?select=*&order=updated_at.desc.nullslast')),
   get('companies?select=*&order=name_ar'),
   get('profiles?select=*&order=created_at.desc'),
-  get('wijha_imports?select=*&order=created_at.desc').catch(()=>[]),
-  get('wijha_threads?select=*&order=last_message_at.desc').catch(()=>[]),
-  get('offer_events?select=kind,offer_id,company_id,at&order=at.desc&limit=2000').catch(()=>[]),
-  get('search_terms?select=term,at&order=at.desc&limit=1000').catch(()=>[]),
-  get('wijha_roles?select=*&order=scope,rank').catch(()=>[]),
-  get('wijha_employment?select=*&order=started_on.desc').catch(()=>[]),
-  get('wijha_supplier_items?select=*&order=created_at.desc').catch(()=>[]),
-  get('wijha_emails?select=*&order=created_at.desc&limit=100').catch(()=>[])]);
+  safe('wijha_imports','wijha_imports?select=*&order=created_at.desc'),
+  safe('wijha_threads','wijha_threads?select=*&order=last_message_at.desc'),
+  safe('offer_events','offer_events?select=kind,offer_id,company_id,at&order=at.desc&limit=2000'),
+  safe('search_terms','search_terms?select=term,at&order=at.desc&limit=1000',true),
+  safe('wijha_roles','wijha_roles?select=*&order=scope,rank'),
+  safe('wijha_employment','wijha_employment?select=*&order=started_on.desc'),
+  safe('wijha_supplier_items','wijha_supplier_items?select=*&order=created_at.desc'),
+  safe('wijha_emails','wijha_emails?select=*&order=created_at.desc&limit=100')]);
  const [o,c,p,i,t,ev,st]=R;
  Object.assign(S,{offers:o,companies:c,profiles:p,imports:i,threads:t,events:ev,terms:st,
    roles:R[7]||[],employment:R[8]||[],suppliers:R[9]||[],emails:R[10]||[]});
+ if(LERR.length) toast('تعذّر تحميل: '+LERR.join(' | '),true);
 }
+/* Arabic labels for raw keys shown in the editor (audit F23) */
+const LBL={
+ status:{draft:'مسودة',pending_review:'بانتظار المراجعة',published:'منشور',rejected:'مرفوض',archived:'مؤرشف'},
+ visibility:{public:'عام',link:'برابط فقط',internal:'داخلي'},
+ category:{tours:'رحلة خارجية',hajj:'حج',umrah:'عمرة'},
+ detail:{full:'كامل',outline:'مخطط أولي'},
+ kind:{include:'يشمل',exclude:'لا يشمل',addon:'إضافة اختيارية'},
+ icat:{transfer:'انتقالات',flight:'طيران',sight:'معالم',activity:'أنشطة',meal:'وجبات',hotel:'إقامة',free:'وقت حر',shop:'تسوق',rites:'مناسك',optional:'اختياري',guide:'مرشد',visa:'تأشيرة',tax:'ضرائب',personal:'شخصي'},
+ note:{visa_doc:'مستند تأشيرة',note:'ملاحظة',cancel:'شرط إلغاء',payment:'دفع'}};
+const optList=(vals,cur,map)=>{ const a=vals.map(k=>`<option value="${esc(k)}" ${cur===k?'selected':''}>${esc((map&&map[k])||k)}</option>`);
+ if(cur&&!vals.includes(cur)) a.push(`<option value="${esc(cur)}" selected>${esc((map&&map[cur])||cur)}</option>`); return a.join(''); };
+const coStatusOf=r=>r==='approved'?'approved':r==='rejected'?'rejected':'pending';
+/* companies.status drives public visibility, wijha_review is what the console edits: keep them in step (audit F1).
+   If the database enum has no 'rejected' label the row falls back to 'pending', which is equally hidden from the public. */
+async function writeCo(id,f){
+ const run=x=>id?patch('companies?id=eq.'+id,x):post('companies',x);
+ try{ return await run(f); }
+ catch(e){ if(f.status==='rejected'&&/enum|invalid input value/i.test(e.message||'')) return run({...f,status:'pending'}); throw e; } }
 const co=id=>S.companies.find(c=>c.id===id);
 const coN=id=>co(id)?.name_ar||co(id)?.name_en||'—';
 const egp=o=>{const v=o.price_quad??o.price_double??o.price_triple??o.price_single;return v==null?null:Math.round(v*(FX[o.currency]||1))+Number(o.egp_addon||0)};
@@ -238,7 +261,7 @@ function render(custom){
   <input id="e" type="email" placeholder="admin@wijha.app"><input id="p" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
   <button class="btn pri" onclick="doLogin()">دخول</button> <button class="btn" onclick="S.url='';render()">تغيير المشروع</button><div id="lerr"></div>
   <p class="note">لا يوجد مدير بعد؟ أنشئ المستخدم في Supabase ثم شغّل <span class="mono">update profiles set role='admin' where email='…';</span></p></div>`;return}
- const unread=S.threads.reduce((a,t)=>a+(t.company_unread||0),0), pend=S.companies.filter(c=>!c.etaa_verified||String(c.status).match(/pend|review|new|wait/i)).length, queued=S.imports.filter(i=>['queued','review','fetching'].includes(i.status)).length;
+ const unread=S.threads.reduce((a,t)=>a+(t.company_unread||0),0), pend=S.companies.filter(c=>(c.wijha_review||'pending')==='pending').length, queued=S.imports.filter(i=>['queued','review','fetching'].includes(i.status)).length;
  const isAdmin=isAdminRole(S.me.role);
  /* the menu is built from the signed-in role's permissions, so each role
     genuinely sees a different console rather than the same one greyed out */
@@ -306,18 +329,21 @@ function overview(){
  ${S.offers.slice(0,8).map(o=>`<tr onclick="editOffer('${o.id}')" style="cursor:pointer"><td><b>${esc(o.title_ar)}</b><small>${CATL[o.category]} · ${esc(o.sub_category||'')}</small></td><td>${esc(coN(o.company_id))}</td><td><span class="pill ${o.status===pubStatus?'ok':'warn'}">${esc(o.status)}</span></td><td class="num">${nf(egp(o))}</td><td class="num">${(o.updated_at||o.created_at||'').slice(0,10)}</td></tr>`).join('')}</tbody></table></div>`;
 }
 async function publishAllNonInternal(){
- const n = S.offers.filter(o=>!o.internal_only && o.review_state==='approved').length;
- if(!confirm(`نشر ${n} رحلة (المعتمدة فقط، وغير المعلّمة "استخدام داخلي فقط")؟`))return;
+ const _t=new Date().toISOString().slice(0,10);
+ const n = S.offers.filter(o=>!o.internal_only && o.review_state==='approved' && (!o.expires_on||o.expires_on>=_t)).length;
+ if(!confirm(`نشر ${n} رحلة (المعتمدة فقط، غير الداخلية وغير المنتهية)؟`))return;
  try{
   const pub = S.offers.find(o=>o.status)?.status || 'published';
-  await patch('offers?review_state=eq.approved&internal_only=eq.false', {status:pub, visibility:'public', published_at:new Date().toISOString()});
-  await patch('offers?review_state=eq.approved&internal_only=is.null', {status:pub, visibility:'public', published_at:new Date().toISOString()});
+  const today=new Date().toISOString().slice(0,10), live=`&or=(expires_on.is.null,expires_on.gte.${today})`;
+  await patch('offers?review_state=eq.approved&internal_only=eq.false'+live, {status:pub, visibility:'public', published_at:new Date().toISOString()});
+  await patch('offers?review_state=eq.approved&internal_only=is.null'+live, {status:pub, visibility:'public', published_at:new Date().toISOString()});
   toast('تم نشر الرحلات'); await loadAll(); render();
  }catch(e){toast(e.message,true)}
 }
 async function bulkStatus(cat,status){
- if(!confirm(`تغيير حالة كل عروض "${CATL[cat]}" إلى ${status}؟`))return;
- try{ await patch(`offers?category=eq.${cat}&review_state=eq.approved`,{status,published_at:new Date().toISOString()}); toast('تم'); await loadAll(); render(); }catch(e){toast(e.message,true)}
+ if(!confirm(`تغيير حالة عروض "${CATL[cat]}" المعتمدة وغير الداخلية وغير المنتهية إلى ${status}؟`))return;
+ try{ const _t=new Date().toISOString().slice(0,10);
+  await patch(`offers?category=eq.${cat}&review_state=eq.approved&internal_only=is.false&or=(expires_on.is.null,expires_on.gte.${_t})`,{status,published_at:new Date().toISOString()}); toast('تم'); await loadAll(); render(); }catch(e){toast(e.message,true)}
 }
 
 /* ═══════════ OFFERS ═══════════ */
@@ -355,9 +381,13 @@ async function bulkSel(what){
  const ids=[...S.sel]; if(!ids.length)return;
  if(what==='delete'){ if(!confirm(`حذف ${ids.length} رحلة نهائياً مع كل المراحل والبنود والفنادق؟`))return;
   try{ await del(`offers?id=in.(${ids.join(',')})`); toast('تم الحذف'); S.sel.clear(); await loadAll(); render(); }catch(e){toast(e.message,true)} return; }
- const st=prompt('الحالة الجديدة:', [...new Set(S.offers.map(o=>o.status))].join(' | ')); if(!st)return;
- try{ await patch(`offers?id=in.(${ids.join(',')})`,{status:st.trim()}); toast('تم'); S.sel.clear(); await loadAll(); render(); }catch(e){toast(e.message,true)}
+ const st=await pickStatus(); if(!st)return;
+ try{ await patch(`offers?id=in.(${ids.join(',')})`,{status:st}); toast('تم'); S.sel.clear(); await loadAll(); render(); }catch(e){toast(e.message,true)}
 }
+function pickStatus(){ return new Promise(ok=>{
+ const d=document.createElement('div'); d.className='ov'; d.style.zIndex=120;
+ d.innerHTML=`<div class="md" style="max-width:340px"><div class="hd"><b>الحالة الجديدة</b></div><div class="bd"><select id="pkSt" style="width:100%">${optList(Object.keys(LBL.status),'published',LBL.status)}</select></div><div class="ft"><button class="btn" id="pkNo">إلغاء</button><button class="btn pri" id="pkOk">تطبيق</button></div></div>`;
+ document.body.appendChild(d); d.querySelector('#pkNo').onclick=()=>{d.remove();ok(null)}; d.querySelector('#pkOk').onclick=()=>{const v=d.querySelector('#pkSt').value;d.remove();ok(v)}; }); }
 async function delOffer(id){ const o=S.offers.find(x=>x.id===id); if(!confirm(`حذف "${o.title_ar}" نهائياً؟`))return;
  try{ await del('offers?id=eq.'+id); toast('تم الحذف'); await loadAll(); render(); }
  catch(e){ toast(e.message, true); console.error('delOffer failed for', id, ':', e.message); } }
@@ -365,12 +395,12 @@ async function delOffer(id){ const o=S.offers.find(x=>x.id===id); if(!confirm(`�
 /* ── offer editor: header fields + stages + items + hotels + notes ── */
 const OFFER_FIELDS=[
  ['sec','الأساسيات'],['ref_code','الرقم المرجعي (تلقائي)','text'],['company_id','الشركة','company'],
- ['visibility','الظهور','select',['public','link','internal']],['expires_on','ينتهي العرض في (إلزامي، قبل السفر)','date'],['category','النوع','select',['tours','hajj','umrah']],['sub_category','الفئة الفرعية','text'],['status','الحالة','text'],
+ ['visibility','الظهور','select',Object.entries(LBL.visibility)],['expires_on','ينتهي العرض في (إلزامي، قبل السفر)','date'],['category','النوع','select',Object.entries(LBL.category)],['sub_category','الفئة الفرعية','text'],['status','الحالة','select',Object.entries(LBL.status)],
  ['title_ar','العنوان (عربي)','text','w2'],['title_en','Title (EN)','text','w2'],['dest_ar','الوجهة (عربي)','text'],['dest_en','Destination (EN)','text'],['region_ar','المنطقة','text'],['region_en','Region','text'],
  ['brief_ar','نبذة (عربي)','textarea','w3'],['brief_en','Brief (EN)','textarea','w3'],
  ['sec','التواريخ والمدة'],['dates_text_ar','نص التواريخ (عربي)','text'],['dates_text_en','Dates text (EN)','text'],['starts_on','يبدأ','date'],['ends_on','ينتهي','date'],['days','أيام','number'],['nights','ليالٍ','number'],['season','الموسم','text'],['registration_deadline','آخر موعد للتسجيل','date'],
  ['sec','الأسعار — الأصلية بالعملة المعلنة'],['currency','العملة','select',['EGP','EUR','USD','GBP','SAR']],['price_quad','رباعية','number'],['price_triple','ثلاثية','number'],['price_double','ثنائية','number'],['price_single','فردية','number'],['price_child_bed','طفل بسرير','number'],['price_child_nobed','طفل بدون سرير','number'],['egp_addon','جزء محلي بالجنيه','number'],['deposit','عربون','number'],['hajj','ferry_fee','رسوم المعدية (الحج البري)','number'],['price_valid_until','السعر ساري حتى','date'],
- ['sec','التفاصيل'],['flights_included','الطيران مشمول','bool'],['hajj','arrival_city','مدينة الوصول','text'],['seats_total','إجمالي المقاعد','number'],['seats_taken','المحجوز','number'],['detail_level','مستوى التفاصيل','select',['full','outline']],['art_key','صورة بديلة تلقائية (تُستخدم فقط لو لا توجد صورة غلاف)','select',['fjord','aurora','medcity','alpine','metro','baltic','tropic','cruise','castle','haram','madinah','plane'],'w2'],['cover_url','رابط صورة الغلاف','text','w2'],
+ ['sec','التفاصيل'],['flights_included','الطيران مشمول','bool'],['hajj','arrival_city','مدينة الوصول','text'],['seats_total','إجمالي المقاعد','number'],['seats_taken','المحجوز','number'],['detail_level','مستوى التفاصيل','select',Object.entries(LBL.detail)],['art_key','صورة بديلة تلقائية (تُستخدم فقط لو لا توجد صورة غلاف)','select',['fjord','aurora','medcity','alpine','metro','baltic','tropic','cruise','castle','haram','madinah','plane'],'w2'],['cover_url','رابط صورة الغلاف','text','w2'],
  ['hajj','meals_ar','الوجبات','text'],['hajj','mina_ar','الإقامة في منى','text'],['flight_out_ar','رحلة الذهاب','text','w2'],['flight_back_ar','رحلة العودة','text','w2'],['note_ar','ملاحظة','textarea','w3'],['source_url','رابط المصدر','text','w2'],['source_type','نوع المصدر','text']];
 let ED=null;
 async function editOffer(id){
@@ -379,20 +409,23 @@ async function editOffer(id){
  if(id){ try{ photos=await get('wijha_photos?select=*&offer_id=eq.'+id+'&order=sort_order').catch(()=>[]); [full,stages,items,hotels,notes]=await Promise.all([get('offers?select=*&id=eq.'+id).then(r=>r[0]),get('offer_stages?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_items?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_hotels?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_notes?select=*&offer_id=eq.'+id+'&order=sort_order')]); }catch(e){toast(e.message,true);return} }
  if(id&&stages.length){ try{ const si=await get('offer_stage_items?select=*&stage_id=in.('+stages.map(x=>x.id).join(',')+')&order=block_order,sort_order');
    stages.forEach(st=>st.items=si.filter(i=>i.stage_id===st.id)); }catch(e){ toast('تعذّر تحميل تفاصيل الأيام — لن يتم الحفظ حتى لا تُحذف',true); return } }
- ED={id,full:full||{},stages,items,hotels,notes,photos,tab:'main'};
+ if(S.hotelsList===undefined){ S.hotelsList=await get('hotels?select=id,name&order=name').catch(()=>null); }
+ ED={id,full:full||{},stages,items,hotels,notes,photos,tab:'main',origStatus:full?.status||null,
+   orig:{offer_stages:stages.map(x=>x.id),offer_items:items.map(x=>x.id),offer_hotels:hotels.map(x=>x.id),offer_notes:notes.map(x=>x.id)}};
  if(!id){
   const d=new Date(); d.setDate(d.getDate()+60);
   ED.full={category:'tours',currency:'EGP',status:S.offers.find(x=>x.category!=='tours')?.status||'published',
     detail_level:'outline',flights_included:false,visibility:'public',expires_on:d.toISOString().slice(0,10),
-    company_id:anyCo(S.me.role)?S.companies[0]?.id:S.me.company_id};
+    company_id:anyCo(S.me.role)?'':S.me.company_id};
  }
  drawEditor();
 }
 function fld(k,label,type,extra){
  const v=ED.full[k]; const cls=extra&&typeof extra==='string'?extra:'';
  if(k==='ref_code') return `<div class="${cls}"><label>${label}<input value="${esc(v||'سيُنشأ تلقائياً عند الحفظ')}" disabled style="font-family:var(--mono);color:var(--muted)"></label></div>`;
- if(type==='company') return `<div class="${cls}"><label>${label}<select data-k="${k}" ${!anyCo(S.me.role)?'disabled':''}>${(anyCo(S.me.role)?S.companies:S.companies.filter(c=>c.id===S.me.company_id)).map(c=>`<option value="${c.id}" ${v===c.id?'selected':''}>${esc(c.name_ar)}</option>`).join('')}</select></label></div>`;
- if(type==='select') return `<div class="${cls}"><label>${label}<select data-k="${k}">${extra.map(x=>`<option ${v===x?'selected':''}>${x}</option>`).join('')}</select></label></div>`;
+ if(type==='company') return `<div class="${cls}"><label>${label}<select data-k="${k}" ${!anyCo(S.me.role)?'disabled':''}>${anyCo(S.me.role)?`<option value="" ${v?'':'selected'}>— اختر الشركة —</option>`:''}${(anyCo(S.me.role)?S.companies:S.companies.filter(c=>c.id===S.me.company_id)).map(c=>`<option value="${c.id}" ${v===c.id?'selected':''}>${esc(c.name_ar)}</option>`).join('')}</select></label></div>`;
+ if(type==='select'){ const pairs=extra.map(x=>Array.isArray(x)?x:[x,x]); const map=Object.fromEntries(pairs);
+   return `<div class="${cls}"><label>${label}<select data-k="${k}">${optList(pairs.map(x=>x[0]),v,map)}</select></label></div>`; }
  if(type==='bool') return `<div class="${cls}"><label>${label}<select data-k="${k}" data-bool="1"><option value="true" ${v?'selected':''}>نعم</option><option value="false" ${!v?'selected':''}>لا</option></select></label></div>`;
  if(type==='textarea') return `<div class="${cls}"><label>${label}<textarea data-k="${k}">${esc(v??'')}</textarea></label></div>`;
  return `<div class="${cls}"><label>${label}<input data-k="${k}" type="${type}" value="${esc(v??'')}"></label></div>`;
@@ -421,11 +454,11 @@ function drawEditor(){
      <p class="note">أو الصق رابطاً في الحقل أعلاه. الصور تُحفظ في مخزن عام مخصّص للعروض.</p></div>
    </div>`
   : ED.tab==='stages' ? `<div class="bar"><button class="btn sm" onclick="ED.stages.push({title_ar:'',day_label:'',description_ar:'',sort_order:ED.stages.length,_new:1});drawEditor()">+ مرحلة</button><span class="note">كل مرحلة = يوم أو محطة. الوصف يُعرض تحت عنوان رئيسي واحد؛ التقسيم لفترات (صباحاً/مساءً) يتم من استيراد النشرة.</span></div>
-     ${ED.stages.map((s,i)=>`<div class="form" style="border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px"><div><label>#<input type="number" value="${s.sort_order??i}" oninput="ED.stages[${i}].sort_order=+this.value"></label></div><div class="w2"><label>العنوان<input value="${esc(s.title_ar)}" oninput="ED.stages[${i}].title_ar=this.value"></label></div><div><label>تسمية اليوم<input value="${esc(s.day_label||'')}" oninput="ED.stages[${i}].day_label=this.value"></label></div><div class="w3"><label>الوصف<textarea oninput="ED.stages[${i}].description_ar=this.value">${esc(s.description_ar||'')}</textarea></label></div><div class="w2"><label>رابط صورة<input value="${esc(s.photo_url||'')}" oninput="ED.stages[${i}].photo_url=this.value"></label></div><div><button class="btn sm danger" onclick="ED.stages[${i}]._del=1;ED.stages.splice(${i},1);drawEditor()">حذف</button></div></div>`).join('')}`
+     ${ED.stages.map((s,i)=>`<div class="form" style="border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px"><div><label>#<input type="number" value="${s.sort_order??i}" oninput="ED.stages[${i}].sort_order=+this.value"></label></div><div class="w2"><label>العنوان<input value="${esc(s.title_ar)}" oninput="ED.stages[${i}].title_ar=this.value"></label></div><div><label>تسمية اليوم<input value="${esc(s.day_label||'')}" oninput="ED.stages[${i}].day_label=this.value"></label></div><div class="w3"><label>الوصف${(s.items||[]).length?' <span class="dim">(لا يظهر للزوار: لهذا اليوم بنود تفصيلية أدناه وهي التي تُعرض)</span>':''}<textarea oninput="ED.stages[${i}].description_ar=this.value">${esc(s.description_ar||'')}</textarea></label>${(s.items||[]).length?`<ul class="note" style="margin:6px 18px 0">${s.items.map(it=>`<li>${it.block_ar?'<b>'+esc(it.block_ar)+':</b> ':''}${esc(it.text_ar||'')}</li>`).join('')}</ul>`:''}</div><div class="w2"><label>رابط صورة<input value="${esc(s.photo_url||'')}" oninput="ED.stages[${i}].photo_url=this.value"></label></div><div><button class="btn sm danger" onclick="ED.stages[${i}]._del=1;ED.stages.splice(${i},1);drawEditor()">حذف</button></div></div>`).join('')}`
   : ED.tab==='items' ? `<div class="bar"><button class="btn sm" onclick="ED.items.push({kind:'include',item_cat:'sight',text_ar:'',sort_order:ED.items.length,_new:1});drawEditor()">+ يشمل</button><button class="btn sm" onclick="ED.items.push({kind:'exclude',item_cat:'personal',text_ar:'',sort_order:ED.items.length,_new:1});drawEditor()">+ لا يشمل</button><button class="btn sm" onclick="ED.items.push({kind:'addon',item_cat:'optional',text_ar:'',price_text:'',sort_order:ED.items.length,_new:1});drawEditor()">+ إضافة اختيارية</button></div>
-     <div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th><th>الفئة</th><th>النص</th><th>سعر</th><th></th></tr></thead><tbody>${ED.items.map((it,i)=>`<tr><td><select onchange="ED.items[${i}].kind=this.value">${['include','exclude','addon'].map(k=>`<option ${it.kind===k?'selected':''}>${k}</option>`).join('')}</select></td><td><select onchange="ED.items[${i}].item_cat=this.value">${['transfer','flight','sight','activity','meal','hotel','free','shop','rites','optional','guide','visa','tax','personal'].map(k=>`<option ${it.item_cat===k?'selected':''}>${k}</option>`).join('')}</select></td><td><input style="width:100%" value="${esc(it.text_ar)}" oninput="ED.items[${i}].text_ar=this.value"></td><td><input style="width:90px" value="${esc(it.price_text||'')}" oninput="ED.items[${i}].price_text=this.value"></td><td><button class="btn sm danger" onclick="ED.items.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`
+     <div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th><th>الفئة</th><th>النص</th><th>سعر</th><th></th></tr></thead><tbody>${ED.items.map((it,i)=>`<tr><td><select onchange="ED.items[${i}].kind=this.value">${optList(['include','exclude','addon'],it.kind,LBL.kind)}</select></td><td><select onchange="ED.items[${i}].item_cat=this.value">${optList(['transfer','flight','sight','activity','meal','hotel','free','shop','rites','optional','guide','visa','tax','personal'],it.item_cat,LBL.icat)}</select></td><td><input style="width:100%" value="${esc(it.text_ar)}" oninput="ED.items[${i}].text_ar=this.value"></td><td><input style="width:90px" value="${esc(it.price_text||'')}" oninput="ED.items[${i}].price_text=this.value"></td><td><button class="btn sm danger" onclick="ED.items.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`
   : ED.tab==='hotels' ? `<div class="bar"><button class="btn sm" onclick="ED.hotels.push({city_ar:'',hotel_name:'',nights:null,date_range:'',sort_order:ED.hotels.length,_new:1});drawEditor()">+ فندق</button></div>
-     <div class="tw"><table style="min-width:0"><thead><tr><th>المدينة</th><th>الفندق</th><th>ليالٍ</th><th>الفترة</th><th>hotel_id</th><th></th></tr></thead><tbody>${ED.hotels.map((h,i)=>`<tr><td><input value="${esc(h.city_ar)}" oninput="ED.hotels[${i}].city_ar=this.value"></td><td><input style="width:100%" value="${esc(h.hotel_name)}" oninput="ED.hotels[${i}].hotel_name=this.value"></td><td><input type="number" style="width:60px" value="${h.nights??''}" oninput="ED.hotels[${i}].nights=+this.value||null"></td><td><input value="${esc(h.date_range||'')}" oninput="ED.hotels[${i}].date_range=this.value"></td><td><input class="mono" style="width:110px" value="${esc(h.hotel_id||'')}" oninput="ED.hotels[${i}].hotel_id=this.value||null" placeholder="h_makkah"></td><td><button class="btn sm danger" onclick="ED.hotels.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`
+     <div class="tw"><table style="min-width:0"><thead><tr><th>المدينة</th><th>الفندق</th><th>ليالٍ</th><th>الفترة</th><th>hotel_id</th><th></th></tr></thead><tbody>${ED.hotels.map((h,i)=>`<tr><td><input value="${esc(h.city_ar)}" oninput="ED.hotels[${i}].city_ar=this.value"></td><td><input style="width:100%" value="${esc(h.hotel_name)}" oninput="ED.hotels[${i}].hotel_name=this.value"></td><td><input type="number" style="width:60px" value="${h.nights??''}" oninput="ED.hotels[${i}].nights=+this.value||null"></td><td><input value="${esc(h.date_range||'')}" oninput="ED.hotels[${i}].date_range=this.value"></td><td>${S.hotelsList?`<select style="max-width:170px" onchange="ED.hotels[${i}].hotel_id=this.value||null"><option value="">— بدون ربط —</option>${S.hotelsList.map(x=>`<option value="${esc(x.id)}" ${h.hotel_id===x.id?'selected':''}>${esc(x.name||x.id)}</option>`).join('')}${h.hotel_id&&!S.hotelsList.some(x=>x.id===h.hotel_id)?`<option value="${esc(h.hotel_id)}" selected>${esc(h.hotel_id)} (غير موجود)</option>`:''}</select>`:`<input class="mono" style="width:110px" value="${esc(h.hotel_id||'')}" oninput="ED.hotels[${i}].hotel_id=this.value||null" placeholder="h_makkah">`}</td><td><button class="btn sm danger" onclick="ED.hotels.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`
   : ED.tab==='photos' ? (!ED.id?`<div class="note">احفظ العرض أولاً ثم أضف الصور.</div>`:`<div class="bar"><label class="btn sm" style="cursor:pointer">+ أضف صوراً<input type="file" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="addPhotos(this.files)"></label>
      <span class="note">صور حقيقية من رحلات الشركة السابقة. تُضغط تلقائياً وتُزال منها بيانات الموقع الجغرافي. لا ترفع صور أشخاص دون إذنهم.</span></div>
      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px">${(ED.photos||[]).map((ph,i)=>`<div style="border:1px solid var(--line);border-radius:12px;padding:8px">
@@ -441,7 +474,7 @@ function drawEditor(){
        <div><label>Answer (EN, optional)<textarea rows="2" dir="ltr" style="width:100%" oninput="ED.notes[${i}].text_en=this.value">${esc(n.text_en||'')}</textarea></label></div>
        <button class="btn sm danger" onclick="ED.notes.splice(${i},1);drawEditor()">حذف السؤال</button></div>`).join('')||'<div class="note">لا توجد أسئلة بعد.</div>'}`
   : `<div class="bar"><button class="btn sm" onclick="ED.notes.push({kind:'visa_doc',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ مستند تأشيرة</button><button class="btn sm" onclick="ED.notes.push({kind:'note',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ ملاحظة</button><button class="btn sm" onclick="ED.notes.push({kind:'cancel',label_ar:'',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ شرط إلغاء</button></div>
-     <div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th><th>العنوان/المهلة</th><th>النص/الغرامة</th><th></th></tr></thead><tbody>${ED.notes.map((n,i)=>n.kind==='faq'?'':`<tr><td><select onchange="ED.notes[${i}].kind=this.value">${['visa_doc','note','cancel','payment'].map(k=>`<option ${n.kind===k?'selected':''}>${k}</option>`).join('')}</select></td><td><input value="${esc(n.label_ar||'')}" oninput="ED.notes[${i}].label_ar=this.value"></td><td><input style="width:100%" value="${esc(n.text_ar)}" oninput="ED.notes[${i}].text_ar=this.value"></td><td><button class="btn sm danger" onclick="ED.notes.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`;
+     <div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th><th>العنوان/المهلة</th><th>النص/الغرامة</th><th></th></tr></thead><tbody>${ED.notes.map((n,i)=>n.kind==='faq'?'':`<tr><td><select onchange="ED.notes[${i}].kind=this.value">${optList(['visa_doc','note','cancel','payment'],n.kind,LBL.note)}</select></td><td><input value="${esc(n.label_ar||'')}" oninput="ED.notes[${i}].label_ar=this.value"></td><td><input style="width:100%" value="${esc(n.text_ar)}" oninput="ED.notes[${i}].text_ar=this.value"></td><td><button class="btn sm danger" onclick="ED.notes.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`;
  let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
  ov.innerHTML=`<div class="md"><div class="hd"><b>${ED.id?'تعديل الرحلة':'رحلة جديدة'}</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
   <div class="bd"><div class="tabs">${tabs.map(([k,l])=>`<button class="${ED.tab===k?'on':''}" onclick="readMain();ED.tab='${k}';drawEditor()">${l}</button>`).join('')}</div>${body}<div id="ederr"></div></div>
@@ -490,32 +523,43 @@ function readMain(){ if(ED.tab!=='main')return; if(!anyCo(S.me.role)) ED.full.co
 function closeEd(){document.getElementById('ov')?.remove();ED=null}
 async function saveOffer(submit){
  readMain(); const f={...ED.full}; if(submit) f.status='pending_review'; delete f.id; delete f.created_at; delete f.updated_at; delete f.ref_code;
- if(!f.expires_on){ document.getElementById('ederr').innerHTML='<div class="err">تاريخ انتهاء العرض إلزامي — لا يمكن الحفظ بدونه</div>'; return; }
- if(f.starts_on && f.expires_on > f.starts_on){ document.getElementById('ederr').innerHTML='<div class="err">تاريخ الانتهاء يجب أن يكون قبل تاريخ السفر</div>'; return; }
+ const bad=m=>{ document.getElementById('ederr').innerHTML='<div class="err">'+esc(m)+'</div>'; };
+ if(!(f.title_ar||'').trim()) return bad('العنوان بالعربية مطلوب');
+ if(!f.company_id) return bad('اختر الشركة صاحبة العرض');
+ if(![f.price_quad,f.price_triple,f.price_double,f.price_single].some(x=>Number(x)>0)) return bad('أدخل سعراً واحداً على الأقل (رباعية أو ثلاثية أو ثنائية أو فردية)');
+ if(!f.expires_on) return bad('تاريخ انتهاء العرض إلزامي — لا يمكن الحفظ بدونه');
+ if(f.starts_on && f.expires_on > f.starts_on) return bad('تاريخ الانتهاء يجب أن يكون قبل تاريخ السفر');
+ if(S.hotelsList){ const badH=ED.hotels.find(h=>h.hotel_id&&!S.hotelsList.some(x=>x.id===h.hotel_id)); if(badH) return bad('الفندق المرتبط "'+badH.hotel_id+'" غير موجود في قائمة الفنادق — اختر فندقاً من القائمة أو "بدون ربط".'); }
+ const admin=isAdminRole(S.me.role);
+ /* a company edit sends a live offer back to review, which hides it from the site (audit F14) */
+ if(!admin && ED.id && ED.origStatus==='published' && !confirm('سيُخفى العرض من الموقع حتى تعتمد وجهة التعديل. متابعة؟')) return;
+ /* new children are inserted first and the old ones removed by id afterwards, so a failure never leaves an offer without its programme (audit F10) */
+ const created={offer_stages:[],offer_items:[],offer_hotels:[],offer_notes:[]};
+ const rollback=async()=>{ for(const [tb,ids] of Object.entries(created)) if(ids.length) await api(`${tb}?id=in.(${ids.join(',')})`,{method:'DELETE'}).catch(()=>{}); };
  try{
   let id=ED.id;
-  const admin=isAdminRole(S.me.role);
   if(!admin){ f.review_state='pending'; f.review_note=null; }
-  if(id) await patch('offers?id=eq.'+id,f); else { const r=await post('offers',f); id=r[0].id; }
+  if(id) await patch('offers?id=eq.'+id,f); else { const r=await post('offers',f); id=r[0].id; ED.id=id; }
   if(!admin){ try{ await post('wijha_offer_revisions',{offer_id:id,changed_by:S.me.id,company_id:S.me.company_id,after_data:f,state:'pending',note:'تعديل من الشركة'},'return=minimal') }catch(e){} }
-  // children: replace-all strategy (simple and safe for an admin tool)
-  // stages first, keeping each day's detailed items (offer_stage_items) attached to the new stage rows
-  if(ED.id) await del(`offer_stages?offer_id=eq.${id}`).catch(e=>{ if(!/لم يُحذف/.test(e.message)) throw e; });
-  if(ED.stages.length){
+  try{
+   if(ED.stages.length){
     const rows=await post('offer_stages',ED.stages.map((s,i)=>({offer_id:id,sort_order:s.sort_order??i,title_ar:s.title_ar||'—',title_en:s.title_en||null,day_label:s.day_label||null,description_ar:s.description_ar||null,photo_url:s.photo_url||null})));
+    created.offer_stages=rows.map(r=>r.id);
     const kids=[]; rows.forEach((r,i)=>(ED.stages[i].items||[]).forEach((it,j)=>kids.push({stage_id:r.id,block_ar:it.block_ar||null,block_order:it.block_order??0,item_cat:it.item_cat||null,text_ar:it.text_ar||'—',text_en:it.text_en||null,sort_order:it.sort_order??j})));
     if(kids.length) await post('offer_stage_items',kids,'return=minimal');
-  }
-  for(const [tb,rows,map] of [
+   }
+   for(const [tb,rows,map] of [
     ['offer_items',ED.items,it=>({offer_id:id,kind:it.kind,item_cat:it.item_cat||null,text_ar:it.text_ar||'—',price_text:it.price_text||null,sort_order:it.sort_order??0})],
     ['offer_hotels',ED.hotels,h=>({offer_id:id,sort_order:h.sort_order??0,city_ar:h.city_ar||'—',hotel_name:h.hotel_name||'—',nights:h.nights||null,date_range:h.date_range||null,hotel_id:h.hotel_id||null})],
     ['offer_notes',ED.notes,n=>({offer_id:id,kind:n.kind,label_ar:n.label_ar||null,label_en:n.label_en||null,text_ar:n.text_ar||null,text_en:n.text_en||null,sort_order:n.sort_order??0})]]){
-   if(ED.id) await del(`${tb}?offer_id=eq.${id}`);
-   const keep=tb==='offer_notes'?rows.filter(r=>r.kind!=='faq'||(r.label_ar&&r.text_ar)):rows;
-   if(keep.length) await post(tb,keep.map(map),'return=minimal');
-  }
-  toast(isAdminRole(S.me.role)?'تم الحفظ':'تم الحفظ — بانتظار مراجعة فريق وجهة'); closeEd(); await loadAll(); render();
- }catch(e){ document.getElementById('ederr').innerHTML='<div class="err">'+esc(e.message)+'</div>' }
+    const keep=tb==='offer_notes'?rows.filter(r=>r.kind!=='faq'||(r.label_ar&&r.text_ar)):rows;
+    if(keep.length){ const rs=await post(tb,keep.map(map)); created[tb]=rs.map(r=>r.id); }
+   }
+  }catch(e){ await rollback(); throw e; }
+  /* everything new is in: now remove the previous rows by id (offer_stages cascades to offer_stage_items) */
+  for(const [tb,ids] of Object.entries(ED.orig||{})) if(ids.length) await api(`${tb}?id=in.(${ids.join(',')})`,{method:'DELETE'});
+  toast(admin?'تم الحفظ':'تم الحفظ — بانتظار مراجعة فريق وجهة'); closeEd(); await loadAll(); render();
+ }catch(e){ const el=document.getElementById('ederr'); if(el) el.innerHTML='<div class="err">'+esc(e.message)+'</div>'; else toast(e.message,true); }
 }
 async function toggleSample(id,val){ try{ await patch('offers?id=eq.'+id,{is_sample:val}); const o=S.offers.find(x=>x.id===id); if(o)o.is_sample=val; toast(val?'تم التعليم كعرض تجريبي':'تم التعليم كعرض حقيقي'); render(); }catch(e){toast(e.message,true)} }
 async function setPublished(id,on){
@@ -586,6 +630,8 @@ function readCo(){ document.querySelectorAll('#ov [data-k]').forEach(el=>{ let v
 function quickReview(st){ readCo(); EC.full.wijha_review=st; saveCo(); }
 async function uploadDoc(){
  if(!EC_FILE) return null;
+ if(EC_FILE.size>10*1024*1024) throw new Error('الملف أكبر من ١٠ ميجابايت');
+ if(!/^(application\/pdf|image\/)/.test(EC_FILE.type||'')) throw new Error('PDF أو صورة فقط');
  const ext=safeExt(EC_FILE,'bin');
  const path=`${S.me.id}/registry-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
  const r=await fetch(S.url+'/storage/v1/object/company-docs/'+path,{method:'POST',
@@ -611,8 +657,9 @@ async function saveCo(){
   if(isAdminRole(S.me.role)&&f.wijha_review){
     f.wijha_reviewed_at=new Date().toISOString(); f.wijha_reviewed_by=S.me.id;
     f.etaa_verified = f.wijha_review==='approved';
+    f.status = coStatusOf(f.wijha_review);
   }
-  if(EC.id) await patch('companies?id=eq.'+EC.id,f); else await post('companies',f);
+  await writeCo(EC.id,f);
   toast('تم الحفظ'); closeEd(); EC_FILE=null; await loadAll(); render();
  }catch(e){ const el=document.getElementById('ederr'); if(el) el.innerHTML='<div class="err">'+esc(e.message)+'</div>'; else toast(e.message,true); }
 }
@@ -630,8 +677,8 @@ function companiesV(){
   <td class="acts">${isAdmin&&c.wijha_review!=='approved'?`<button class="btn sm ok" onclick="approveCo('${c.id}')">اعتماد</button>`:''}${isAdmin&&c.wijha_review!=='rejected'?`<button class="btn sm danger" onclick="rejectCo('${c.id}')">رفض</button>`:''}${c.commercial_registry_url?`<button class="btn sm" onclick="openDoc('${esc(c.commercial_registry_url)}')">السجل</button>`:''}<button class="btn sm" onclick="editCo('${c.id}')">تعديل</button>${c.source_url?`<button class="btn sm" onclick="queueImport('${c.id}','${esc(c.source_url)}','company')">استيراد من الرابط</button>`:''}${isAdmin?`<button class="btn sm danger" onclick="delCo('${c.id}')">حذف</button>`:''}</td></tr>`}).join('')}</tbody></table></div>
  <p class="note">المراجعات من جوجل: خزّن Place ID ورابط الخريطة هنا؛ سحب المراجعات تلقائياً يحتاج مفتاح Google Places API مقيّداً بنطاق الموقع (انظر README).</p>`;
 }
-async function approveCo(id){ try{ await patch('companies?id=eq.'+id,{wijha_review:'approved',etaa_verified:true,wijha_reviewed_at:new Date().toISOString(),wijha_reviewed_by:S.me.id}); toast('تم الاعتماد'); await loadAll(); render(); }catch(e){toast(e.message,true)} }
-async function rejectCo(id){ const n=prompt('سبب الرفض (يظهر للشركة):'); if(n===null)return; try{ await patch('companies?id=eq.'+id,{wijha_review:'rejected',etaa_verified:false,wijha_review_note:n,wijha_reviewed_at:new Date().toISOString(),wijha_reviewed_by:S.me.id}); toast('تم الرفض'); await loadAll(); render(); }catch(e){toast(e.message,true)} }
+async function approveCo(id){ try{ await writeCo(id,{wijha_review:'approved',status:'approved',etaa_verified:true,wijha_reviewed_at:new Date().toISOString(),wijha_reviewed_by:S.me.id}); toast('تم الاعتماد'); await loadAll(); render(); }catch(e){toast(e.message,true)} }
+async function rejectCo(id){ const n=prompt('سبب الرفض (يظهر للشركة):'); if(n===null)return; try{ await writeCo(id,{wijha_review:'rejected',status:'rejected',etaa_verified:false,wijha_review_note:n,wijha_reviewed_at:new Date().toISOString(),wijha_reviewed_by:S.me.id}); toast('تم الرفض'); await loadAll(); render(); }catch(e){toast(e.message,true)} }
 async function delCo(id){ const n=S.offers.filter(o=>o.company_id===id).length; if(!confirm(`حذف الشركة و ${n} رحلة تابعة لها؟`))return; try{ await del('offers?company_id=eq.'+id); await del('companies?id=eq.'+id); toast('تم'); await loadAll(); render(); }catch(e){toast(e.message,true)} }
 
 /* ═══════════ USERS ═══════════ */
@@ -640,7 +687,7 @@ function usersV(){
  <div class="tw"><table><thead><tr><th>الاسم</th><th>البريد</th><th>الهاتف</th><th>العمر</th><th>الجنسية</th><th>تأشيرات سارية</th><th>الدور</th><th>الشركة</th><th>سُجّل</th><th></th></tr></thead><tbody>
  ${S.profiles.map(p=>`<tr><td><b>${esc(p.name||'—')}</b></td><td class="mono">${esc(p.email||'')}</td><td class="mono">${esc(p.phone||'—')}</td><td>${esc(p.age_range||'—')}</td><td>${esc(cName(p.nationality,'ar'))}</td>
   <td>${(p.travel_visas||[]).length?(p.travel_visas).map(v=>{const exp=v.expiry&&new Date(v.expiry)<new Date();return `<span class="chip" style="${exp?'color:var(--red)':''}">${esc(cName(v.country,'ar'))} · ${esc(v.expiry||'')}${exp?' ⚠':''}</span>`}).join(''):'<span class="dim">—</span>'}</td>
-  <td><select onchange="setRole('${p.id}',this.value)">${['client','company_staff','company_admin','company','admin','wijha_admin'].map(r=>`<option ${p.role===r?'selected':''}>${r}</option>`).join('')}</select></td>
+  <td><select onchange="setRole('${p.id}',this.value)">${['client','wijha_scout','company_staff','company_admin','company','admin','wijha_admin'].map(r=>`<option ${p.role===r?'selected':''}>${r}</option>`).join('')}</select></td>
   <td><select onchange="setCoOf('${p.id}',this.value)"><option value="">—</option>${S.companies.map(c=>`<option value="${c.id}" ${p.company_id===c.id?'selected':''}>${esc(c.name_ar)}</option>`).join('')}</select></td>
   <td class="num">${(p.created_at||'').slice(0,10)}</td>
   <td class="acts"><button class="btn sm" onclick="editUser('${p.id}')">تعديل</button></td></tr>`).join('')}</tbody></table></div>
@@ -755,7 +802,7 @@ function intakeV(){
  <p class="sub">أرسل العرض بأي شكل عندك — ملف PDF أو Word أو صورة الإعلان، أو اكتبه، أو سجّله بصوتك. وجهة تقرؤه وتحوّله إلى صفحة عرض بنفس تصنيفات كل الشركات، ثم تراجعه أنت قبل النشر.</p>
  <p class="note">📊 تفضّل الإدخال المنظّم؟ <a href="./wijha-offers-template.xlsx" download>حمّل قالب Excel</a>، املأه (عرض في كل صف، حتى 50 عرضاً)، ثم ارفعه هنا: يُقرأ حرفياً بدون ذكاء اصطناعي. أو الصق الفقرة كاملة في خانة النص وسنحوّلها.</p>
  <div class="tw" style="padding:18px">
-  ${pickAny?`<div class="form" style="margin-bottom:12px"><div class="w2"><label>الشركة صاحبة العرض<select id="inCo"><option value="">— اختر الشركة —</option>${S.companies.map(c=>`<option value="${c.id}">${esc(c.name_ar)}${c.status!=='approved'?' (قيد المراجعة)':''}</option>`).join('')}</select></label></div></div>`:`<input type="hidden" id="inCo" value="${cid}">`}
+  ${pickAny?`<div class="form" style="margin-bottom:12px"><div class="w2"><label>الشركة صاحبة العرض<select id="inCo"><option value="">— اختر الشركة —</option>${S.companies.map(c=>`<option value="${c.id}">${esc(c.name_ar)}${c.wijha_review!=='approved'?' (قيد المراجعة)':''}</option>`).join('')}</select></label></div></div>`:`<input type="hidden" id="inCo" value="${cid}">`}
   <label id="drop" class="drop" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')"
      ondrop="event.preventDefault();this.classList.remove('over');addIntakeFiles(event.dataTransfer.files)">
    <input type="file" id="inFile" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,image/*,audio/*" onchange="addIntakeFiles(this.files)" style="display:none">
@@ -829,7 +876,7 @@ async function submitIntake(){
   prog.innerHTML='<div class="note-box">⏳ جارٍ الرفع…</div>';
   const ids=[];
   const add=async row=>{ const r=await post('wijha_imports',{company_id:cid,submitted_by:S.me.id,note,status:'queued',...row}); ids.push(r[0].id); };
-  for(const f of files){ const path=await uploadIntake(f,cid); await add({kind:(f.name.split('.').pop()||'file').toLowerCase(),file_path:path,raw_text:files.length===1?(tx||null):null}); }
+  for(const f of files){ const path=await uploadIntake(f,cid); await add({kind:safeExt(f,'file'),file_path:path,raw_text:files.length===1?(tx||null):null}); }
   if(audio){ const path=await uploadIntake(audio,cid); await add({kind:'voice',file_path:path,raw_text:tx||null}); }
   else if(url) await add({kind:'url',url,raw_text:files.length?null:(tx||null)});
   else if(!files.length || (files.length>1&&tx)) await add({kind:'text',raw_text:tx});
@@ -1070,7 +1117,7 @@ function chatsV(){
   <div class="cfoot"><input id="cin" placeholder="${isAdminRole(S.me.role)?'رد كإدارة…':'رد على العميل…'}" onkeydown="if(event.key==='Enter')sendAdmin()"><button class="btn pri" onclick="sendAdmin()">إرسال</button></div>`:'<div class="cbody dim" style="place-content:center;text-align:center">اختر محادثة</div>'}</div></div>`;
 }
 async function loadMsgs(){ try{ S.msgs=await get('wijha_messages?select=*&thread_id=eq.'+S.thread+'&order=created_at'); const b=document.getElementById('cbody'); if(!b)return;
- b.innerHTML=S.msgs.map(m=>`<div class="msg ${m.sender_role}${m.blocked?' blocked':''}">${esc(m.body)}<time>${m.sender_role} · ${(m.created_at||'').replace('T',' ').slice(0,16)}</time></div>`).join('')||'<span class="dim">لا رسائل</span>'; b.scrollTop=b.scrollHeight; }catch(e){toast(e.message,true)} }
+ b.innerHTML=S.msgs.map(m=>`<div class="msg ${m.sender_role}${m.blocked?' blocked':''}">${esc(m.body)}<time>${m.sender_role} · ${(m.created_at||'').replace('T',' ').slice(0,16)}</time></div>`).join('')||'<span class="dim">لا رسائل</span>'; b.scrollTop=b.scrollHeight; }catch(e){toast(e.message,true); const b=document.getElementById('cbody'); if(b) b.innerHTML='<div class="err">تعذّر تحميل الرسائل: '+esc(e.message)+' <button class="btn sm" onclick="loadMsgs()">إعادة المحاولة</button></div>'} }
 async function sendAdmin(){ const v=cin.value.trim(); if(!v)return; cin.value=''; try{ await post('wijha_messages',{thread_id:S.thread,sender_id:S.me.id,sender_role:isAdminRole(S.me.role)?'admin':'company',body:v},'return=minimal'); await rpc('wijha_mark_read',{p_thread:S.thread}).catch(()=>{}); await loadMsgs(); }catch(e){toast(e.message,true)} }
 
 /* ═══════════ INSIGHTS ═══════════ */
