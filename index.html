@@ -83,7 +83,8 @@ h3{font-size:15px;font-weight:700;margin-bottom:10px} h4{font-size:13px;font-wei
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:14px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:.15s}
 .card:hover{transform:translateY(-2px);box-shadow:0 14px 32px -20px rgba(0,0,0,.35);border-color:#dad4c7}
-.card .img{height:152px;position:relative;overflow:hidden} .card .img svg{width:100%;height:100%;display:block}
+.card .img{aspect-ratio:4/3;height:auto;position:relative;overflow:hidden;background:#e9e4d8} .card .img>img,.card .img>svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block} .card .img::after{content:'';position:absolute;inset:auto 0 0 0;height:42%;background:linear-gradient(to top,rgba(0,0,0,.30),transparent);pointer-events:none} .card .img svg{width:100%;height:100%;display:block}
+.card .img .cat,.card .img .flag,.card .img .cmpbtn{z-index:2}
 .card .img .cat{position:absolute;top:10px;inset-inline-start:10px;background:rgba(27,27,31,.82);color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px}
 .card .img .flag{position:absolute;top:10px;inset-inline-end:10px;color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px}
 .flag.soon{background:var(--red)} .flag.full{background:var(--amber-ink)}
@@ -1458,9 +1459,8 @@ function detail(id){
      <button class="tag" onclick="share()">↗ ${L==='ar'?'مشاركة':'Share'}</button></div></div>
   </div>
   <div class="gallery">
-    <div class="g1">${pic(x.cover,x.art,s)}</div><div class="g2">${pic(x.itin[1]?.photo,x.itin[1]?.art||x.art,s+1)}</div>
-    <div class="g3">${pic(x.itin[2]?.photo,x.itin[2]?.art||x.art,s+2)}</div><div class="g4">${pic(x.itin[3]?.photo,x.itin[3]?.art||x.art,s+3)}</div>
-    <div class="g5">${pic(x.itin[4]?.photo,'plane',s+4)}</div></div>
+    <div class="g1">${pic(x.cover||(x.photos&&x.photos[0]&&x.photos[0].url),x.art,s)}</div>
+    ${[1,2,3,4].map(n=>`<div class="g${n+1}">${pic(x.itin[n]?.photo||(x.photos&&x.photos[x.cover?n-1:n]&&x.photos[x.cover?n-1:n].url),n===4?'plane':(x.itin[n]?.art||x.art),s+n)}</div>`).join('')}</div>
 
   <div class="layout"><div class="main">
    <section><div class="facts">
@@ -1535,6 +1535,8 @@ function detail(id){
 
    ${(x.cancel&&x.co!=='sawa')?`<section><h2>${t('d_pay')}</h2><h3>${L==='ar'?'سياسة الإلغاء':'Cancellation'}</h3>
      <div class="pol">${(L==='ar'?x.cancel.ar:x.cancel.en).map(r=>`<div><span>${esc(r[0])}</span><b>${esc(r[1])}</b></div>`).join('')}</div></section>`:''}
+   ${(x.faq&&x.faq.length)?`<section class="faq"><h2>${L==='ar'?'أسئلة شائعة':'Frequently asked questions'}</h2>${x.faq.map(f=>`<details style="border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 8px;background:var(--surface)"><summary style="cursor:pointer;font-weight:700">${esc(f.q[L])}</summary><p style="margin:8px 0 0;line-height:1.8">${esc(f.a[L])}</p></details>`).join('')}</section>`:''}
+   ${(x.photos&&x.photos.some(p=>p.past))?`<section class="past"><h2>${L==='ar'?'صور من رحلات سابقة للشركة':'Photos from the company\'s previous trips'}</h2><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">${x.photos.filter(p=>p.past).map(p=>`<figure style="margin:0"><img src="${esc(p.url)}" alt="${esc(p.cap[L])}" loading="lazy" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;display:block">${p.cap[L]?`<figcaption class="note" style="margin-top:4px">${esc(p.cap[L])}</figcaption>`:''}</figure>`).join('')}</div><p class="note">${L==='ar'?'صور حقيقية من رحلات الشركة السابقة، وقد تختلف الفنادق والبرنامج عن هذا العرض.':'Real photos from the company\'s earlier trips; hotels and programme may differ from this offer.'}</p></section>`:''}
    ${x.co==='sawa'?`<section><h2>${t('d_pay')}</h2>
      <h3>${L==='ar'?'طرق الدفع':'Payment methods'}</h3>
      <div class="pays">${(L==='ar'?c.pay:c.payEn).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div>
@@ -2068,11 +2070,12 @@ async function loadCatalogue(){
 /* ── hydrate one offer with stages / items / notes / hotels ── */
 async function hydrate(x){
  if(x._hydrated||!API)return x;
- const [stages,items,notes,ohotels]=await Promise.all([
+ const [stages,items,notes,ohotels,photos]=await Promise.all([
   API.select(`offer_stages?offer_id=eq.${x.id}&select=id,sort_order,title_ar,title_en,day_label,description_ar,description_en,art_key&order=sort_order`),
   API.select(`offer_items?offer_id=eq.${x.id}&select=kind,item_cat,text_ar,text_en,price_text,sort_order&order=sort_order`),
   API.select(`offer_notes?offer_id=eq.${x.id}&select=kind,label_ar,label_en,text_ar,text_en,sort_order&order=sort_order`).catch(()=>[]),
-  API.select(`offer_hotels?offer_id=eq.${x.id}&select=hotel_id,sort_order,city_ar,city_en,hotel_name,date_range,nights,note_ar,note_en&order=sort_order`)
+  API.select(`offer_hotels?offer_id=eq.${x.id}&select=hotel_id,sort_order,city_ar,city_en,hotel_name,date_range,nights,note_ar,note_en&order=sort_order`),
+  API.select(`wijha_photos?offer_id=eq.${x.id}&select=external_url,caption_ar,caption_en,service_kind,sort_order&order=sort_order`).catch(()=>[])
  ]);
  let blocks=[];
  if(stages.length){
@@ -2101,6 +2104,8 @@ async function hydrate(x){
  if(vd.length) x.visa={country:x.dest,countryAr:x.destAr,docsAr:vd.map(o=>o.text_ar),docsEn:vd.map(o=>o.text_en||o.text_ar)};
  const inlineAr=[x.noteAr,x.sourceNoteAr].filter(Boolean), inlineEn=[x.noteEn||x.noteAr].filter(Boolean);
  if(nt.length||inlineAr.length) x.notes={ar:[...nt.map(o=>o.text_ar),...inlineAr],en:[...nt.map(o=>o.text_en||o.text_ar),...inlineEn]};
+ x.photos=(photos||[]).filter(p=>/^https:\/\//.test(p.external_url||'')).map(p=>({url:p.external_url,cap:{ar:p.caption_ar||'',en:p.caption_en||p.caption_ar||''},past:p.service_kind==='past_trip'}));
+ x.faq=notes.filter(o=>o.kind==='faq'&&o.label_ar&&o.text_ar).map(o=>({q:{ar:o.label_ar,en:o.label_en||o.label_ar},a:{ar:o.text_ar,en:o.text_en||o.text_ar}}));
  if(cx.length) x.cancel={ar:cx.map(o=>[o.label_ar,o.text_ar]),en:cx.map(o=>[o.label_en||o.label_ar,o.text_en||o.text_ar])};
  x.hotels=ohotels.map(h=>{
   if(h.hotel_id&&HOTELS[h.hotel_id])

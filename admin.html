@@ -375,11 +375,11 @@ const OFFER_FIELDS=[
 let ED=null;
 async function editOffer(id){
  const o=id?S.offers.find(x=>x.id===id):null;
- let full={},stages=[],items=[],hotels=[],notes=[];
- if(id){ try{ [full,stages,items,hotels,notes]=await Promise.all([get('offers?select=*&id=eq.'+id).then(r=>r[0]),get('offer_stages?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_items?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_hotels?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_notes?select=*&offer_id=eq.'+id+'&order=sort_order')]); }catch(e){toast(e.message,true);return} }
+ let full={},stages=[],items=[],hotels=[],notes=[],photos=[];
+ if(id){ try{ photos=await get('wijha_photos?select=*&offer_id=eq.'+id+'&order=sort_order').catch(()=>[]); [full,stages,items,hotels,notes]=await Promise.all([get('offers?select=*&id=eq.'+id).then(r=>r[0]),get('offer_stages?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_items?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_hotels?select=*&offer_id=eq.'+id+'&order=sort_order'),get('offer_notes?select=*&offer_id=eq.'+id+'&order=sort_order')]); }catch(e){toast(e.message,true);return} }
  if(id&&stages.length){ try{ const si=await get('offer_stage_items?select=*&stage_id=in.('+stages.map(x=>x.id).join(',')+')&order=block_order,sort_order');
    stages.forEach(st=>st.items=si.filter(i=>i.stage_id===st.id)); }catch(e){ toast('تعذّر تحميل تفاصيل الأيام — لن يتم الحفظ حتى لا تُحذف',true); return } }
- ED={id,full:full||{},stages,items,hotels,notes,tab:'main'};
+ ED={id,full:full||{},stages,items,hotels,notes,photos,tab:'main'};
  if(!id){
   const d=new Date(); d.setDate(d.getDate()+60);
   ED.full={category:'tours',currency:'EGP',status:S.offers.find(x=>x.category!=='tours')?.status||'published',
@@ -409,7 +409,7 @@ function checksBox(){
   ${c.length?`<ul style="margin:8px 18px 0">${c.map(x=>`<li>${esc(x.problem_ar)}</li>`).join('')}</ul>`:'<div class="note">لم يُبلّغ عن نقاط غير واضحة.</div>'}</div>`;
 }
 function drawEditor(){
- const tabs=[['main','البيانات'],['stages',`المراحل (${ED.stages.length})`],['items',`يشمل / لا يشمل (${ED.items.length})`],['hotels',`الفنادق (${ED.hotels.length})`],['notes',`تأشيرة وملاحظات (${ED.notes.length})`]];
+ const tabs=[['main','البيانات'],['stages',`المراحل (${ED.stages.length})`],['items',`يشمل / لا يشمل (${ED.items.length})`],['hotels',`الفنادق (${ED.hotels.length})`],['notes',`تأشيرة وملاحظات (${ED.notes.filter(n=>n.kind!=='faq').length})`],['faq',`أسئلة شائعة (${ED.notes.filter(n=>n.kind==='faq').length})`],['photos',`صور (${(ED.photos||[]).length})`]];
  const isRites = ['hajj','umrah'].includes(ED.full.category);
  const body= ED.tab==='main' ? `${checksBox()}<div class="form">${OFFER_FIELDS
    .filter(f=>f[0]!=='hajj'||isRites)
@@ -426,22 +426,63 @@ function drawEditor(){
      <div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th><th>الفئة</th><th>النص</th><th>سعر</th><th></th></tr></thead><tbody>${ED.items.map((it,i)=>`<tr><td><select onchange="ED.items[${i}].kind=this.value">${['include','exclude','addon'].map(k=>`<option ${it.kind===k?'selected':''}>${k}</option>`).join('')}</select></td><td><select onchange="ED.items[${i}].item_cat=this.value">${['transfer','flight','sight','activity','meal','hotel','free','shop','rites','optional','guide','visa','tax','personal'].map(k=>`<option ${it.item_cat===k?'selected':''}>${k}</option>`).join('')}</select></td><td><input style="width:100%" value="${esc(it.text_ar)}" oninput="ED.items[${i}].text_ar=this.value"></td><td><input style="width:90px" value="${esc(it.price_text||'')}" oninput="ED.items[${i}].price_text=this.value"></td><td><button class="btn sm danger" onclick="ED.items.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`
   : ED.tab==='hotels' ? `<div class="bar"><button class="btn sm" onclick="ED.hotels.push({city_ar:'',hotel_name:'',nights:null,date_range:'',sort_order:ED.hotels.length,_new:1});drawEditor()">+ فندق</button></div>
      <div class="tw"><table style="min-width:0"><thead><tr><th>المدينة</th><th>الفندق</th><th>ليالٍ</th><th>الفترة</th><th>hotel_id</th><th></th></tr></thead><tbody>${ED.hotels.map((h,i)=>`<tr><td><input value="${esc(h.city_ar)}" oninput="ED.hotels[${i}].city_ar=this.value"></td><td><input style="width:100%" value="${esc(h.hotel_name)}" oninput="ED.hotels[${i}].hotel_name=this.value"></td><td><input type="number" style="width:60px" value="${h.nights??''}" oninput="ED.hotels[${i}].nights=+this.value||null"></td><td><input value="${esc(h.date_range||'')}" oninput="ED.hotels[${i}].date_range=this.value"></td><td><input class="mono" style="width:110px" value="${esc(h.hotel_id||'')}" oninput="ED.hotels[${i}].hotel_id=this.value||null" placeholder="h_makkah"></td><td><button class="btn sm danger" onclick="ED.hotels.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`
+  : ED.tab==='photos' ? (!ED.id?`<div class="note">احفظ العرض أولاً ثم أضف الصور.</div>`:`<div class="bar"><label class="btn sm" style="cursor:pointer">+ أضف صوراً<input type="file" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="addPhotos(this.files)"></label>
+     <span class="note">صور حقيقية من رحلات الشركة السابقة. تُضغط تلقائياً وتُزال منها بيانات الموقع الجغرافي. لا ترفع صور أشخاص دون إذنهم.</span></div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px">${(ED.photos||[]).map((ph,i)=>`<div style="border:1px solid var(--line);border-radius:12px;padding:8px">
+       <img src="${esc(ph.external_url||'')}" alt="" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;display:block">
+       <input style="width:100%;margin-top:6px" placeholder="وصف (مثال: الفيوردات · يوليو ٢٠٢٥)" value="${esc(ph.caption_ar||'')}" onchange="savePhotoCaption(${i},this.value)">
+       <label style="display:flex;gap:6px;align-items:center;font-size:12px;margin-top:4px"><input type="checkbox" ${ph.service_kind==='past_trip'?'checked':''} onchange="savePhotoKind(${i},this.checked)"> من رحلة سابقة</label>
+       <button class="btn sm danger" style="margin-top:6px" onclick="delPhoto(${i})">حذف</button></div>`).join('')||'<div class="note">لا توجد صور بعد.</div>'}</div>`)
+  : ED.tab==='faq' ? `<div class="bar"><button class="btn sm" onclick="ED.notes.push({kind:'faq',label_ar:'',text_ar:'',label_en:'',text_en:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ سؤال شائع</button><span class="note">يظهر للعملاء في صفحة العرض تحت "أسئلة شائعة". حدّثه كلما تكرر سؤال من العملاء.</span></div>
+     ${ED.notes.map((n,i)=>n.kind!=='faq'?'':`<div class="form" style="border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px">
+       <div><label>السؤال<input value="${esc(n.label_ar||'')}" oninput="ED.notes[${i}].label_ar=this.value"></label></div>
+       <div><label>الإجابة<textarea rows="2" style="width:100%" oninput="ED.notes[${i}].text_ar=this.value">${esc(n.text_ar||'')}</textarea></label></div>
+       <div><label>Question (EN, optional)<input dir="ltr" value="${esc(n.label_en||'')}" oninput="ED.notes[${i}].label_en=this.value"></label></div>
+       <div><label>Answer (EN, optional)<textarea rows="2" dir="ltr" style="width:100%" oninput="ED.notes[${i}].text_en=this.value">${esc(n.text_en||'')}</textarea></label></div>
+       <button class="btn sm danger" onclick="ED.notes.splice(${i},1);drawEditor()">حذف السؤال</button></div>`).join('')||'<div class="note">لا توجد أسئلة بعد.</div>'}`
   : `<div class="bar"><button class="btn sm" onclick="ED.notes.push({kind:'visa_doc',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ مستند تأشيرة</button><button class="btn sm" onclick="ED.notes.push({kind:'note',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ ملاحظة</button><button class="btn sm" onclick="ED.notes.push({kind:'cancel',label_ar:'',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ شرط إلغاء</button></div>
-     <div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th><th>العنوان/المهلة</th><th>النص/الغرامة</th><th></th></tr></thead><tbody>${ED.notes.map((n,i)=>`<tr><td><select onchange="ED.notes[${i}].kind=this.value">${['visa_doc','note','cancel','payment'].map(k=>`<option ${n.kind===k?'selected':''}>${k}</option>`).join('')}</select></td><td><input value="${esc(n.label_ar||'')}" oninput="ED.notes[${i}].label_ar=this.value"></td><td><input style="width:100%" value="${esc(n.text_ar)}" oninput="ED.notes[${i}].text_ar=this.value"></td><td><button class="btn sm danger" onclick="ED.notes.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`;
+     <div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th><th>العنوان/المهلة</th><th>النص/الغرامة</th><th></th></tr></thead><tbody>${ED.notes.map((n,i)=>n.kind==='faq'?'':`<tr><td><select onchange="ED.notes[${i}].kind=this.value">${['visa_doc','note','cancel','payment'].map(k=>`<option ${n.kind===k?'selected':''}>${k}</option>`).join('')}</select></td><td><input value="${esc(n.label_ar||'')}" oninput="ED.notes[${i}].label_ar=this.value"></td><td><input style="width:100%" value="${esc(n.text_ar)}" oninput="ED.notes[${i}].text_ar=this.value"></td><td><button class="btn sm danger" onclick="ED.notes.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`;
  let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
  ov.innerHTML=`<div class="md"><div class="hd"><b>${ED.id?'تعديل الرحلة':'رحلة جديدة'}</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
   <div class="bd"><div class="tabs">${tabs.map(([k,l])=>`<button class="${ED.tab===k?'on':''}" onclick="readMain();ED.tab='${k}';drawEditor()">${l}</button>`).join('')}</div>${body}<div id="ederr"></div></div>
   <div class="ft">${ED.id?`<a class="btn" href="./index.html#/trip/${ED.id}" target="_blank">معاينة ↗</a>`:''}<button class="btn pri" onclick="saveOffer()">حفظ</button>${!isAdminRole(S.me.role)&&ED.id&&['draft','rejected'].includes(ED.full.status)?`<button class="btn ok" onclick="saveOffer(true)">حفظ وإرسال للمراجعة ✓</button>`:''}</div></div>`;
 }
+
+/* resize + crop in the browser: unified 4:3 covers, compressed gallery photos, location data (EXIF) removed because the picture is redrawn */
+async function prepImage(file,mode){
+ if(!file||!/^image\/(jpeg|png|webp)$/.test(file.type)) throw new Error('الصور المسموحة: JPG أو PNG أو WebP');
+ if(file.size>15*1024*1024) throw new Error('الصورة أكبر من 15 ميجا');
+ const bmp=await createImageBitmap(file);
+ let sx=0,sy=0,sw=bmp.width,sh=bmp.height,w,h;
+ if(mode==='cover'){ const r=4/3; if(sw/sh>r){ const nw=sh*r; sx=(sw-nw)/2; sw=nw; } else { const nh=sw/r; sy=(sh-nh)/2; sh=nh; } w=Math.min(1200,Math.round(sw)); h=Math.round(w*3/4); }
+ else { const k=Math.min(1,1600/Math.max(sw,sh)); w=Math.round(sw*k); h=Math.round(sh*k); }
+ const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(bmp,sx,sy,sw,sh,0,0,w,h);
+ const blob=await new Promise(ok=>c.toBlob(ok,'image/jpeg',0.84)); if(!blob) throw new Error('تعذّر معالجة الصورة'); return blob;
+}
+async function putPhoto(blob,folder){
+ const path=`${upFolder(ED.full?.company_id)}/${folder}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
+ const r=await fetch(S.url+'/storage/v1/object/offer-photos/'+path,{method:'POST',headers:{apikey:S.key,Authorization:'Bearer '+await freshToken(),'Content-Type':'image/jpeg'},body:blob});
+ if(!r.ok) throw new Error((await r.text()).slice(0,140));
+ return {path,url:S.url+'/storage/v1/object/public/offer-photos/'+path};
+}
+async function addPhotos(files){
+ if(!ED?.id||!files?.length) return; let n=0;
+ for(const f of [...files].slice(0,12)){
+  try{ const {path,url}=await putPhoto(await prepImage(f,'gallery'),'gallery');
+   const [row]=await post('wijha_photos',{offer_id:ED.id,company_id:ED.full.company_id,storage_path:path,external_url:url,service_kind:'past_trip',sort_order:(ED.photos||[]).length,uploaded_by:S.me.id});
+   (ED.photos=ED.photos||[]).push(row); n++; }catch(e){ toast(f.name+': '+e.message,true); }
+ }
+ if(n) toast('تم رفع '+n+' صورة'); drawEditor();
+}
+async function savePhotoCaption(i,v){ const ph=ED.photos[i]; try{ await patch('wijha_photos?id=eq.'+ph.id,{caption_ar:v||null}); ph.caption_ar=v; }catch(e){toast(e.message,true)} }
+async function savePhotoKind(i,on){ const ph=ED.photos[i]; try{ await patch('wijha_photos?id=eq.'+ph.id,{service_kind:on?'past_trip':'offer'}); ph.service_kind=on?'past_trip':'offer'; }catch(e){toast(e.message,true)} }
+async function delPhoto(i){ const ph=ED.photos[i]; if(!confirm('حذف هذه الصورة؟'))return; try{ await del('wijha_photos?id=eq.'+ph.id);
+  if(ph.storage_path) fetch(S.url+'/storage/v1/object/offer-photos/'+ph.storage_path,{method:'DELETE',headers:{apikey:S.key,Authorization:'Bearer '+await freshToken()}}).catch(()=>{});
+  ED.photos.splice(i,1); drawEditor(); }catch(e){toast(e.message,true)} }
 async function uploadCover(file){
  if(!file)return;
- try{ const ext=safeExt(file,'jpg');
-  const path=`${upFolder(ED.full?.company_id)}/covers/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
-  const r=await fetch(S.url+'/storage/v1/object/offer-photos/'+path,{method:'POST',
-   headers:{apikey:S.key,Authorization:'Bearer '+await freshToken(),'Content-Type':file.type},body:file});
-  if(!r.ok) throw new Error((await r.text()).slice(0,140));
-  ED.full.cover_url = S.url+'/storage/v1/object/public/offer-photos/'+path;
-  toast('تم رفع الصورة'); drawEditor();
+ try{ const {url}=await putPhoto(await prepImage(file,'cover'),'covers');
+  ED.full.cover_url=url; toast('تم رفع الصورة (قُصّت تلقائياً بنسبة 4:3)'); drawEditor();
  }catch(e){toast(e.message,true)}
 }
 function readMain(){ if(ED.tab!=='main')return; if(!anyCo(S.me.role)) ED.full.company_id=S.me.company_id; document.querySelectorAll('#ov [data-k]').forEach(el=>{ const k=el.dataset.k; if(el.disabled)return; let v=el.value;
@@ -468,9 +509,10 @@ async function saveOffer(submit){
   for(const [tb,rows,map] of [
     ['offer_items',ED.items,it=>({offer_id:id,kind:it.kind,item_cat:it.item_cat||null,text_ar:it.text_ar||'—',price_text:it.price_text||null,sort_order:it.sort_order??0})],
     ['offer_hotels',ED.hotels,h=>({offer_id:id,sort_order:h.sort_order??0,city_ar:h.city_ar||'—',hotel_name:h.hotel_name||'—',nights:h.nights||null,date_range:h.date_range||null,hotel_id:h.hotel_id||null})],
-    ['offer_notes',ED.notes,n=>({offer_id:id,kind:n.kind,label_ar:n.label_ar||null,text_ar:n.text_ar||null,sort_order:n.sort_order??0})]]){
+    ['offer_notes',ED.notes,n=>({offer_id:id,kind:n.kind,label_ar:n.label_ar||null,label_en:n.label_en||null,text_ar:n.text_ar||null,text_en:n.text_en||null,sort_order:n.sort_order??0})]]){
    if(ED.id) await del(`${tb}?offer_id=eq.${id}`);
-   if(rows.length) await post(tb,rows.map(map),'return=minimal');
+   const keep=tb==='offer_notes'?rows.filter(r=>r.kind!=='faq'||(r.label_ar&&r.text_ar)):rows;
+   if(keep.length) await post(tb,keep.map(map),'return=minimal');
   }
   toast(isAdminRole(S.me.role)?'تم الحفظ':'تم الحفظ — بانتظار مراجعة فريق وجهة'); closeEd(); await loadAll(); render();
  }catch(e){ document.getElementById('ederr').innerHTML='<div class="err">'+esc(e.message)+'</div>' }
