@@ -472,6 +472,7 @@ footer h4{font-size:14px;margin-bottom:10px}
 <script defer src="blocks/faq.js"></script>
 <script defer src="blocks/photos.js"></script>
 <script defer src="blocks/freshness.js"></script>
+<script defer src="blocks/vault-intake.js"></script>
 </head>
 <body>
 <header class="nav"><div class="wrap">
@@ -2695,6 +2696,7 @@ dash=async function(){
  document.getElementById('app').innerHTML=`<div class="wrap">
   <div class="head"><div class="crumbs"><span class="tag">🏢 ${esc(c.ar||CO?.name||'')}</span>${c.verified?`<span class="vf-pill">✓ ${t('verified')}${c.lic?' · '+esc(c.lic):''}</span>`:`<span class="tag warn">${rev?.wijha_review==='rejected'?(L==='ar'?'الطلب مرفوض':'Application rejected'):(L==='ar'?'الطلب قيد المراجعة — رحلاتك تظهر بعد الاعتماد':'Under review — your trips go live once approved')}</span>${rev?.wijha_review_note?`<span class="tag">${esc(rev.wijha_review_note)}</span>`:''}`}<span class="tag">${esc(PROF.name||PROF.email)}</span><button class="tag" onclick="signOutAll()">${t('signout')}</button></div><h1>${t('dash')}</h1></div>
   <div class="kpis"><div class="kpi"><b>${mine.length}</b><small>${L==='ar'?'رحلة منشورة':'live trips'}</small></div><div class="kpi"><b>${MYTHREADS.length}</b><small>${L==='ar'?'محادثة':'conversations'}</small></div><div class="kpi"><b>${MYTHREADS.reduce((a,x)=>a+(x.company_unread||0),0)}</b><small>${L==='ar'?'بانتظار ردّك':'awaiting your reply'}</small></div><div class="kpi"><b>${imports.filter(i=>i.status!=='imported').length}</b><small>${L==='ar'?'رابط قيد الاستيراد':'URLs importing'}</small></div></div>
+  ${Wijha.html('dash.vault',{companyId:cid,staff:false})}
   <div class="acctgrid">
    <div class="panel"><h3>${L==='ar'?'أضف رحلة من رابط':'Add a trip from a URL'}</h3><p class="lead" style="font-size:13px">${L==='ar'?'الصق رابط صفحة الرحلة على موقعك أو النشرة. تُستخرج البيانات وتُراجع ثم تُنشر باسمك.':'Paste the trip page or brochure link. We extract the data, review it, and publish under your name.'}</p>
     <input id="impUrl" placeholder="https://…" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:14px"><input id="impNote" placeholder="${L==='ar'?'ملاحظة (اختياري)':'Note (optional)'}" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:14px">
@@ -2707,6 +2709,16 @@ dash=async function(){
     <a href="./emails.html" target="_blank" rel="noopener" class="note" style="display:block;margin-top:10px;text-decoration:underline">✉ ${t('dash_emails')} →</a></div>
   </div></div>`;
 };
+/* ── secure upload (blocks/vault-intake.js): calls the bridge / extract functions with a fresh token. Never throws: status 0 = no connection. ── */
+async function vaultToken(){
+ try{ const exp=JSON.parse(atob(AU.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).exp; if(!exp||exp*1000-Date.now()<60000) await arefresh(); }catch(e){ if(AU&&AU.refresh_token) await arefresh(); }
+ return authed()?AU.access_token:'';
+}
+async function vaultFn(name,body){
+ try{ const r=await fetch(SBU().replace(/\/$/,'')+'/functions/v1/'+name,{method:'POST',headers:{apikey:SBK(),Authorization:'Bearer '+await vaultToken(),'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return {status:r.status,body:await r.json().catch(()=>({}))}; }catch(e){ return {status:0,body:{error:String(e&&e.message||e)}}; }
+}
+const vaultBridge=body=>vaultFn('wijha-vault-bridge',body), vaultExtract=id=>vaultFn('wijha-extract',{import_id:id});
 async function submitImport(cid){ const url=v('impUrl'); if(!/^https?:\/\//.test(url)){showErr('impErr',L==='ar'?'رابط غير صحيح':'Invalid URL');return}
  try{ await apost('wijha_imports',{company_id:cid,url,note:v('impNote')||null,kind:'offer',submitted_by:AU.user.id},'return=minimal'); toast(L==='ar'?'تم — سيظهر في طابور الاستيراد':'Submitted — queued for import'); dash(); }catch(e){showErr('impErr',e.message)} }
 
@@ -2785,7 +2797,8 @@ const TURNSTILE_SITE_KEY='';
 /* Legal pages and the cookie notice now live in blocks/legal.js. Everything blocks may use from this page is handed over here, once. */
 Wijha.host({
   lang:()=>L, esc, toast:m=>toast(m), go:h=>go(h), refresh:()=>route(),
-  get:p=>API.select(p), post:(tb,row)=>API.insert(tb,row)
+  get:p=>API.select(p), post:(tb,row)=>API.insert(tb,row),
+  extras:{ bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
 });
 /* ── captcha (Cloudflare Turnstile): asked only when signing up, signing in or resetting a password ── */
 let _tsLoad=null;

@@ -94,6 +94,7 @@ pre.json{background:var(--bg);border:1px solid var(--line);border-radius:9px;pad
 <script defer src="blocks/admin-faq.js"></script>
 <script defer src="blocks/admin-photos.js"></script>
 <script defer src="blocks/admin-freshness.js"></script>
+<script defer src="blocks/vault-intake.js"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -784,7 +785,7 @@ function intakeV(){
  <p class="sub">أرسل العرض بأي شكل عندك — ملف PDF أو Word أو صورة الإعلان، أو اكتبه، أو سجّله بصوتك. وجهة تقرؤه وتحوّله إلى صفحة عرض بنفس تصنيفات كل الشركات، ثم تراجعه أنت قبل النشر.</p>
  <p class="note">📊 تفضّل الإدخال المنظّم؟ <a href="./wijha-offers-template.xlsx" download>حمّل قالب Excel</a>، املأه (عرض في كل صف، حتى 50 عرضاً)، ثم ارفعه هنا: يُقرأ حرفياً بدون ذكاء اصطناعي. أو الصق الفقرة كاملة في خانة النص وسنحوّلها.</p>
  <div class="tw" style="padding:18px">
-  ${pickAny?`<div class="form" style="margin-bottom:12px"><div class="w2"><label>الشركة صاحبة العرض<select id="inCo"><option value="">— اختر الشركة —</option>${S.companies.map(c=>`<option value="${c.id}">${esc(c.name_ar)}${c.wijha_review!=='approved'?' (قيد المراجعة)':''}</option>`).join('')}</select></label></div></div>`:`<input type="hidden" id="inCo" value="${cid}">`}
+  ${pickAny?`<div class="form" style="margin-bottom:12px"><div class="w2"><label>الشركة صاحبة العرض<select id="inCo" onchange="INTAKE.co=this.value;Wijha.use('vault-intake')?.companyChanged(this.value)"><option value="">— اختر الشركة —</option>${S.companies.map(c=>`<option value="${c.id}"${INTAKE.co===c.id?' selected':''}>${esc(c.name_ar)}${c.wijha_review!=='approved'?' (قيد المراجعة)':''}</option>`).join('')}</select></label></div></div>`:`<input type="hidden" id="inCo" value="${cid}">`}
   <label id="drop" class="drop" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')"
      ondrop="event.preventDefault();this.classList.remove('over');addIntakeFiles(event.dataTransfer.files)">
    <input type="file" id="inFile" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,image/*,audio/*" onchange="addIntakeFiles(this.files)" style="display:none">
@@ -805,6 +806,7 @@ function intakeV(){
    <button class="btn" onclick="editOffer(null)">أو املأ النموذج يدوياً</button></div>
   <div id="inErr"></div><div id="inProg"></div>
  </div>
+ ${Wijha.html('intake.vault',{companyId:pickAny?(INTAKE.co||''):cid,staff:pickAny})}
  <h2 style="margin-top:22px">ما أرسلته</h2>
  <div class="tw"><table><thead><tr><th>المصدر</th><th>الشركة</th><th>الحالة</th><th>أُضيف</th><th></th></tr></thead><tbody>
  ${q.map(i=>{const s=st[i.status]||[i.status,'warn']; const made=i.payload?.created||[];
@@ -869,16 +871,22 @@ async function submitIntake(){
 }
 
 /* calls the wijha-extract function; if it is not deployed yet the upload simply waits in the list for the team */
+async function extractCall(id){   /* the one place that calls wijha-extract; used by the upload flow and by blocks/vault-intake.js. Never throws: status 0 = no connection */
+ try{ const r=await fetch(S.url+'/functions/v1/wijha-extract',{method:'POST',headers:{apikey:S.key,Authorization:'Bearer '+await freshToken(),'Content-Type':'application/json'},body:JSON.stringify({import_id:id})});
+  return {status:r.status,body:await r.json().catch(()=>({}))}; }catch(e){ return {status:0,body:{error:e.message}}; }
+}
+async function bridgeCall(body){
+ try{ const r=await fetch(S.url+'/functions/v1/wijha-vault-bridge',{method:'POST',headers:{apikey:S.key,Authorization:'Bearer '+await freshToken(),'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return {status:r.status,body:await r.json().catch(()=>({}))}; }catch(e){ return {status:0,body:{error:e.message}}; }
+}
 async function processImport(id,redraw){
- try{
-  const r=await fetch(S.url+'/functions/v1/wijha-extract',{method:'POST',headers:{apikey:S.key,Authorization:'Bearer '+await freshToken(),'Content-Type':'application/json'},body:JSON.stringify({import_id:id})});
-  const b=await r.json().catch(()=>({}));
-  if(r.status===404) toast('القراءة التلقائية لم تُفعّل بعد — حُفظ العرض وسيُراجعه فريق وجهة',true);
-  else if(!r.ok) toast(b.error||('تعذّرت القراءة ('+r.status+')'),true);
-  else{ const n=b.created?.length||0, w=(b.created||[]).reduce((a,c)=>a+(c.checks?.length||0),0);
+ const {status,body:b}=await extractCall(id);
+ if(status===0) toast('تعذّر الاتصال: '+(b.error||''),true);
+ else if(status===404) toast('القراءة التلقائية لم تُفعّل بعد — حُفظ العرض وسيُراجعه فريق وجهة',true);
+ else if(status<200||status>=300) toast(b.error||('تعذّرت القراءة ('+status+')'),true);
+ else{ const n=b.created?.length||0, w=(b.created||[]).reduce((a,c)=>a+(c.checks?.length||0),0);
     toast(n>1?`تم إنشاء ${n} عروض — راجعها قبل الإرسال`:`تم إنشاء العرض — راجعه قبل الإرسال${w?` (${w} نقطة تحتاج تأكيد)`:''}`);
     if(n===1&&redraw!==false){ await loadAll(); render(); return editOffer(b.created[0].offer_id); } }
- }catch(e){ toast('تعذّر الاتصال: '+e.message,true) }
  if(redraw){ await loadAll(); render(); }
 }
 async function openIntakeFile(path){
@@ -1117,6 +1125,7 @@ Wijha.host({
   lang:()=>'ar', esc, toast:(m,bad)=>toast(m,bad), get, post, patch, del, rpc,
   refresh:(name,scope)=>scope==='editor'?drawEditor():render(),
   extras:{ prepImage, putPhoto, me:()=>S.me,
+    bridge:bridgeCall, extract:extractCall, review:id=>editOffer(id), reloadList:async()=>{ await loadAll(); render(); },
     removeFile:async path=>{ try{ await fetch(S.url+'/storage/v1/object/offer-photos/'+path,{method:'DELETE',headers:{apikey:S.key,Authorization:'Bearer '+await freshToken()}}); }catch(e){} } }
 });
 boot();
