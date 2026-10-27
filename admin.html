@@ -89,6 +89,11 @@ pre.json{background:var(--bg);border:1px solid var(--line);border-radius:9px;pad
 .drop.over,.drop:hover{border-color:#e0961d;background:#fff4dd}
 .btn.danger{background:#fdeaea;color:#c23b3b}
 </style>
+<script src="blocks/core.js"></script>
+<script>window.Wijha=window.Wijha||{block(){},host(){},html(){return ''},mount(){},use(){return null},status(){return {}}};</script>
+<script defer src="blocks/admin-faq.js"></script>
+<script defer src="blocks/admin-photos.js"></script>
+<script defer src="blocks/admin-freshness.js"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -358,13 +363,15 @@ function offersV(){
   <button class="btn pri" onclick="editOffer(null)">+ رحلة جديدة</button>
   ${isAdminRole(S.me.role)?`<button class="btn ok" onclick="publishAllNonInternal()">نشر كل الرحلات غير الداخلية</button>`:''}
   ${S.sel.size?`<button class="btn" onclick="bulkSel('status')">حالة (${S.sel.size})</button><button class="btn danger" onclick="bulkSel('delete')">حذف (${S.sel.size})</button>`:''}</div>
- <div class="tw"><table><thead><tr><th><input type="checkbox" onchange="rows_toggle(this.checked)"></th><th>الرقم المرجعي</th><th>الرحلة</th><th>الشركة</th><th>النوع</th><th>التواريخ</th><th>ينتهي</th><th>EGP</th><th>الظهور</th><th>برنامج</th><th>المراجعة</th><th></th></tr></thead><tbody>
+ ${Wijha.html('offers.fresh.panel',{offers:S.offers,co:f.co,isAdmin:isAdminRole(S.me.role),canConfirm:isAdminRole(S.me.role)||isCoRole(S.me.role),myCo:S.me.company_id,coName:coN})}
+ <div class="tw"><table><thead><tr><th><input type="checkbox" onchange="rows_toggle(this.checked)"></th><th>الرقم المرجعي</th><th>الرحلة</th><th>الشركة</th><th>النوع</th><th>التواريخ</th><th>ينتهي</th><th>EGP</th><th>تأكيد السعر</th><th>الظهور</th><th>برنامج</th><th>المراجعة</th><th></th></tr></thead><tbody>
  ${rows.map(o=>`<tr class="${S.sel.has(o.id)?'sel':''}"><td><input type="checkbox" ${S.sel.has(o.id)?'checked':''} onchange="S.sel[this.checked?'add':'delete']('${o.id}');render()"></td>
   <td><span class="mono" style="font-weight:700;color:var(--amber-ink)">${esc(o.ref_code||'—')}</span></td>
   <td><b>${esc(o.title_ar)}</b>${o.is_sample?' <span class="pill warn">تجريبي</span>':''}${o.listed_by&&o.listed_by!=='company'&&!o.is_claimed?` <span class="pill info" title="لم ترفعه الشركة بنفسها">${o.listed_by==='agent'?'جمعه الوكيل الآلي':'جمعته وجهة'}</span>`:''}<small>${esc(o.dest_ar||o.title_en||'')}</small>${o.source_kind?`<small class="dim">المصدر: ${esc(o.source_kind)}</small>`:''}</td><td>${esc(coN(o.company_id))}</td>
   <td>${CATL[o.category]}<small>${esc(o.sub_category||'')}</small></td><td>${esc(o.dates_text_ar||o.starts_on||'—')}<small>${o.days?o.days+' يوم':''}</small></td>
   <td class="num">${o.expires_on?`<span class="pill ${new Date(o.expires_on)<new Date()?'bad':'ok'}">${o.expires_on}</span>`:'<span class="pill warn">بدون</span>'}</td>
   <td class="num">${nf(egp(o))}<small class="dim">${o.currency!=='EGP'?nf(o.price_quad??o.price_double)+' '+o.currency:''}</small></td>
+  <td>${Wijha.html('offers.fresh.cell',{offer:o,canConfirm:isAdminRole(S.me.role)||isCoRole(S.me.role)},{quiet:true})}</td>
   <td>${({public:'<span class="pill ok">عام</span>',link:'<span class="pill info">برابط فقط</span>',internal:'<span class="pill">داخلي</span>'})[o.visibility||'public']}</td>
   <td class="num">${o.stage_count} <span class="dim">/ ${o.item_count} / ${o.hotel_count}</span>${o.detail_level==='outline'?'<small>outline</small>':''}</td>
   <td><span class="pill ${o.review_state==='approved'?'ok':o.review_state==='rejected'?'bad':'warn'}">${({draft:'مسودة',pending:'بانتظار المراجعة',approved:'معتمد',rejected:'مرفوض'})[o.review_state||'approved']}</span>${o.review_note?`<small>${esc(o.review_note)}</small>`:''}</td>
@@ -373,7 +380,7 @@ function offersV(){
    ${o.internal_only||o.visibility==='internal'?`<button class="btn sm" onclick="toast('هذه الرحلة داخلية — لا تظهر على الموقع العام',true)">معاينة (داخلية)</button>`:o.status!=='published'||o.review_state!=='approved'?`<button class="btn sm" title="الموقع العام يعرض المنشور والمعتمد فقط" onclick="toast('هذا العرض ${o.status!=='published'?'مسودة':'غير معتمد'} — لا يظهر على الموقع حتى ${o.review_state!=='approved'?'تعتمده ثم ':''}تنشره',true)">معاينة (غير منشور)</button>`:`<a class="btn sm" href="./index.html#/trip/${o.id}" target="_blank">معاينة ↗</a>`}
    ${isAdminRole(S.me.role)&&o.review_state==='approved'&&!o.internal_only&&o.visibility!=='internal'?(o.status==='published'?`<button class="btn sm" title="إخفاء من الموقع" onclick="setPublished('${o.id}',false)">إخفاء</button>`:`<button class="btn sm ok" title="إظهار على الموقع" onclick="setPublished('${o.id}',true)">نشر</button>`):''}
    ${isAdminRole(S.me.role)&&o.review_state==='pending'?`<button class="btn sm ok" onclick="reviewOffer('${o.id}','approved')">اعتماد</button><button class="btn sm danger" onclick="reviewOffer('${o.id}','rejected')">رفض</button>`:''}
-   <button class="btn sm danger" onclick="delOffer('${o.id}')">حذف</button></td></tr>`).join('')||'<tr><td colspan="12" class="dim">لا نتائج</td></tr>'}</tbody></table></div>
+   <button class="btn sm danger" onclick="delOffer('${o.id}')">حذف</button></td></tr>`).join('')||'<tr><td colspan="13" class="dim">لا نتائج</td></tr>'}</tbody></table></div>
  <p class="note">برنامج = مراحل / بنود / فنادق. "outline" = بيانات رأسية فقط، البرنامج اليومي لم يُدخل بعد.</p>`;
 }
 function rows_toggle(on){const f=S.filter;S.offers.filter(o=>(!f.cat||o.category===f.cat)&&(!f.status||o.status===f.status)&&(!f.co||o.company_id===f.co)).forEach(o=>on?S.sel.add(o.id):S.sel.delete(o.id));render()}
@@ -459,20 +466,8 @@ function drawEditor(){
      <div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th><th>الفئة</th><th>النص</th><th>سعر</th><th></th></tr></thead><tbody>${ED.items.map((it,i)=>`<tr><td><select onchange="ED.items[${i}].kind=this.value">${optList(['include','exclude','addon'],it.kind,LBL.kind)}</select></td><td><select onchange="ED.items[${i}].item_cat=this.value">${optList(['transfer','flight','sight','activity','meal','hotel','free','shop','rites','optional','guide','visa','tax','personal'],it.item_cat,LBL.icat)}</select></td><td><input style="width:100%" value="${esc(it.text_ar)}" oninput="ED.items[${i}].text_ar=this.value"></td><td><input style="width:90px" value="${esc(it.price_text||'')}" oninput="ED.items[${i}].price_text=this.value"></td><td><button class="btn sm danger" onclick="ED.items.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`
   : ED.tab==='hotels' ? `<div class="bar"><button class="btn sm" onclick="ED.hotels.push({city_ar:'',hotel_name:'',nights:null,date_range:'',sort_order:ED.hotels.length,_new:1});drawEditor()">+ فندق</button></div>
      <div class="tw"><table style="min-width:0"><thead><tr><th>المدينة</th><th>الفندق</th><th>ليالٍ</th><th>الفترة</th><th>hotel_id</th><th></th></tr></thead><tbody>${ED.hotels.map((h,i)=>`<tr><td><input value="${esc(h.city_ar)}" oninput="ED.hotels[${i}].city_ar=this.value"></td><td><input style="width:100%" value="${esc(h.hotel_name)}" oninput="ED.hotels[${i}].hotel_name=this.value"></td><td><input type="number" style="width:60px" value="${h.nights??''}" oninput="ED.hotels[${i}].nights=+this.value||null"></td><td><input value="${esc(h.date_range||'')}" oninput="ED.hotels[${i}].date_range=this.value"></td><td>${S.hotelsList?`<select style="max-width:170px" onchange="ED.hotels[${i}].hotel_id=this.value||null"><option value="">— بدون ربط —</option>${S.hotelsList.map(x=>`<option value="${esc(x.id)}" ${h.hotel_id===x.id?'selected':''}>${esc(x.name||x.id)}</option>`).join('')}${h.hotel_id&&!S.hotelsList.some(x=>x.id===h.hotel_id)?`<option value="${esc(h.hotel_id)}" selected>${esc(h.hotel_id)} (غير موجود)</option>`:''}</select>`:`<input class="mono" style="width:110px" value="${esc(h.hotel_id||'')}" oninput="ED.hotels[${i}].hotel_id=this.value||null" placeholder="h_makkah">`}</td><td><button class="btn sm danger" onclick="ED.hotels.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`
-  : ED.tab==='photos' ? (!ED.id?`<div class="note">احفظ العرض أولاً ثم أضف الصور.</div>`:`<div class="bar"><label class="btn sm" style="cursor:pointer">+ أضف صوراً<input type="file" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="addPhotos(this.files)"></label>
-     <span class="note">صور حقيقية من رحلات الشركة السابقة. تُضغط تلقائياً وتُزال منها بيانات الموقع الجغرافي. لا ترفع صور أشخاص دون إذنهم.</span></div>
-     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px">${(ED.photos||[]).map((ph,i)=>`<div style="border:1px solid var(--line);border-radius:12px;padding:8px">
-       <img src="${esc(ph.external_url||'')}" alt="" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;display:block">
-       <input style="width:100%;margin-top:6px" placeholder="وصف (مثال: الفيوردات · يوليو ٢٠٢٥)" value="${esc(ph.caption_ar||'')}" onchange="savePhotoCaption(${i},this.value)">
-       <label style="display:flex;gap:6px;align-items:center;font-size:12px;margin-top:4px"><input type="checkbox" ${ph.service_kind==='past_trip'?'checked':''} onchange="savePhotoKind(${i},this.checked)"> من رحلة سابقة</label>
-       <button class="btn sm danger" style="margin-top:6px" onclick="delPhoto(${i})">حذف</button></div>`).join('')||'<div class="note">لا توجد صور بعد.</div>'}</div>`)
-  : ED.tab==='faq' ? `<div class="bar"><button class="btn sm" onclick="ED.notes.push({kind:'faq',label_ar:'',text_ar:'',label_en:'',text_en:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ سؤال شائع</button><span class="note">يظهر للعملاء في صفحة العرض تحت "أسئلة شائعة". حدّثه كلما تكرر سؤال من العملاء.</span></div>
-     ${ED.notes.map((n,i)=>n.kind!=='faq'?'':`<div class="form" style="border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px">
-       <div><label>السؤال<input value="${esc(n.label_ar||'')}" oninput="ED.notes[${i}].label_ar=this.value"></label></div>
-       <div><label>الإجابة<textarea rows="2" style="width:100%" oninput="ED.notes[${i}].text_ar=this.value">${esc(n.text_ar||'')}</textarea></label></div>
-       <div><label>Question (EN, optional)<input dir="ltr" value="${esc(n.label_en||'')}" oninput="ED.notes[${i}].label_en=this.value"></label></div>
-       <div><label>Answer (EN, optional)<textarea rows="2" dir="ltr" style="width:100%" oninput="ED.notes[${i}].text_en=this.value">${esc(n.text_en||'')}</textarea></label></div>
-       <button class="btn sm danger" onclick="ED.notes.splice(${i},1);drawEditor()">حذف السؤال</button></div>`).join('')||'<div class="note">لا توجد أسئلة بعد.</div>'}`
+  : ED.tab==='photos' ? Wijha.html('editor.photos',{ED})
+  : ED.tab==='faq' ? Wijha.html('editor.faq',{ED})
   : `<div class="bar"><button class="btn sm" onclick="ED.notes.push({kind:'visa_doc',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ مستند تأشيرة</button><button class="btn sm" onclick="ED.notes.push({kind:'note',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ ملاحظة</button><button class="btn sm" onclick="ED.notes.push({kind:'cancel',label_ar:'',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ شرط إلغاء</button></div>
      <div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th><th>العنوان/المهلة</th><th>النص/الغرامة</th><th></th></tr></thead><tbody>${ED.notes.map((n,i)=>n.kind==='faq'?'':`<tr><td><select onchange="ED.notes[${i}].kind=this.value">${optList(['visa_doc','note','cancel','payment'],n.kind,LBL.note)}</select></td><td><input value="${esc(n.label_ar||'')}" oninput="ED.notes[${i}].label_ar=this.value"></td><td><input style="width:100%" value="${esc(n.text_ar)}" oninput="ED.notes[${i}].text_ar=this.value"></td><td><button class="btn sm danger" onclick="ED.notes.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`;
  let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
@@ -498,20 +493,7 @@ async function putPhoto(blob,folder){
  if(!r.ok) throw new Error((await r.text()).slice(0,140));
  return {path,url:S.url+'/storage/v1/object/public/offer-photos/'+path};
 }
-async function addPhotos(files){
- if(!ED?.id||!files?.length) return; let n=0;
- for(const f of [...files].slice(0,12)){
-  try{ const {path,url}=await putPhoto(await prepImage(f,'gallery'),'gallery');
-   const [row]=await post('wijha_photos',{offer_id:ED.id,company_id:ED.full.company_id,storage_path:path,external_url:url,service_kind:'past_trip',sort_order:(ED.photos||[]).length,uploaded_by:S.me.id});
-   (ED.photos=ED.photos||[]).push(row); n++; }catch(e){ toast(f.name+': '+e.message,true); }
- }
- if(n) toast('تم رفع '+n+' صورة'); drawEditor();
-}
-async function savePhotoCaption(i,v){ const ph=ED.photos[i]; try{ await patch('wijha_photos?id=eq.'+ph.id,{caption_ar:v||null}); ph.caption_ar=v; }catch(e){toast(e.message,true)} }
-async function savePhotoKind(i,on){ const ph=ED.photos[i]; try{ await patch('wijha_photos?id=eq.'+ph.id,{service_kind:on?'past_trip':'offer'}); ph.service_kind=on?'past_trip':'offer'; }catch(e){toast(e.message,true)} }
-async function delPhoto(i){ const ph=ED.photos[i]; if(!confirm('حذف هذه الصورة؟'))return; try{ await del('wijha_photos?id=eq.'+ph.id);
-  if(ph.storage_path) fetch(S.url+'/storage/v1/object/offer-photos/'+ph.storage_path,{method:'DELETE',headers:{apikey:S.key,Authorization:'Bearer '+await freshToken()}}).catch(()=>{});
-  ED.photos.splice(i,1); drawEditor(); }catch(e){toast(e.message,true)} }
+/* gallery add / caption / flag / delete: blocks/admin-photos.js */
 async function uploadCover(file){
  if(!file)return;
  try{ const {url}=await putPhoto(await prepImage(file,'cover'),'covers');
@@ -1130,6 +1112,13 @@ function insights(){
  <h2>الأعلى تفاعلاً</h2><div class="tw"><table><thead><tr><th>الرحلة</th><th>الشركة</th><th>مشاهدة</th><th>حفظ</th><th>استفسار</th><th>محادثة</th></tr></thead><tbody>${top.map(r=>`<tr><td><b>${esc(r.o.title_ar)}</b></td><td>${esc(coN(r.o.company_id))}</td><td class="num">${r.view}</td><td class="num">${r.save}</td><td class="num">${r.enquiry}</td><td class="num">${r.chat_open}</td></tr>`).join('')||'<tr><td colspan="6" class="dim">لا أحداث بعد — تظهر بعد تصفح حقيقي للموقع</td></tr>'}</tbody></table></div>
  <h2>كلمات البحث</h2><div class="tw"><table style="min-width:0"><tbody>${tt.map(([k,n])=>`<tr><td>${esc(k)}</td><td class="num">${n}</td></tr>`).join('')||'<tr><td class="dim">لا بحث مسجّل بعد</td></tr>'}</tbody></table></div>`;
 }
+/* Everything the blocks in /blocks/ may use from this page, handed over once (they never touch the page's globals). */
+Wijha.host({
+  lang:()=>'ar', esc, toast:(m,bad)=>toast(m,bad), get, post, patch, del, rpc,
+  refresh:(name,scope)=>scope==='editor'?drawEditor():render(),
+  extras:{ prepImage, putPhoto, me:()=>S.me,
+    removeFile:async path=>{ try{ await fetch(S.url+'/storage/v1/object/offer-photos/'+path,{method:'DELETE',headers:{apikey:S.key,Authorization:'Bearer '+await freshToken()}}); }catch(e){} } }
+});
 boot();
 </script>
 </body>

@@ -466,6 +466,12 @@ footer h4{font-size:14px;margin-bottom:10px}
 }
 @media(prefers-reduced-motion:reduce){.h-skel{animation:none}.h-cat-art{transition:none!important}.h-cat:hover .h-cat-art{transform:none}}
 </style>
+<script src="blocks/core.js"></script>
+<script>window.Wijha=window.Wijha||{block(){},host(){},html(){return ''},mount(){},use(){return null},status(){return {}}};</script>
+<script defer src="blocks/legal.js"></script>
+<script defer src="blocks/faq.js"></script>
+<script defer src="blocks/photos.js"></script>
+<script defer src="blocks/freshness.js"></script>
 </head>
 <body>
 <header class="nav"><div class="wrap">
@@ -1333,7 +1339,7 @@ function route(){
  window.scrollTo(0,0); document.getElementById('mbar').classList.add('hidden'); document.body.style.overflow='';
  document.querySelectorAll('[data-nav]').forEach(a=>a.classList.remove('on'));
  syncNav();
- if(h.startsWith('#/legal/')) return legalPage(h.slice(8));
+ if(h.startsWith('#/legal/')) return Wijha.mount('page.legal',app,{k:h.slice(8)});
  if(h.startsWith('#/trip/')) return detail(h.slice(7));
  if(h.startsWith('#/hotel/')) return hotelPage(h.slice(8));
  if(h.startsWith('#/trips')) { const c=(h.split('/')[2]||'').split('?')[0]; list(c);
@@ -1375,7 +1381,7 @@ function card(t_){
     <div class="ttl">${esc(tripName(t_,L))}</div>
     <div class="co">${esc(L==='ar'?c.ar:c.en)}${c.verified?' <span class="vf">✓</span>':''}${byWijha(t_)?` <span class="by-w" title="${esc(LISTED_TXT())}">${L==='ar'?'· جمعته وجهة':'· listed by Wijha'}</span>`:''}</div>
     <div class="meta">${durTxt(t_)[0]?`<span>🗓 ${durTxt(t_)[0]}</span>`:''}<span>📍 ${esc(L==='ar'?t_.regionAr:t_.region)}</span>${t_.flightsIncluded?`<span>✈ ${t('inc_yes')}</span>`:''}</div>
-    <div class="pr">${priceBlock(t_)}<span class="cta">${t('view')} →</span></div>
+    <div class="pr">${priceBlock(t_)}<span class="cta">${t('view')} →</span></div>${Wijha.html('trip.fresh',{trip:t_,variant:'card',hasPrice:!!priceRows(t_)[0]},{quiet:true})}
   </div></a>`;
 }
 
@@ -1674,7 +1680,7 @@ function detail(id){
      <div class="fact"><div class="k">${t('d_dates')}</div><div class="v">${esc(L==='ar'?x.dates.ar:x.dates.en)}</div></div>
      <div class="fact"><div class="k">${t('d_region')}</div><div class="v">${esc(L==='ar'?x.destAr:x.dest)}<small>${esc(L==='ar'?x.regionAr:x.region)}</small></div></div>
      <div class="fact"><div class="k">${t('d_flights')}</div><div class="v">${x.flightsIncluded?t('inc_yes'):t('inc_no')}${x.arrival?`<small>${L==='ar'?'الوصول':'Arrival'}: ${esc(x.arrival)}</small>`:''}</div></div>
-     <div class="fact"><div class="k">${t('d_from')}</div>${priceBlock(x,'v')}</div>
+     <div class="fact"><div class="k">${t('d_from')}</div>${priceBlock(x,'v')}${Wijha.html('trip.fresh',{trip:x,variant:'mini',hasPrice:!!priceRows(x)[0]},{quiet:true})}</div>
    </div></section>
 
    <section><div class="eyebrow">${t('d_brief')}</div>
@@ -1741,8 +1747,8 @@ function detail(id){
 
    ${(x.cancel&&x.co!=='sawa')?`<section><h2>${t('d_pay')}</h2><h3>${L==='ar'?'سياسة الإلغاء':'Cancellation'}</h3>
      <div class="pol">${(L==='ar'?x.cancel.ar:x.cancel.en).map(r=>`<div><span>${esc(r[0])}</span><b>${esc(r[1])}</b></div>`).join('')}</div></section>`:''}
-   ${(x.faq&&x.faq.length)?`<section class="faq"><h2>${L==='ar'?'أسئلة شائعة':'Frequently asked questions'}</h2>${x.faq.map(f=>`<details style="border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 8px;background:var(--surface)"><summary style="cursor:pointer;font-weight:700">${esc(f.q[L])}</summary><p style="margin:8px 0 0;line-height:1.8">${esc(f.a[L])}</p></details>`).join('')}</section>`:''}
-   ${(x.photos&&x.photos.some(p=>p.past))?`<section class="past"><h2>${L==='ar'?'صور من رحلات سابقة للشركة':'Photos from the company\'s previous trips'}</h2><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">${x.photos.filter(p=>p.past).map(p=>`<figure style="margin:0"><img src="${esc(p.url)}" alt="${esc(p.cap[L])}" loading="lazy" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;display:block">${p.cap[L]?`<figcaption class="note" style="margin-top:4px">${esc(p.cap[L])}</figcaption>`:''}</figure>`).join('')}</div><p class="note">${L==='ar'?'صور حقيقية من رحلات الشركة السابقة، وقد تختلف الفنادق والبرنامج عن هذا العرض.':'Real photos from the company\'s earlier trips; hotels and programme may differ from this offer.'}</p></section>`:''}
+   ${Wijha.html('detail.faq',{trip:x})}
+   ${Wijha.html('detail.photos',{trip:x})}
    ${x.co==='sawa'?`<section><h2>${t('d_pay')}</h2>
      <h3>${L==='ar'?'طرق الدفع':'Payment methods'}</h3>
      <div class="pays">${(L==='ar'?c.pay:c.payEn).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div>
@@ -1766,7 +1772,7 @@ function detail(id){
 
   <aside class="side" id="side" onclick="if(event.target===this)sheet(false)"><div class="bcard">
     <button class="sheet-x" aria-label="${L==='ar'?'إغلاق':'Close'}" onclick="sheet(false)">✕</button>
-    <div class="pl">${rows.length?priceBlock(x):`<div class="pr-egp" style="font-size:20px">${L==='ar'?'السعر عند الاستفسار':'Price on enquiry'}</div>`}</div>
+    <div class="pl">${rows.length?priceBlock(x):`<div class="pr-egp" style="font-size:20px">${L==='ar'?'السعر عند الاستفسار':'Price on enquiry'}</div>`}${rows.length?Wijha.html('trip.fresh',{trip:x,variant:'detail',hasPrice:true},{quiet:true}):''}</div>
     <div class="gst">${esc(L==='ar'?x.dates.ar:x.dates.en)}${x.priceNote?` · ${esc(L==='ar'?x.priceNote.ar:x.priceNote.en)}`:''}</div>
     ${rows.length?`<div class="field"><div class="k">${L==='ar'?'اختر الغرف وعدد المسافرين':'Choose rooms & travellers'}</div>
       <div class="rooms">${rows.map(([k,v])=>
@@ -2232,6 +2238,7 @@ function mapOffer(o){
   minaAr:o.mina_ar||null, minaEn:o.mina_en||null,
   noteAr:o.note_ar||null, noteEn:o.note_en||null,
   viewCount:o.view_count||0,
+  confirmedAt:o.price_confirmed_at||null,
   hotels:[], itin:[], inc:[], exc:[], addons:[], notes:null, visa:null, cancel:null,
   _hydrated:false
  };
@@ -2771,87 +2778,15 @@ function stopPoll(){ if(POLL)clearInterval(POLL); POLL=null; drawBell(); }
 
 </script>
 <script>
-/* ══════════════ Legal pages · cookie notice · captcha ══════════════
+/* ══════════════ Captcha (Legal pages and cookie notice: see blocks/legal.js) ══════════════
    TURNSTILE_SITE_KEY: paste the public "site key" from Cloudflare Turnstile (free). While empty, the captcha is off.
    The matching secret key goes ONLY in Supabase → Authentication → Attack Protection (never in this file). */
 const TURNSTILE_SITE_KEY='';
-const LEGAL_UPDATED={ar:'آخر تحديث: ٢٥ أكتوبر ٢٠٢٦',en:'Last updated: 25 October 2026'};
-const LEGAL={
-terms:{ar:['الشروط والأحكام',[
- ['من نحن','وجهة منصة إلكترونية تجمع عروض رحلات الحج والعمرة والرحلات الخارجية من شركات سياحة مصرية مرخّصة، وتتيح لك المقارنة والتواصل مع الشركة. وجهة ليست شركة سياحة ولا وكيل سفر، ولا تبيع الرحلات بنفسها.'],
- ['العلاقة التعاقدية','عقد الرحلة يكون بينك وبين الشركة المنظِّمة مباشرة وفق شروطها المعلنة في العرض. وجهة ليست طرفاً في هذا العقد ولا تتقاضى أي نسبة من سعر الرحلة، ولا تستلم أموال الحجز.'],
- ['دقة العروض','الأسعار والبرامج والتواريخ كما نشرتها الشركات. قد تعرض وجهة عروضاً جمعتها من المواد المنشورة علناً للشركة، وتُعلَّم بوضوح بعبارة "جمعته وجهة" إلى أن تتبناها الشركة. تأكّد دائماً من التفاصيل ومن توفر المقاعد مع الشركة قبل الدفع.'],
- ['حسابك','أنت مسؤول عن صحة بياناتك وعن سرية كلمة المرور. يجوز لنا إيقاف أي حساب يسيء استخدام المنصة أو يرسل محتوى مخالفاً أو مضللاً.'],
- ['المراسلات','تُحجب أرقام الهواتف والبريد الإلكتروني تلقائياً داخل المحادثة بين العميل والشركة. لا تُرسل عبر المحادثة صور جواز السفر أو بيانات البطاقات المصرفية.'],
- ['حدود المسؤولية','لا تتحمل وجهة مسؤولية التزام الشركة بتنفيذ الرحلة أو الاسترداد؛ تواصل مع الشركة أولاً عبر المحادثة في صفحة عرضها. وصفة التحقق المعروضة على صفحة الشركة تعكس بيانات الترخيص المتوفرة لدينا.'],
- ['القانون واختصاص القضاء','تخضع هذه الشروط لقوانين جمهورية مصر العربية، وتختص محاكم القاهرة بالنظر في أي نزاع، مع عدم الإخلال بحقوقك كمستهلك.'],
- ['التعديل','قد نحدّث هذه الشروط، وتاريخ آخر تحديث مذكور أعلاه. استمرار استخدامك للموقع بعد التحديث يعني قبوله.']]],
- en:['Terms of use',[
- ['Who we are','Wijha is an online platform that lists Hajj, Umrah and outbound trip offers from licensed Egyptian travel companies so you can compare them and contact the company. Wijha is not a travel agency and does not sell trips itself.'],
- ['The contract','Your trip contract is directly between you and the organising company, on the terms shown in the offer. Wijha is not a party to it, takes no percentage of the trip price and does not receive booking money.'],
- ['Accuracy of offers','Prices, programmes and dates are as published by the companies. Wijha may list offers it collected from a company\'s public material; these are clearly labelled "collected by Wijha" until the company adopts them. Always confirm details and availability with the company before paying.'],
- ['Your account','You are responsible for the accuracy of your details and the secrecy of your password. We may suspend accounts that abuse the platform or post misleading or unlawful content.'],
- ['Messages','Phone numbers and emails are blocked automatically in the chat between a client and a company. Do not send passport images or bank-card details through chat.'],
- ['Limits of responsibility','Wijha is not responsible for a company delivering the trip or issuing refunds; raise any problem with the company first, through the chat on its offer page. The verification badge shown on a company page reflects the licence information we hold.'],
- ['Governing law','These terms are governed by the laws of the Arab Republic of Egypt and the Cairo courts have jurisdiction, without affecting your rights as a consumer.'],
- ['Changes','We may update these terms; the date of the latest update is shown above. Continuing to use the site after an update means you accept it.']]]},
-privacy:{ar:['سياسة الخصوصية',[
- ['ما الذي نجمعه','بيانات الحساب (الاسم، البريد الإلكتروني، رقم الهاتف)، وما تحفظه أو تقارنه من رحلات، ورسائلك للشركات، وإحصاءات استخدام مجهولة الهوية إذا وافقت عليها.'],
- ['من يرى بياناتك','بيانات تسجيلك لا يطّلع عليها موظفو وجهة. عندما ترسل استفساراً أو رسالة لشركة، تصل بياناتك اللازمة للتواصل (الاسم ورقم الهاتف ومحتوى الرسالة) إلى تلك الشركة وحدها. لا نبيع بياناتك ولا نشاركها لأغراض إعلانية.'],
- ['المستندات','إن طلبت منك شركة مستندات للسفر (جواز، هوية، كشف حساب…) فستُرفع عبر رابط خاص بعيد عن الموقع الرئيسي، وتُخزَّن مشفّرة في مساحة منفصلة، ولا يراها إلا من تتولى حجزك، وتُحذف تلقائياً بعد ٣٠ يوماً من انتهاء الرحلة. كل فتح أو تنزيل لمستند يُسجَّل.'],
- ['مدة الاحتفاظ','نحتفظ ببيانات الحساب ما دام الحساب قائماً، ويحق لك طلب حذفه (انظر «حقوقك»). المحادثات والاستفسارات تُحفظ للمدة اللازمة لمتابعة الحجز والشكاوى.'],
- ['حقوقك','وفق قانون حماية البيانات الشخصية المصري رقم ١٥١ لسنة ٢٠٢٠ يحق لك الاطلاع على بياناتك وتصحيحها وطلب حذفها أو الاعتراض على معالجتها. قناة تقديم هذه الطلبات قيد الإعداد وستُعلَن في هذه الصفحة.'],
- ['الأمان','نستخدم اتصالاً مشفراً، وقواعد صلاحيات صارمة على قاعدة البيانات، وفصلاً بين المستندات وبقية بيانات الموقع. لا يوجد نظام آمن بنسبة ١٠٠٪؛ نبلغك ونبلغ الجهات المختصة عند أي حادث يمس بياناتك وفق القانون.'],
- ['مزودو الخدمة','نستخدم مزودي بنية تحتية موثوقين لاستضافة الموقع وقاعدة البيانات، وأدوات حماية من الإساءة (كابتشا). قد تُعالج أدوات ذكاء اصطناعي محتوى العروض التي ترفعها الشركات، ولا تُرسل إليها مستندات العملاء الشخصية.']]],
- en:['Privacy policy',[
- ['What we collect','Account details (name, email, phone), the trips you save or compare, your messages to companies, and anonymous usage statistics if you accept them.'],
- ['Who sees your data','Wijha staff do not see your sign-up details. When you send an enquiry or message to a company, the details needed to reach you (name, phone, message) go to that company only. We do not sell your data or share it for advertising.'],
- ['Documents','If a company asks you for travel documents (passport, ID, bank statement…), you upload them through a private link on a separate site, stored in a separate vault, visible only to the person handling your booking, and deleted automatically 30 days after the trip ends. Every opening or download is logged.'],
- ['Retention','We keep account data while the account exists, and you have the right to ask for deletion (see "Your rights"). Chats and enquiries are kept as long as needed to follow up bookings and complaints.'],
- ['Your rights','Under Egypt\'s Personal Data Protection Law No. 151 of 2020 you may access, correct, request deletion of, or object to processing of your data. The channel for submitting these requests is being set up and will be announced on this page.'],
- ['Security','We use encrypted connections, strict database access rules, and keep documents apart from the rest of the site data. No system is 100% secure; we notify you and the authorities of any incident affecting your data as the law requires.'],
- ['Service providers','We use trusted infrastructure providers for hosting and the database, and abuse-protection tools (captcha). AI tools may process the offer material that companies upload; clients\' personal documents are never sent to them.']]]},
-cookies:{ar:['ملفات تعريف الارتباط والتخزين',[
- ['ما نستخدمه','نستخدم تخزين المتصفح الضروري فقط لتشغيل الموقع: اللغة، وجلسة الدخول، وقائمة المقارنة والمحفوظات. لا نستخدم كوكيز إعلانية ولا نتتبعك عبر مواقع أخرى.'],
- ['الإحصاءات','إذا ضغطت "قبول الكل" نحفظ معرّفاً مجهولاً على جهازك لنعرف عدد الزوار الفريدين وأي العروض تثير الاهتمام. إن اخترت "الضروري فقط" نستخدم معرّفاً مؤقتاً يزول بإغلاق الصفحة.'],
- ['تغيير اختيارك','يمكنك تغيير اختيارك في أي وقت من الزر أدناه أو بمسح بيانات الموقع من إعدادات المتصفح.']]],
- en:['Cookies & storage',[
- ['What we use','Only the browser storage needed to run the site: language, sign-in session, comparison list and saved trips. We use no advertising cookies and do not track you across other sites.'],
- ['Statistics','If you press "Accept all" we keep an anonymous id on your device to count unique visitors and see which offers get interest. If you choose "Essential only" we use a temporary id that disappears when you close the page.'],
- ['Changing your mind','You can change your choice any time with the button below or by clearing the site data in your browser settings.']]]},
-refund:{ar:['الاسترداد والإلغاء',[
- ['من يحدد الشروط','الاسترداد والإلغاء تحكمهما شروط الشركة المنظِّمة المعلنة في العرض (قسم "الإلغاء والاسترداد") وعقدك معها، لأن الدفع يتم لها مباشرة.'],
- ['قبل أن تدفع','اقرأ قسم الإلغاء في العرض، واطلب من الشركة توضيح أي نقطة كتابةً عبر المحادثة، واحتفظ بإيصال الدفع وعقد الحجز.'],
- ['إن حدثت مشكلة','تواصل مع الشركة أولاً. إن لم تصلا إلى حل فاحتفظ بالإيصال والعقد والمراسلات، ويمكنك اللجوء إلى جهاز حماية المستهلك.']]],
- en:['Cancellation & refunds',[
- ['Who sets the terms','Cancellation and refunds follow the organising company\'s terms shown in the offer ("Cancellation & refund" section) and your contract with it, because payment is made directly to the company.'],
- ['Before you pay','Read the cancellation section of the offer, ask the company in writing via chat to clarify anything unclear, and keep your payment receipt and booking contract.'],
- ['If something goes wrong','Contact the company first. If you cannot agree, keep your receipt, contract and messages; you may also turn to the Consumer Protection Agency.']]]}
-};
-function legalPage(k){
-  const pg=LEGAL[k]||LEGAL.terms, d=pg[L]||pg.ar, app=document.getElementById('app');
-  const tabs=[['terms',L==='ar'?'الشروط':'Terms'],['privacy',L==='ar'?'الخصوصية':'Privacy'],['cookies',L==='ar'?'الكوكيز':'Cookies'],['refund',L==='ar'?'الاسترداد':'Refunds']];
-  app.innerHTML=`<div class="wrap" style="max-width:780px;padding:28px 16px 56px">
-   <nav style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px" aria-label="legal">${tabs.map(([id,n])=>`<a class="chip ${id===k?'on':''}" href="#/legal/${id}">${n}</a>`).join('')}</nav>
-   <h1 style="margin:0 0 4px">${esc(d[0])}</h1><p class="note" style="margin:0 0 18px">${LEGAL_UPDATED[L]}</p>
-   ${d[1].map(([h,b],i)=>`<section style="margin:0 0 16px"><h2 style="font-size:17px;margin:0 0 4px">${i+1}. ${esc(h)}</h2><p style="margin:0;line-height:1.9">${esc(b)}</p></section>`).join('')}
-   ${k==='cookies'?`<button class="btn" onclick="resetConsent()">${L==='ar'?'تغيير اختياري':'Change my choice'}</button>`:''}</div>`;
-  document.title=d[0]+' — '+(L==='ar'?'وجهة':'Wijha');
-}
-/* ── cookie / storage notice ── */
-function consentBanner(){
-  let c=null; try{ c=localStorage.getItem('wijha_consent'); }catch(e){}
-  if(c||document.getElementById('cookieBar')) return;
-  const b=document.createElement('div'); b.id='cookieBar'; b.setAttribute('role','dialog'); b.setAttribute('aria-label',L==='ar'?'ملفات تعريف الارتباط':'Cookies');
-  b.style.cssText='position:fixed;inset:auto 12px 12px 12px;z-index:120;background:var(--surface,#fff);color:var(--ink,#1f1b16);border:1px solid var(--line,#e6e0d4);border-radius:14px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.18);display:flex;gap:12px;flex-wrap:wrap;align-items:center;max-width:720px;margin:0 auto';
-  b.innerHTML=`<p style="margin:0;flex:1;min-width:220px;font-size:14px;line-height:1.7">${L==='ar'?'نستخدم التخزين الضروري لتشغيل الموقع، ويمكنك السماح بإحصاءات مجهولة تساعدنا على تحسين العروض.':'We use only the storage needed to run the site, and you can allow anonymous statistics that help us improve offers.'} <a href="#/legal/cookies">${L==='ar'?'التفاصيل':'Details'}</a></p>
-   <button class="btn" id="ckEss">${L==='ar'?'الضروري فقط':'Essential only'}</button><button class="btn btn-primary" id="ckAll">${L==='ar'?'قبول الكل':'Accept all'}</button>`;
-  document.body.appendChild(b);
-  const set=v=>{ try{localStorage.setItem('wijha_consent',v); if(v!=='all') localStorage.removeItem('wijha_sid');}catch(e){} b.remove(); };
-  b.querySelector('#ckEss').onclick=()=>set('essential'); b.querySelector('#ckAll').onclick=()=>set('all');
-}
-function resetConsent(){ try{localStorage.removeItem('wijha_consent');}catch(e){} consentBanner(); }
-window.addEventListener('load',()=>setTimeout(consentBanner,600));
+/* Legal pages and the cookie notice now live in blocks/legal.js. Everything blocks may use from this page is handed over here, once. */
+Wijha.host({
+  lang:()=>L, esc, toast:m=>toast(m), go:h=>go(h), refresh:()=>route(),
+  get:p=>API.select(p), post:(tb,row)=>API.insert(tb,row)
+});
 /* ── captcha (Cloudflare Turnstile): asked only when signing up, signing in or resetting a password ── */
 let _tsLoad=null;
 function captchaToken(){
