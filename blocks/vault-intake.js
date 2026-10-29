@@ -1,4 +1,4 @@
-/* Block: vault-intake  v1.0.0   (task #16 front-end)
+/* Block: vault-intake  v1.1.0   (task #16 front-end)
  * "Secure file upload (new)" card: the company makes a one-off upload link, uploads on a separate page/domain,
  * then converts the uploaded files into draft offers here. Sits BESIDE the existing upload; replaces nothing.
  *
@@ -64,7 +64,7 @@
 .vi-new{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--amber-soft,#fff4dd);color:var(--amber-ink,#8a5a00)}
 .vi-note{font-size:12.5px;color:var(--muted,#6b6a72);line-height:1.7;margin:6px 0}
 .vi-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:10px;border:1px solid var(--line,#e8e4dc);background:var(--surface,#fff);color:inherit;font:inherit;font-size:13px;font-weight:700;cursor:pointer;min-height:38px}
-.vi-btn:disabled{opacity:.5;cursor:default}.vi-btn.pri{background:var(--amber,#e29a1a);border-color:transparent;color:#1b1b1f}.vi-btn.bad{color:var(--red,#c23b3b)}.vi-btn.sm{padding:5px 10px;min-height:32px;font-size:12px}
+a.vi-btn{text-decoration:none}.vi-btn:disabled{opacity:.5;cursor:default}.vi-btn.pri{background:var(--amber,#e29a1a);border-color:transparent;color:#1b1b1f}.vi-btn.bad{color:var(--red,#c23b3b)}.vi-btn.sm{padding:5px 10px;min-height:32px;font-size:12px}
 .vi-link{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.vi-link input{flex:1 1 220px;min-width:0;padding:9px 10px;border:1px solid var(--line,#e8e4dc);border-radius:10px;font:12px/1.4 ui-monospace,Menlo,monospace;direction:ltr;text-align:left;background:var(--bg,#fbfaf7);color:inherit}
 .vi-err{background:var(--red-soft,#fdeaea);color:var(--red,#c23b3b);padding:10px 12px;border-radius:10px;font-size:13px;margin:8px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .vi-err.off{background:var(--amber-soft,#fff4dd);color:var(--amber-ink,#8a5a00)}
@@ -103,7 +103,8 @@
       if (c.phase === 'done') {
         const list = c.created || [];
         return `<span class="vi-chip ok">${esc(list.length > 1 ? t('تم إنشاء ' + list.length + ' عروض', list.length + ' offers created') : list.length === 1 ? t('تم إنشاء العرض', 'Offer created') : t('تمت القراءة', 'Read'))}</span>` +
-          list.map(o => `<button class="vi-btn sm" data-wb-click="vault-intake.review|${esc(o.offer_id)}">${esc(t('راجع: ', 'Review: ') + S(o.title_ar).slice(0, 28))}${o.checks && o.checks.length ? ' (' + Number(o.checks.length) + ' ⚠)' : ''}</button>`).join('');
+          list.map(o => `<button class="vi-btn sm" data-wb-click="vault-intake.review|${esc(o.offer_id)}">${esc(t('راجع: ', 'Review: ') + S(o.title_ar).slice(0, 28))}${o.checks && o.checks.length ? ' (' + Number(o.checks.length) + ' ⚠)' : ''}</button>` +
+            (API.x && API.x.previewHref && S(o.offer_id) ? `<a class="vi-btn sm pri" data-vi-preview="${esc(o.offer_id)}" href="${esc(API.x.previewHref(S(o.offer_id)))}" target="_blank" rel="noopener">${esc(t('معاينة كما يراها العميل', 'Preview as the client sees it'))} ↗</a>` : '')).join('');
       }
     }
     if (f.import_id) {
@@ -185,7 +186,7 @@
   }
 
   Wijha.block('vault-intake', {
-    version: '1.0.0',
+    version: '1.1.0',
     init(api) { API = api; css(); if (!timer) timer = setInterval(tick, POLL_MS); },
     expose: {
       companyChanged(co) { cur = S(co); if (API) { paint(); if (cur && !st(cur).loaded) load(); } },
