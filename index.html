@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wijha وجهة — رحلات خارجية وعمرة وحج من شركات مصرية مرخّصة</title>
+<title>Wijha وجهة — رحلات خارجية وعمرة وحج من شركات ووكلاء ومنظّمين معتمدين</title>
+<meta name="description" content="منصة تجمع رحلات الحج والعمرة والرحلات الخارجية من شركات السياحة والوكلاء والمنظّمين المعتمدين.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Wijha وجهة">
+<meta property="og:title" content="Wijha وجهة — رحلات خارجية وعمرة وحج">
+<meta property="og:description" content="منصة تجمع رحلات الحج والعمرة والرحلات الخارجية من شركات السياحة والوكلاء والمنظّمين المعتمدين.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=IBM+Plex+Mono:wght@400;500&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -474,6 +479,7 @@ footer h4{font-size:14px;margin-bottom:10px}
 <script defer src="blocks/freshness.js"></script>
 <script defer src="blocks/vault-intake.js"></script>
 <script defer src="blocks/preview.js"></script>
+<script defer src="blocks/chat.js"></script>
 </head>
 <body>
 <header class="nav"><div class="wrap">
@@ -497,9 +503,9 @@ footer h4{font-size:14px;margin-bottom:10px}
 
 <footer><div class="wrap cols">
   <div><div class="brand" style="margin-bottom:8px">وجهة <span>Wijha</span></div>
-    <p data-t="ft_about">منصة تجمع رحلات الحج والعمرة والرحلات الخارجية من شركات السياحة المصرية المرخّصة.</p>
+    <p data-t="ft_about">منصة تجمع رحلات الحج والعمرة والرحلات الخارجية من شركات السياحة والوكلاء والمنظّمين المعتمدين.</p>
     <p class="mono" style="margin-top:8px">© 2026 Wijha · Cairo, Egypt</p></div>
-  <div><h4 data-t="ft_explore">استكشف</h4><a href="#/trips/abroad" data-t="ft_abroad">رحلات خارجية</a><a href="#/trips/umrah" data-t="ft_umrah">عمرة</a><a href="#/trips/hajj" data-t="ft_hajj">حج</a><a href="#/company/signup" data-t="ft_portal">بوابة الشركات</a><a href="./emails.html" target="_blank" rel="noopener" data-t="ft_mail">قوالب البريد</a><a href="./admin.html" target="_blank" rel="noopener" data-t="ft_admin">مركز القيادة</a></div>
+  <div><h4 data-t="ft_explore">استكشف</h4><a href="#/trips/abroad" data-t="ft_abroad">رحلات خارجية</a><a href="#/trips/umrah" data-t="ft_umrah">عمرة</a><a href="#/trips/hajj" data-t="ft_hajj">حج</a><a href="#/company/signup" data-t="ft_portal">بوابة الشركات</a></div>
   <div><h4 data-t="ft_legal">قانوني</h4><a href="#/legal/terms" data-t="ft_terms">الشروط والأحكام</a><a href="#/legal/privacy" data-t="ft_priv">سياسة الخصوصية</a><a href="#/legal/cookies" data-t="ft_cook">ملفات تعريف الارتباط</a><a href="#/legal/refund" data-t="ft_refund">الاسترداد والإلغاء</a>
     <p class="note" data-t="ft_note">الأسعار والبرامج كما نشرتها الشركات — تأكّد من التفاصيل مع الشركة قبل الدفع.</p></div>
 </div></footer>
@@ -556,8 +562,8 @@ const COS = [
  {id:'sawa', ar:'ترافل سوا', en:'Travel Sawa', lic:'ETAA-A-2214', gov:'القاهرة', govEn:'Cairo',
   addr:'٥٨ ذاكر حسين، مدينة نصر', addrEn:'58 Zaker Hussein, Nasr City', hotline:'+20 121 2121 333',
   wa:'201212121333', email:'info@travelsawa.com', site:'travelsawa.com', verified:true, rating:4.8, reviews:412,
-  aboutAr:'شركة سياحة مصرية مرخّصة متخصصة في الرحلات الجماعية إلى أوروبا وشهر العسل والتأشيرات.',
-  aboutEn:'Licensed Egyptian agency specialising in European group tours, honeymoons and visa services.',
+  aboutAr:'شركة سياحة مصرية متخصصة في الرحلات الجماعية إلى أوروبا وشهر العسل والتأشيرات.',
+  aboutEn:'Egyptian agency specialising in European group tours, honeymoons and visa services.',
   hours:'الأحد – الخميس ١١:٠٠ ص – ٧:٠٠ م', hoursEn:'Sun–Thu 11:00–19:00',
   pay:['كاش بالمقر','ماكينة POS (+٢٪)','تحويل بنكي CIB','إنستاباي','لينك دفع أونلاين','تقسيط ValU / سهولة / أمان / كونتكت'],
   payEn:['Cash at office','POS card (+2%)','CIB bank transfer','InstaPay','Online payment link','Instalments via ValU / Sahoolah / Aman / Contact']},
@@ -819,7 +825,7 @@ const TRIPS=[
     {ar:'مساءً', en:'Evening', items:[
       I('sight','جولة نصف يوم في مدريد: الشوارع الواسعة وحديقة بوين ريتيرو','Half-day Madrid tour: the wide boulevards and Buen Retiro park'),
       I('sight','ساحة مايور المحاطة بالأروقة، والقصر الملكي الباروكي ومستودع الأسلحة','Plaza Mayor with its arcades, the Baroque Royal Palace and the Armoury'),
-      I('sight','متحف برادو من الخارج — الدخول غير مشمول','The Prado from outside — entry not included')]}]},
+      I('sight','متحف برادو من الخارج — الدخول غير شامل','The Prado from outside — entry not included')]}]},
   {ar:'إلى إشبيلية عبر قرطبة التاريخية', en:'To Seville via historic Córdoba', art:'medcity', blocks:[
     {ar:'صباحاً', en:'Morning', items:[
       I('transfer','المغادرة من فندق مدريد في اتجاه قرطبة','Depart the Madrid hotel for Córdoba')]},
@@ -859,7 +865,7 @@ const TRIPS=[
   {ar:'يوم التسوق في مدريد', en:'Shopping day in Madrid', art:'medcity', blocks:[
     {ar:'اليوم كله', en:'All day', items:[
       I('meal','الإفطار في الفندق','Breakfast at the hotel'),
-      I('shop','جولة تسوق يوم كامل في أحد أفضل مولات مدريد (مدريد أوتلت) — مشمولة','Full-day shopping tour at one of Madrid\'s best malls (Madrid Outlet) — included')]}]},
+      I('shop','جولة تسوق يوم كامل في أحد أفضل مولات مدريد (مدريد أوتلت) — شاملة','Full-day shopping tour at one of Madrid\'s best malls (Madrid Outlet) — included')]}]},
   {ar:'العودة', en:'Return home', art:'plane', blocks:[
     {ar:'صباحاً', en:'Morning', items:[
       I('meal','الإفطار ثم إنهاء الإقامة','Breakfast, then check out'),
@@ -1083,20 +1089,20 @@ const T={ar:{
  nav_home:'استكشف',nav_offers:'كل الرحلات',nav_abroad:'رحلات خارجية',nav_umrah:'عمرة',nav_hajj:'حج',
  nav_signin:'دخول',nav_account:'حسابي',nav_partner:'بوابة الشركات',
  hero_h:'رحلتك، <em>مُرتَّبة بالكامل</em>',
- hero_p:'رحلات خارجية وعمرة وحج من شركات سياحة مصرية مرخّصة. كل الأسعار بالجنيه المصري، وكل التفاصيل في مكان واحد.',
+ hero_p:'رحلات خارجية وعمرة وحج من شركات سياحة ووكلاء ومنظّمين معتمدين، وكل التفاصيل في مكان واحد.',
  hero_c1:'تصفّح الرحلات',hero_c2:'عروض العمرة',
- st_trips:'رحلة منشورة',st_cos:'شركة مرخّصة',st_hotels:'فندق بمراجعات',st_dest:'وجهة',
+ st_trips:'رحلة منشورة',st_cos:'جهة ناشرة',st_hotels:'فندق بمراجعات',st_dest:'وجهة',
  featured:'رحلات مختارة',viewall:'عرض الكل',cos_title:'الشركات على وجهة',
- how_title:'كيف تعمل وجهة؟',how1:'قارن',how1s:'كل الرحلات بالجنيه المصري، فالمقارنة عادلة.',
- how2:'تحقّق',how2s:'كل شركة مرخّصة من اتحاد الغرف السياحية.',how3:'اسأل',how3s:'محادثة مباشرة مع موظف الشركة داخل المنصة.',how4:'احجز',how4s:'الحجز والدفع مع الشركة — بدون رسوم من وجهة.',
+ how_title:'كيف تعمل وجهة؟',how1:'قارن',how1s:'كل الرحلات في مكان واحد، فالمقارنة عادلة.',
+ how2:'تحقّق',how2s:'تظهر شارة «موثّقة» فقط للجهات التي تحققنا من بياناتها.',how3:'اسأل',how3s:'محادثة مباشرة مع موظف الشركة داخل المنصة.',how4:'احجز',how4s:'الحجز والدفع مع الشركة — بدون رسوم من وجهة.',
  all:'الكل',company:'الشركة',region:'المنطقة',sort_low:'الأقل سعراً',sort_high:'الأعلى سعراً',sort_soon:'الأقرب موعداً',
  search:'ابحث عن وجهة أو شركة…',results:'رحلة',nores:'لا توجد رحلات مطابقة. جرّب تخفيف الفلاتر.',
  days:'يوم',nights:'ليلة',person:'للفرد',view:'التفاصيل',soon:'يقترب الموعد',full:'شبه مكتملة',
  d_duration:'المدة',d_dates:'المواعيد',d_region:'المنطقة',d_flights:'الطيران',d_from:'يبدأ من',
- inc_yes:'مشمول',inc_no:'غير مشمول',
+ inc_yes:'شامل',inc_no:'غير شامل',
  d_brief:'نبذة',d_journey:'تفاصيل البرنامج',d_hotels:'الإقامة',d_incl:'ما يشمله السعر',d_flightinfo:'مواعيد الطيران',
  d_visa:'التأشيرة والمستندات',d_notes:'ملاحظات',d_pay:'الدفع والحجز والإلغاء',d_about:'عن الشركة',d_similar:'رحلات مشابهة قد تناسبك',
- verified:'مرخّصة',hotline:'الخط الساخن',outline:'البرنامج اليومي قيد الإدخال من النشرة الرسمية',
+ verified:'موثّقة',hotline:'الخط الساخن',outline:'البرنامج اليومي قيد الإدخال من النشرة الرسمية',
  room:'نوع الغرفة',quad:'رباعية',triple:'ثلاثية',double:'ثنائية',single:'فردية',child_bed:'طفل بسرير',child_nobed:'طفل بدون سرير',
  travelers:'المسافرون',adult:'مسافر',adults:'مسافرين',total:'الإجمالي',breakdown:'تفاصيل السعر',
  pkg:'الباقة',ferry:'رسوم المعدية',dep:'العربون',local:'الجزء المحلي',
@@ -1113,8 +1119,8 @@ const T={ar:{
  f_gov:'المحافظة',f_addr:'العنوان',f_hotline:'الخط الساخن',f_wa:'واتساب',f_site:'الموقع الإلكتروني',
  f_specialty:'التخصص',f_contact:'مسؤول الحساب',f_role:'الوظيفة',
  create:'إنشاء الحساب',skip:'تخطّي والدخول مباشرة',haveacc:'لديك حساب؟ دخول',
- acc_title:'حسابي',acc_saved:'الرحلات المحفوظة',acc_enq:'استفساراتي',acc_chats:'محادثاتي',acc_prefs:'تفضيلاتي',
- dash:'لوحة الشركة',dash_over:'نظرة عامة',dash_trips:'رحلاتي',dash_inbox:'الاستفسارات',dash_stats:'إحصاءات',dash_emails:'قوالب البريد',
+ acc_title:'حسابي',acc_saved:'الرحلات المحفوظة',acc_enq:'استفساراتي',acc_chats:'المحادثات',acc_prefs:'تفضيلاتي',
+ dash:'لوحة الشركة',dash_over:'نظرة عامة',dash_trips:'رحلاتي',dash_inbox:'المحادثات',dash_stats:'إحصاءات',dash_emails:'قوالب البريد',
  kpi_views:'مشاهدة',kpi_enq:'استفسار',kpi_conv:'معدل التحويل',kpi_saves:'حفظ',
  signout:'خروج',logged:'مسجّل الدخول كـ',
  send:'إرسال',typemsg:'اكتب رسالتك…',
@@ -1124,12 +1130,12 @@ const T={ar:{
  nav_home:'Explore',nav_offers:'All trips',nav_abroad:'Trips abroad',nav_umrah:'Umrah',nav_hajj:'Hajj',
  nav_signin:'Sign in',nav_account:'My account',nav_partner:'Company portal',
  hero_h:'Your trip, <em>fully planned</em>',
- hero_p:'Trips abroad, Umrah and Hajj from licensed Egyptian agencies. Every price in Egyptian pounds, every detail in one place.',
+ hero_p:'Trips abroad, Umrah and Hajj from travel companies, agents and trusted organisers, every detail in one place.',
  hero_c1:'Browse trips',hero_c2:'Umrah offers',
- st_trips:'published trips',st_cos:'licensed companies',st_hotels:'reviewed hotels',st_dest:'destinations',
+ st_trips:'published trips',st_cos:'publishers',st_hotels:'reviewed hotels',st_dest:'destinations',
  featured:'Featured trips',viewall:'View all',cos_title:'Companies on Wijha',
- how_title:'How Wijha works',how1:'Compare',how1s:'Every trip in Egyptian pounds, so the comparison is fair.',
- how2:'Verify',how2s:'Every company licensed by the Egyptian Travel Agents Association.',how3:'Ask',how3s:'Chat directly with a company employee inside the platform.',how4:'Book',how4s:'Book and pay with the company — no fee from Wijha.',
+ how_title:'How Wijha works',how1:'Compare',how1s:'Every trip in one place, so the comparison is fair.',
+ how2:'Verify',how2s:'A "Verified" badge appears only for publishers whose details we have checked.',how3:'Ask',how3s:'Chat directly with a company employee inside the platform.',how4:'Book',how4s:'Book and pay with the company — no fee from Wijha.',
  all:'All',company:'Company',region:'Region',sort_low:'Price: low → high',sort_high:'Price: high → low',sort_soon:'Departing soonest',
  search:'Search a destination or company…',results:'trips',nores:'No trips match. Try loosening the filters.',
  days:'days',nights:'nights',person:'per person',view:'View trip',soon:'Departing soon',full:'Nearly full',
@@ -1137,7 +1143,7 @@ const T={ar:{
  inc_yes:'Included',inc_no:'Not included',
  d_brief:'Brief',d_journey:'Programme details',d_hotels:'Where you stay',d_incl:'What the price covers',d_flightinfo:'Flight times',
  d_visa:'Visa & documents',d_notes:'Notes',d_pay:'Payment, reservation & cancellation',d_about:'About the company',d_similar:'Similar trips you might like',
- verified:'Licensed',hotline:'Hotline',outline:'Day-by-day programme pending ingestion from the official brochure',
+ verified:'Verified',hotline:'Hotline',outline:'Day-by-day programme pending ingestion from the official brochure',
  room:'Room type',quad:'Quad',triple:'Triple',double:'Double',single:'Single',child_bed:'Child with bed',child_nobed:'Child without bed',
  travelers:'Travellers',adult:'traveller',adults:'travellers',total:'Total',breakdown:'Price breakdown',
  pkg:'Package',ferry:'Ferry fee',dep:'Deposit',local:'Local portion',
@@ -1154,8 +1160,8 @@ const T={ar:{
  f_gov:'Governorate',f_addr:'Address',f_hotline:'Hotline',f_wa:'WhatsApp',f_site:'Website',
  f_specialty:'Specialities',f_contact:'Account manager',f_role:'Role',
  create:'Create account',skip:'Skip and continue',haveacc:'Already have an account? Sign in',
- acc_title:'My account',acc_saved:'Saved trips',acc_enq:'My enquiries',acc_chats:'My chats',acc_prefs:'Preferences',
- dash:'Company dashboard',dash_over:'Overview',dash_trips:'My trips',dash_inbox:'Enquiries',dash_stats:'Insights',dash_emails:'Email templates',
+ acc_title:'My account',acc_saved:'Saved trips',acc_enq:'My enquiries',acc_chats:'Messages',acc_prefs:'Preferences',
+ dash:'Company dashboard',dash_over:'Overview',dash_trips:'My trips',dash_inbox:'Messages',dash_stats:'Insights',dash_emails:'Email templates',
  kpi_views:'views',kpi_enq:'enquiries',kpi_conv:'enquiry rate',kpi_saves:'saves',
  signout:'Sign out',logged:'Signed in as',
  send:'Send',typemsg:'Write a message…',
@@ -1401,46 +1407,46 @@ function pickFeatured(){
 
 /* ══════════════ HOME ══════════════ */
 Object.assign(T.ar,{
- h_title:'رحلتك القادمة، من شركة مرخّصة وبسعر واضح',
- h_sub:'قارن رحلات الحج والعمرة والرحلات الخارجية بالجنيه المصري، ثم تواصل مع الشركة مباشرة. وجهة لا تأخذ أي نسبة من سعر الرحلة.',
+ h_title:'رحلتك القادمة، بسعر واضح وتواصل مباشر مع المنظّم',
+ h_sub:'قارن رحلات الحج والعمرة والرحلات الخارجية، ثم تواصل مع الجهة المنظّمة مباشرة. وجهة لا تأخذ أي نسبة من سعر الرحلة.',
  h_q_lbl:'ابحث عن رحلة',h_q_ph:'وجهة أو اسم شركة',h_type_lbl:'نوع الرحلة',h_go:'ابحث',h_pop:'وجهات شائعة',
- h_live:'رحلة متاحة الآن',h_lic:'شركة موثّقة الترخيص',
+ h_live:'رحلة متاحة الآن',h_lic:'جهة موثّقة',
  h_cats:'اختر نوع رحلتك',h_from:'تبدأ من',h_egp:'ج.م',h_nocat:'لا توجد رحلات منشورة حالياً',h_open:'تصفّح',
- h_feat_sub:'عروض منشورة من شركات مختلفة، بالجنيه المصري.',
+ h_feat_sub:'عروض منشورة من جهات مختلفة.',
  h_empty_t:'لا توجد رحلات منشورة الآن',h_empty_p:'الشركات تضيف عروضها تباعاً. يمكنك تصفّح كل الرحلات أو العودة لاحقاً.',
  h_trust:'لماذا وجهة؟',
- h_t1:'شركات مرخّصة فقط',h_t1p:'كل شركة على وجهة مرخّصة من اتحاد الغرف السياحية، ورقم الترخيص ظاهر في صفحتها.',
- h_t2:'بلا عمولة مخفية',h_t2p:'وجهة لا تأخذ أي نسبة من سعر رحلتك. الحجز والدفع يتمان مع الشركة مباشرة، والسعر المعروض هو سعرها.',
+ h_t1:'أسعار واضحة وبلا عمولة',h_t1p:'السعر المعروض هو سعر الجهة المنظّمة، ووجهة لا تأخذ أي نسبة منه.',
+ h_t2:'شارة «موثّقة» عند التحقق فقط',h_t2p:'نعرض الشارة على صفحة الجهة حين نتحقق من بياناتها، وتبقى بقية العروض كما نشرها أصحابها. الحجز والدفع مع الجهة مباشرة.',
  h_t3:'قارن جنباً إلى جنب',h_t3p:'أضف حتى ٣ رحلات وقارن السعر والمواعيد والفنادق والطيران في جدول واحد.',
  h_t3c:'ابدأ المقارنة',h_t3o:'افتح المقارنة',
  h_t_of:'من',h_t_cos:'شركة موثّقة',
  h_cos_sub:'الشركات التي لديها رحلات منشورة الآن.',h_lic_no:'ترخيص',
- h_co_t:'هل تدير شركة سياحة مرخّصة؟',h_co_c:'سجّل شركتك',h_co_d:'افتح لوحة الشركة',
+ h_co_t:'هل تنظّم رحلات؟',h_co_c:'سجّل شركتك',h_co_d:'افتح لوحة الشركة',
  h_how_sub:'أربع خطوات من المقارنة إلى الحجز.',
- ft_about:'منصة تجمع رحلات الحج والعمرة والرحلات الخارجية من شركات السياحة المصرية المرخّصة.',
- ft_explore:'استكشف',ft_abroad:'رحلات خارجية',ft_umrah:'عمرة',ft_hajj:'حج',ft_portal:'بوابة الشركات',ft_mail:'قوالب البريد',ft_admin:'مركز القيادة',
+ ft_about:'منصة تجمع رحلات الحج والعمرة والرحلات الخارجية من شركات السياحة والوكلاء والمنظّمين المعتمدين.',
+ ft_explore:'استكشف',ft_abroad:'رحلات خارجية',ft_umrah:'عمرة',ft_hajj:'حج',ft_portal:'بوابة الشركات',
  ft_legal:'قانوني',ft_terms:'الشروط والأحكام',ft_priv:'سياسة الخصوصية',ft_cook:'ملفات تعريف الارتباط',ft_refund:'الاسترداد والإلغاء',
  ft_note:'الأسعار والبرامج كما نشرتها الشركات — تأكّد من التفاصيل مع الشركة قبل الدفع.'
 });
 Object.assign(T.en,{
- h_title:'Your next trip, from a licensed company, at a clear price',
- h_sub:'Compare Hajj, Umrah and trips abroad in Egyptian pounds, then contact the company directly. Wijha takes no percentage of the trip price.',
+ h_title:'Your next trip, at a clear price, straight from the organiser',
+ h_sub:'Compare Hajj, Umrah and trips abroad, then contact the organiser directly. Wijha takes no percentage of the trip price.',
  h_q_lbl:'Find a trip',h_q_ph:'Destination or company name',h_type_lbl:'Trip type',h_go:'Search',h_pop:'Popular destinations',
- h_live:'trips available now',h_lic:'companies with verified licences',
+ h_live:'trips available now',h_lic:'verified publishers',
  h_cats:'Choose your kind of trip',h_from:'From',h_egp:'EGP',h_nocat:'No trips published right now',h_open:'Browse',
- h_feat_sub:'Offers from different companies, priced in Egyptian pounds.',
+ h_feat_sub:'Offers published by different organisers.',
  h_empty_t:'No trips are published right now',h_empty_p:'Companies add their offers as they are approved. Browse all trips or check back soon.',
  h_trust:'Why Wijha',
- h_t1:'Licensed companies only',h_t1p:'Every company on Wijha is licensed by the tourism chambers federation, and its licence number is shown on its page.',
- h_t2:'No hidden commission',h_t2p:'Wijha takes no percentage of your trip price. You book and pay the company directly, and the price shown is the company\'s price.',
+ h_t1:'Clear prices, no commission',h_t1p:'The price shown is the organiser\'s own price, and Wijha takes no percentage of it.',
+ h_t2:'"Verified" only where checked',h_t2p:'The badge appears on a publisher\'s page only when we have verified its details; other offers stay as published by their owners. You book and pay the organiser directly.',
  h_t3:'Compare side by side',h_t3p:'Add up to 3 trips and compare price, dates, hotels and flights in one table.',
  h_t3c:'Start comparing',h_t3o:'Open comparison',
  h_t_of:'of',h_t_cos:'verified',
  h_cos_sub:'Companies with trips published right now.',h_lic_no:'Licence',
- h_co_t:'Do you run a licensed travel company?',h_co_c:'Register your company',h_co_d:'Open company dashboard',
+ h_co_t:'Do you organise trips?',h_co_c:'Register your company',h_co_d:'Open company dashboard',
  h_how_sub:'Four steps from comparing to booking.',
- ft_about:'A marketplace for Hajj, Umrah and trips abroad from licensed Egyptian travel companies.',
- ft_explore:'Explore',ft_abroad:'Trips abroad',ft_umrah:'Umrah',ft_hajj:'Hajj',ft_portal:'Company portal',ft_mail:'Email templates',ft_admin:'Command centre',
+ ft_about:'A platform that brings together Hajj, Umrah and outbound trips from travel companies, agents and trusted organisers.',
+ ft_explore:'Explore',ft_abroad:'Trips abroad',ft_umrah:'Umrah',ft_hajj:'Hajj',ft_portal:'Company portal',
  ft_legal:'Legal',ft_terms:'Terms & conditions',ft_priv:'Privacy policy',ft_cook:'Cookies',ft_refund:'Refunds & cancellation',
  ft_note:'Prices and programmes are as published by the companies. Confirm details with the company before paying.'
 });
@@ -1503,8 +1509,8 @@ function home(){
 
   <section class="h-trust" aria-labelledby="hTrust"><h2 id="hTrust" class="h-h2">${t('h_trust')}</h2>
    <div class="h-pillars">
-    <div><span class="h-ic">${HI.shield}</span><h3>${t('h_t1')}</h3><p>${t('h_t1p')}</p>${verified?`<p class="h-calc"><b>${nf(verified)}</b> ${t('h_t_of')} <b>${nf(COS.length)}</b> ${t('h_t_cos')}</p>`:''}</div>
-    <div><span class="h-ic">${HI.tag}</span><h3>${t('h_t2')}</h3><p>${t('h_t2p')}</p></div>
+    <div><span class="h-ic">${HI.shield}</span><h3>${t('h_t1')}</h3><p>${t('h_t1p')}</p></div>
+    <div><span class="h-ic">${HI.tag}</span><h3>${t('h_t2')}</h3><p>${t('h_t2p')}</p>${verified?`<p class="h-calc"><b>${nf(verified)}</b> ${t('h_t_of')} <b>${nf(COS.length)}</b> ${t('h_t_cos')}</p>`:''}</div>
     <div><span class="h-ic">${HI.cmp}</span><h3>${t('h_t3')}</h3><p>${t('h_t3p')}</p>
      <a class="h-link" href="${cmpN>=2?'#/compare':'#/trips'}">${cmpN>=2?`${t('h_t3o')} (${cmpN})`:t('h_t3c')} ${HI.arr}</a></div>
    </div></section>
@@ -1930,12 +1936,8 @@ function account(){
      <div class="kv"><span>${t('f_budget')}</span><b>${esc(ME.budget||'—')}</b></div>
      <div class="kv"><span>${t('f_interests')}</span><b>${(ME.interests||[]).map(i=>`<span class="tag sm">${esc(CATS[i]?(L==='ar'?CATS[i].ar:CATS[i].en):(L==='ar'?i.split('/')[0]:i.split('/')[1]))}</span>`).join(' ')||'—'}</b></div>
    </div>
-   <div class="panel"><h3>${t('acc_enq')} <span class="pillnum">${ENQ.length}</span></h3>
-     ${ENQ.length?ENQ.filter(e=>trip(e.trip)).map(e=>{const x=trip(e.trip);return `<a class="rowitem" href="#/trip/${e.trip}">
-       <div><b>${esc(tripName(x,L))}</b><small>${e.mix||(t(e.room)+' × '+e.pax)} · ${new Date(e.at).toLocaleDateString()}</small></div>
-       <span class="tag ok">${L==='ar'?'قيد الرد':'Awaiting reply'}</span></a>`}).join(''):`<p class="lead">${L==='ar'?'لم ترسل أي استفسار بعد.':'No enquiries yet.'}</p>`}
-   </div>
-   <div class="panel"><h3>${t('acc_chats')}</h3>
+   <div class="panel"><h3>${t('acc_chats')} <span class="pillnum">${THREADS.reduce((a,x)=>a+(x.unread||0),0)}</span></h3>
+     ${ENQ.filter(e=>trip(e.trip)).map(e=>{const x=trip(e.trip);return `<a class="rowitem" href="#/trip/${e.trip}"><div><b>${esc(tripName(x,L))}</b><small>${e.mix||(t(e.room)+' × '+e.pax)} · ${new Date(e.at).toLocaleDateString()}</small></div><span class="tag ok">${L==='ar'?'قيد الرد':'Awaiting reply'}</span></a>`}).join('')}
      ${THREADS.map(th=>{const x=trip(th.trip);return `<a class="rowitem" href="#/chat/${th.id}">
        <div><b>${esc(th.emp)}</b><small>${x?esc(tripName(x,L)):'—'}</small></div>
        ${th.unread?`<span class="pillnum">${th.unread}</span>`:`<span class="tag">${L==='ar'?'مقروءة':'Read'}</span>`}</a>`}).join('')}
@@ -1976,7 +1978,7 @@ function signupCo(){
      ${fld('oPass',t('f_pass'),'password','••••••••')}</div>
    <div class="acts"><button class="btn btn-primary" onclick="doCoSignup()">${t('create')}</button>
      <button class="btn btn-ghost" onclick="doCoSignup(true)">${t('skip')}</button></div>
-   <p class="note">${L==='ar'?'تتحقق وجهة من رقم الترخيص آلياً مقابل سجل اتحاد الغرف السياحية قبل نشر أول رحلة.':'Wijha checks the licence number automatically against the ETAA register before your first trip goes live.'}</p>
+   <p class="note">${L==='ar'?'إن أدخلت رقم ترخيص، تتحقق منه وجهة قبل منح شارة «موثّقة».':'If you enter a licence number, Wijha checks it before granting the "Verified" badge.'}</p>
   </div></div>`;
 }
 function doCoSignup(skip){
@@ -2092,6 +2094,7 @@ function applyLang(){
  document.documentElement.lang=L; document.documentElement.dir=L==='ar'?'rtl':'ltr';
  document.getElementById('langBtn').textContent=L==='ar'?'EN':'ع';
  document.querySelectorAll('[data-t]').forEach(el=>el.innerHTML=t(el.dataset.t));
+ try{ Wijha.use('chat')?.relang(); }catch(e){}
 }
 function toggleLang(){L=L==='ar'?'en':'ar';localStorage.setItem('wijha_lang',L);applyLang();route()}
 /* boot handled by the Supabase layer */
@@ -2728,8 +2731,6 @@ account=async function(){
     <p class="note">${L==='ar'?'بياناتك محفوظة في حسابك وتُستخدم لترشيح رحلات تناسبك.':'Your details are stored in your account and used to suggest suitable trips.'}</p></div>
    <div class="panel"><h3>${t('acc_chats')} <span class="pillnum">${MYTHREADS.reduce((a,x)=>a+(x.client_unread||0),0)}</span></h3>
     ${MYTHREADS.map(th=>{const x=trip(th.offer_id);return `<a class="rowitem" href="#/chat/${th.id}"><div><b>${esc(coName(th.company_id))}</b><small>${x?esc(tripName(x,L)):'—'}</small><small class="dim">${th.last_message_from==='client'?(L==='ar'?'بانتظار رد الشركة':'Awaiting company reply'):(L==='ar'?'ردّت الشركة':'Company replied')} · ${(th.last_message_at||'').replace('T',' ').slice(0,16)}</small></div>${th.client_unread?`<span class="pillnum">${th.client_unread}</span>`:''}</a>`}).join('')||(LOADERR?threadsErr():`<p class="lead">${L==='ar'?'لا محادثات بعد — أرسل استفساراً من أي رحلة.':'No chats yet — send an enquiry from any trip.'}</p>`)}</div>
-   <div class="panel"><h3>${t('acc_enq')} <span class="pillnum">${MYTHREADS.length}</span></h3>
-    ${MYTHREADS.map(th=>{const x=trip(th.offer_id);return x?`<a class="rowitem" href="#/trip/${x.id}"><div><b>${esc(tripName(x,L))}</b><small>${esc(coName(th.company_id))}</small></div><span class="tag ${th.status==='open'?'ok':''}">${th.status}</span></a>`:''}).join('')||`<p class="lead">—</p>`}</div>
   </div>
   <section class="sec"><h2>${t('acc_saved')} <span class="pillnum">${saved.length}</span></h2>${saved.length?`<div class="grid">${saved.map(card).join('')}</div>`:`<p class="lead">${L==='ar'?'لا توجد رحلات محفوظة بعد.':'Nothing saved yet.'}</p>`}</section></div>`;
 };
@@ -2888,7 +2889,7 @@ async function sendMsgLive(id){ const i=document.getElementById('cin'),val=i.val
 /* ── notifications: bell badge + pop-up toast on new replies (poll every 8s) ── */
 function bellHtml(){ const n=MYTHREADS.reduce((a,x)=>a+((isCoRole(PROF?.role)?x.company_unread:x.client_unread)||0),0);
  return `<a class="lang" id="bell" href="${isCoRole(PROF?.role)?'#/company':'#/account'}" title="${L==='ar'?'المحادثات':'Chats'}" style="position:relative">💬${n?`<span class="pillnum" style="position:absolute;top:-8px;inset-inline-end:-8px">${n}</span>`:''}</a>`; }
-function drawBell(){ let el=document.getElementById('bellWrap'); if(!el){ el=document.createElement('span'); el.id='bellWrap'; document.getElementById('langBtn')?.before(el); } el.innerHTML=authed()?bellHtml():''; }
+function drawBell(){ let el=document.getElementById('bellWrap'); if(!el){ el=document.createElement('span'); el.id='bellWrap'; document.getElementById('langBtn')?.before(el); } el.innerHTML=(authed()&&!chatUse())?bellHtml():''; }
 async function pollChats(){ if(!authed())return; const before={}; MYTHREADS.forEach(x=>before[x.id]=(isCoRole(PROF?.role)?x.company_unread:x.client_unread)||0);
  await loadThreads(); drawBell();
  MYTHREADS.forEach(x=>{ const now=(isCoRole(PROF?.role)?x.company_unread:x.client_unread)||0; if(now>(before[x.id]||0)){
@@ -2898,9 +2899,69 @@ async function pollChats(){ if(!authed())return; const before={}; MYTHREADS.forE
 }
 function popup(text,threadId){ const d=document.createElement('div'); d.className='toast'; d.style.cursor='pointer'; d.style.bottom='90px';
  d.innerHTML=`💬 <b>${L==='ar'?'رد جديد':'New reply'}</b> · ${esc(text)}`; d.onclick=()=>{d.remove();go('#/chat/'+threadId)}; document.body.appendChild(d); setTimeout(()=>d.remove(),7000); }
-function startPoll(){ stopPoll(); drawBell(); pollChats(); POLL=setInterval(pollChats,8000); }
-function stopPoll(){ if(POLL)clearInterval(POLL); POLL=null; drawBell(); }
+function stopLegacyPoll(){ if(POLL)clearInterval(POLL); POLL=null; }
+/* the chat widget (blocks/chat.js) polls for itself: 10 s while open, 45 s for the badge. The old bell + 8 s poll run only if the block is off or missing. */
+function startPoll(){ stopLegacyPoll(); chatReady().then(c=>{ drawBell(); if(c) c.sync(); else { pollChats(); POLL=setInterval(pollChats,8000); } }); }
+function stopPoll(){ stopLegacyPoll(); const c=chatUse(); if(c) c.sync(); drawBell(); }
 
+/* ── ONE inbox (blocks/chat.js): the page only hands the widget its data helpers; the old full-page chat stays as the fallback ── */
+const chatRole=()=>isCoRole(PROF?.role)?'company':'client';
+const CHAT_HOST={
+ me(){ if(!API) return {id:'demo',role:'client'}; if(!authed()||!PROF||isAdminRole(PROF.role)||PROF.role==='wijha_scout') return null; return {id:AU.user.id,role:chatRole()}; },
+ async list(){
+  if(!API) return THREADS.map(th=>({id:th.id,offer_id:th.trip,company_id:th.co,last_message_at:null,last_message_from:(th.msgs[th.msgs.length-1]||{}).f==='c'?'client':'company',client_unread:th.unread||0,_d:th}));
+  const r=await aget('wijha_threads?select=*&order=last_message_at.desc'); MYTHREADS=r; LOADERR=null; return r; },
+ who(th){ if(!API) return th._d.emp; return chatRole()==='client'?coName(th.company_id):(L==='ar'?'عميل':'Client'); },
+ sub(th){ const x=trip(th.offer_id); return x?tripName(x,L):''; },
+ tripId(th){ return trip(th.offer_id)?th.offer_id:''; },
+ unread(th){ return chatRole()==='company'&&API?(th.company_unread||0):(th.client_unread||0); },
+ lastFrom(th){ return th.last_message_from||''; },
+ offer(offerId){ const x=trip(offerId); return {who:x?coName(x.co):'',sub:x?tripName(x,L):'',tripId:x?x.id:''}; },
+ async messages(id){
+  if(!API){ const th=THREADS.find(x=>x.id===id); return th?th.msgs.map((m,i)=>({id:'d'+i,sender_role:m.f==='sys'?'system':m.f==='c'?'client':'company',body:L==='ar'?m.ar:m.en,blocked:!!m.blocked,time:m.t})):[]; }
+  return aget('wijha_messages?select=*&thread_id=eq.'+encodeURIComponent(id)+'&order=created_at'); },
+ async send(id,body){
+  if(!API){ const th=THREADS.find(x=>x.id===id); const tm=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+   if(CONTACT_RE.test(body)){ th.msgs.push({f:'c',t:tm,ar:body,en:body,blocked:true}); persist(); return {id:'d'+Date.now(),sender_role:'client',body,blocked:true,time:tm}; }
+   th.msgs.push({f:'c',t:tm,ar:body,en:body}); persist();
+   setTimeout(()=>{ th.msgs.push({f:'e',t:tm,ar:'وصلتني رسالتك، بأراجع التفاصيل وأرد عليك خلال دقائق 🙏',en:'Got your message — checking the details and coming back to you in a few minutes 🙏'}); persist(); },900);
+   return {id:'d'+Date.now(),sender_role:'client',body,time:tm}; }
+  const r=await apost('wijha_messages',{thread_id:id,sender_id:AU.user.id,sender_role:chatRole(),body}); return r&&r[0]; },
+ async ensure(offerId){
+  if(!API) return threadFor(offerId);
+  const x=trip(offerId); if(!x) throw new Error('offer');
+  let th=(await aget(`wijha_threads?select=id&client_id=eq.${AU.user.id}&company_id=eq.${x.co}&offer_id=eq.${x.id}`))[0];
+  if(!th){ th=(await apost('wijha_threads',{client_id:AU.user.id,company_id:x.co,offer_id:x.id}))[0]; API.insert('offer_events',{offer_id:x.id,company_id:x.co,kind:'chat_open',session_id:sid()}); }
+  return th.id; },
+ async markRead(id){ if(!API){ const th=THREADS.find(x=>x.id===id); if(th){th.unread=0;persist();} return; } await arpc('wijha_mark_read',{p_thread:id}); },
+ warn(){ return t('warn'); },
+ showFab(){ return !!API||!!ME; },
+ signIn(){ go('#/signup'); }
+};
+const chatUse=()=>Wijha.use('chat');
+/* wait (briefly) for the deferred block script, unless it is switched off or broken */
+async function chatReady(){ for(let i=0;i<60;i++){ const c=chatUse(); if(c) return c; const st=(Wijha.status().chat||{}).state; if(st&&st!=='pending'&&st!=='starting') return null; if(i>=20&&!st) return null; await new Promise(r=>setTimeout(r,50)); } return null; }
+let LAST_PAGE_HASH=null;
+const _routeBase=route;
+window.addEventListener('hashchange',e=>{ try{ const nh=new URL(e.newURL).hash, oh=new URL(e.oldURL).hash; if(nh.startsWith('#/chat')){ if(!oh.startsWith('#/chat')) LAST_PAGE_HASH=oh||'#/'; } else LAST_PAGE_HASH=null; }catch(x){} });
+const _chatPageFull=chatPage;
+chatPage=async function(id){
+ const c=await chatReady();
+ if(!c) return _chatPageFull(id);                                 /* block off or missing: the old full page */
+ const back=LAST_PAGE_HASH||(authed()&&PROF?(isCoRole(PROF.role)?'#/company':'#/account'):'#/trips');
+ const keep=document.getElementById('app').children.length>0&&LAST_PAGE_HASH;
+ try{ history.replaceState(null,'',location.pathname+location.search+back); }catch(e){}
+ if(!keep) _routeBase();
+ if(String(id).startsWith('new-')) c.openOffer(String(id).slice(4)); else c.open(String(id));
+};
+/* the trip page "Chat with the company" button and every inbox row: open the widget in place (no page change) */
+document.addEventListener('click',e=>{
+ if(window.__preview||e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey) return;
+ const a=e.target&&e.target.closest?e.target.closest('a[href^="#/chat"]'):null; if(!a) return;
+ const c=chatUse(); if(!c) return;
+ e.preventDefault(); const id=(a.getAttribute('href').split('/')[2]||'').split('?')[0];
+ if(id.startsWith('new-')) c.openOffer(id.slice(4)); else if(id) c.open(id); else c.open();
+});
 /* ── boot hook: restore session after the catalogue loads ── */
 (async()=>{ await new Promise(r=>setTimeout(r,50)); if(API&&authed()){ await loadProfile(); if(PROF){ ME={name:PROF.name||PROF.email}; if(isCoRole(PROF.role)&&PROF.company_id){CO={id:PROF.company_id,name:coName(PROF.company_id),emp:PROF.name||PROF.email,role:PROF.role,lic:co(PROF.company_id)?.lic||'',verified:!!co(PROF.company_id)?.verified};} syncNav(); startPoll(); } } })();
 
@@ -2914,7 +2975,7 @@ const TURNSTILE_SITE_KEY='';
 Wijha.host({
   lang:()=>L, esc, toast:m=>toast(m), go:h=>go(h), refresh:()=>route(),
   get:p=>API.select(p), post:(tb,row)=>API.insert(tb,row),
-  extras:{ previewHref:id=>'./index.html#/preview/'+encodeURIComponent(id), pvPatch, pvReload, bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
+  extras:{ chat:CHAT_HOST, previewHref:id=>'./index.html#/preview/'+encodeURIComponent(id), pvPatch, pvReload, bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
 });
 /* ── captcha (Cloudflare Turnstile): asked only when signing up, signing in or resetting a password ── */
 let _tsLoad=null;
