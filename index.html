@@ -473,6 +473,7 @@ footer h4{font-size:14px;margin-bottom:10px}
 <script defer src="blocks/photos.js"></script>
 <script defer src="blocks/freshness.js"></script>
 <script defer src="blocks/vault-intake.js"></script>
+<script defer src="blocks/preview.js"></script>
 </head>
 <body>
 <header class="nav"><div class="wrap">
@@ -1340,7 +1341,9 @@ function route(){
  window.scrollTo(0,0); document.getElementById('mbar').classList.add('hidden'); document.body.style.overflow='';
  document.querySelectorAll('[data-nav]').forEach(a=>a.classList.remove('on'));
  syncNav();
+ if(!h.startsWith('#/preview/')) pvLeave();
  if(h.startsWith('#/legal/')) return Wijha.mount('page.legal',app,{k:h.slice(8)});
+ if(h.startsWith('#/preview/')) return previewRoute(h.slice(10).split('?')[0]);
  if(h.startsWith('#/trip/')) return detail(h.slice(7));
  if(h.startsWith('#/hotel/')) return hotelPage(h.slice(8));
  if(h.startsWith('#/trips')) { const c=(h.split('/')[2]||'').split('?')[0]; list(c);
@@ -1644,9 +1647,18 @@ const qtyOf=()=>Object.entries(B.q).filter(([k,n])=>n>0);
 const paxOf=()=>qtyOf().reduce((a,[k,n])=>a+n,0);
 const mixLabel=()=>qtyOf().map(([k,n])=>t(k)+' × '+n).join(' + ');
 const mixTotal=x=>qtyOf().reduce((a,[k,n])=>a+(egpOf(x,k)||0)*n,0)+(x.ferry||0)*paxOf();
+/* preview helpers (blocks/preview.js): in preview mode ONLY, a field the extractor left empty shows a dashed "not entered" placeholder.
+   On the public route window.__preview is false, so every helper returns '' and the page is unchanged. */
+const pvE=(empty,ar,en,full)=>(window.__preview&&empty)?Wijha.html('preview.ph',{ar,en,full},{quiet:true}):'';
+const pvLi=(empty,ar,en)=>{const h=pvE(empty,ar,en);return h?`<li>${h}</li>`:''};
+const pvS=(empty,title,ar,en)=>{const h=pvE(empty,ar,en);return h?`<section><h2>${title}</h2>${h}</section>`:''};
 function detail(id){
  const x=trip(id); if(!x){notFound(L==='ar'?'هذه الرحلة غير موجودة أو لم تعد منشورة.':'This trip does not exist or is no longer published.');return;}
- CUR=x; const rows=priceRows(x); B={q:{}}; if(rows[0]) B.q[rows[0][0]]=1;
+ return detailView(x);
+}
+/* the one trip-page template: takes an already-mapped trip (public route: from TRIPS; preview route: mapped from the user's own read) */
+function detailView(x){
+ const id=x.id; CUR=x; const rows=priceRows(x); B={q:{}}; if(rows[0]) B.q[rows[0][0]]=1;
  const c=co(x.co), s=nextSeed(), sims=similar(x);
  const total=x.seats||0, taken=x.taken||0, pct=total?Math.round(taken/total*100):0;
  document.getElementById('app').innerHTML=`<div class="wrap">
@@ -1655,7 +1667,7 @@ function detail(id){
      <span class="tag t-${x.cat}">${CATS[x.cat].icon} ${L==='ar'?CATS[x.cat].ar:CATS[x.cat].en}</span>
      <span class="tag">${L==='ar'?CATS[x.cat].subs[x.sub].ar:CATS[x.cat].subs[x.sub].en}</span>
      <span class="tag">${esc(L==='ar'?x.regionAr:x.region)}</span>
-     ${durTxt(x).length?`<span class="tag">${durTxt(x).join(' / ')}</span>`:''}
+     ${durTxt(x).length?`<span class="tag">${durTxt(x).join(' / ')}</span>`:pvE(true,'المدة','Duration')}
      ${x.flightsIncluded?`<span class="tag ok">✈ ${t('inc_yes')}</span>`:''}
    </div>
    ${x.sample?`<div class="note-box">🧪 ${x.expired?(L==='ar'?'عرض تجريبي انتهى موعده — معروض كمثال فقط ولا يمكن الاستفسار عنه.':'Sample offer whose dates have passed — shown as an example only, enquiries are closed.'):(L==='ar'?'هذا عرض تجريبي لعرض شكل الصفحة — الأسعار والمواعيد غير مؤكدة وقد لا يكون متاحاً للحجز.':'This is a sample offer shown to demonstrate the page — prices and dates are not confirmed and it may not be bookable.')}</div>`:''}
@@ -1677,15 +1689,15 @@ function detail(id){
 
   <div class="layout"><div class="main">
    <section><div class="facts">
-     ${durTxt(x).length?`<div class="fact"><div class="k">${t('d_duration')}</div><div class="v">${durTxt(x)[0]||''}<small>${durTxt(x)[1]||''}</small></div></div>`:''}
-     <div class="fact"><div class="k">${t('d_dates')}</div><div class="v">${esc(L==='ar'?x.dates.ar:x.dates.en)}</div></div>
+     ${durTxt(x).length?`<div class="fact"><div class="k">${t('d_duration')}</div><div class="v">${durTxt(x)[0]||''}<small>${durTxt(x)[1]||''}</small></div></div>`:(window.__preview?`<div class="fact"><div class="k">${t('d_duration')}</div><div class="v">${pvE(true,'المدة','Duration')}</div></div>`:'')}
+     <div class="fact"><div class="k">${t('d_dates')}</div><div class="v">${pvE(x.dates.ar==='—','التواريخ','Dates')||esc(L==='ar'?x.dates.ar:x.dates.en)}</div></div>
      <div class="fact"><div class="k">${t('d_region')}</div><div class="v">${esc(L==='ar'?x.destAr:x.dest)}<small>${esc(L==='ar'?x.regionAr:x.region)}</small></div></div>
      <div class="fact"><div class="k">${t('d_flights')}</div><div class="v">${x.flightsIncluded?t('inc_yes'):t('inc_no')}${x.arrival?`<small>${L==='ar'?'الوصول':'Arrival'}: ${esc(x.arrival)}</small>`:''}</div></div>
-     <div class="fact"><div class="k">${t('d_from')}</div>${priceBlock(x,'v')}${Wijha.html('trip.fresh',{trip:x,variant:'mini',hasPrice:!!priceRows(x)[0]},{quiet:true})}</div>
+     <div class="fact"><div class="k">${t('d_from')}</div>${pvE(!rows.length,'السعر','Price')||priceBlock(x,'v')}${Wijha.html('trip.fresh',{trip:x,variant:'mini',hasPrice:!!priceRows(x)[0]},{quiet:true})}</div>
    </div></section>
 
    <section><div class="eyebrow">${t('d_brief')}</div>
-     <p class="brief">${esc(L==='ar'?x.briefAr:x.briefEn)}</p>
+     ${pvE(!(L==='ar'?x.briefAr:x.briefEn),'النبذة التعريفية','Summary')||`<p class="brief">${esc(L==='ar'?x.briefAr:x.briefEn)}</p>`}
      ${x.seats?`<div class="fillbar"><div class="bar"><i style="width:${pct}%"></i></div>
        <div class="ft"><span>${taken} ${t('seats')} ${total}</span><b>${pct}%</b></div></div>`:''}
    </section>
@@ -1694,8 +1706,8 @@ function detail(id){
      <h2 style="margin:0">${t('d_journey')}</h2>
      <div style="display:flex;gap:6px"><button class="tag" onclick="allDays(true)">${L==='ar'?'توسيع الكل':'Expand all'}</button>
       <button class="tag" onclick="allDays(false)">${L==='ar'?'طيّ الكل':'Collapse all'}</button></div></div>
-    ${x.detail==='outline'?`<div class="note-box">📄 ${t('outline')}</div>`:''}
-    <div class="days">${x.itin.map((d,i)=>`
+    ${x.detail==='outline'||(window.__preview&&!x.itin.length)?`<div class="note-box">📄 ${t('outline')}</div>`:''}
+    <div class="days">${pvE(!x.itin.length,'لم يُعثر على برنامج يوم بيوم في الملف','No day-by-day program was found in the file',true)}${x.itin.map((d,i)=>`
      <div class="day ${i===0?'open':''}">
       <button class="day-head" onclick="this.parentElement.classList.toggle('open')">
         <div class="day-n">${L==='ar'?'يوم':'Day'}<b>${i+1}</b></div>
@@ -1709,7 +1721,7 @@ function detail(id){
           <span class="txt">${esc(L==='ar'?it.ar:it.en)}<em class="ic-lbl">${L==='ar'?ITEM_CATS[it.cat].ar:ITEM_CATS[it.cat].en}</em></span></li>`).join('')}</ul></div>`).join('')}
       </div></div>`).join('')}</div></section>
 
-   ${x.hotels&&x.hotels.length?`<section><h2>${t('d_hotels')}</h2><div class="hotels">${x.hotels.map(hh=>{
+   ${pvS(!(x.hotels&&x.hotels.length),t('d_hotels'),'الفنادق','Hotels')}${x.hotels&&x.hotels.length?`<section><h2>${t('d_hotels')}</h2><div class="hotels">${x.hotels.map(hh=>{
      const h=HOTELS[hh.h]; return `<a class="hotel" href="#/hotel/${hh.h}">
       <div class="hart">${art(h.art,nextSeed())}</div>
       <div class="hbody"><b>${esc(h.name)}</b>
@@ -1720,9 +1732,9 @@ function detail(id){
 
    <section><h2>${t('d_incl')}</h2><div class="two">
      <div class="incl"><h3 class="yes">✓ ${t('inc_yes')}</h3><ul>${x.inc.map(i=>
-       `<li><span class="pin" style="--c:${ITEM_CATS[i.cat].c}">${ITEM_CATS[i.cat].icon}</span><span class="txt">${esc(L==='ar'?i.ar:i.en)}<em class="ic-lbl">${L==='ar'?ITEM_CATS[i.cat].ar:ITEM_CATS[i.cat].en}</em></span></li>`).join('')}</ul></div>
+       `<li><span class="pin" style="--c:${ITEM_CATS[i.cat].c}">${ITEM_CATS[i.cat].icon}</span><span class="txt">${esc(L==='ar'?i.ar:i.en)}<em class="ic-lbl">${L==='ar'?ITEM_CATS[i.cat].ar:ITEM_CATS[i.cat].en}</em></span></li>`).join('')||pvLi(true,'ما يشمله السعر','What is included')}</ul></div>
      <div class="incl"><h3 class="no">− ${t('inc_no')}</h3><ul>${x.exc.map(i=>
-       `<li><span class="pin" style="--c:${ITEM_CATS[i.cat].c}">${ITEM_CATS[i.cat].icon}</span><span class="txt">${esc(L==='ar'?i.ar:i.en)}<em class="ic-lbl">${L==='ar'?ITEM_CATS[i.cat].ar:ITEM_CATS[i.cat].en}</em></span></li>`).join('')}</ul></div>
+       `<li><span class="pin" style="--c:${ITEM_CATS[i.cat].c}">${ITEM_CATS[i.cat].icon}</span><span class="txt">${esc(L==='ar'?i.ar:i.en)}<em class="ic-lbl">${L==='ar'?ITEM_CATS[i.cat].ar:ITEM_CATS[i.cat].en}</em></span></li>`).join('')||pvLi(true,'ما لا يشمله السعر','What is not included')}</ul></div>
    </div></section>
 
    ${(x.mealsAr||x.minaAr||x.track||x.deposit||x.regDeadline||x.validUntil||x.priceBasis||x.addons?.length)?`<section><h2>${L==='ar'?'تفاصيل إضافية':'Additional details'}</h2><div class="facts" style="grid-template-columns:repeat(auto-fill,minmax(190px,1fr))">
@@ -1746,7 +1758,7 @@ function detail(id){
 
    ${x.notes?`<section><h2>${t('d_notes')}</h2><ul class="docs">${(L==='ar'?x.notes.ar:x.notes.en).map(n=>`<li>ℹ️ ${esc(n)}</li>`).join('')}</ul></section>`:''}
 
-   ${(x.cancel&&x.co!=='sawa')?`<section><h2>${t('d_pay')}</h2><h3>${L==='ar'?'سياسة الإلغاء':'Cancellation'}</h3>
+   ${x.co!=='sawa'?pvS(!x.cancel,t('d_pay'),'سياسة الإلغاء','Cancellation policy'):''}${(x.cancel&&x.co!=='sawa')?`<section><h2>${t('d_pay')}</h2><h3>${L==='ar'?'سياسة الإلغاء':'Cancellation'}</h3>
      <div class="pol">${(L==='ar'?x.cancel.ar:x.cancel.en).map(r=>`<div><span>${esc(r[0])}</span><b>${esc(r[1])}</b></div>`).join('')}</div></section>`:''}
    ${Wijha.html('detail.faq',{trip:x})}
    ${Wijha.html('detail.photos',{trip:x})}
@@ -1773,8 +1785,8 @@ function detail(id){
 
   <aside class="side" id="side" onclick="if(event.target===this)sheet(false)"><div class="bcard">
     <button class="sheet-x" aria-label="${L==='ar'?'إغلاق':'Close'}" onclick="sheet(false)">✕</button>
-    <div class="pl">${rows.length?priceBlock(x):`<div class="pr-egp" style="font-size:20px">${L==='ar'?'السعر عند الاستفسار':'Price on enquiry'}</div>`}${rows.length?Wijha.html('trip.fresh',{trip:x,variant:'detail',hasPrice:true},{quiet:true}):''}</div>
-    <div class="gst">${esc(L==='ar'?x.dates.ar:x.dates.en)}${x.priceNote?` · ${esc(L==='ar'?x.priceNote.ar:x.priceNote.en)}`:''}</div>
+    <div class="pl">${pvE(!rows.length,'السعر','Price')}${rows.length?priceBlock(x):`<div class="pr-egp" style="font-size:20px">${L==='ar'?'السعر عند الاستفسار':'Price on enquiry'}</div>`}${rows.length?Wijha.html('trip.fresh',{trip:x,variant:'detail',hasPrice:true},{quiet:true}):''}</div>
+    <div class="gst">${pvE(x.dates.ar==='—','التواريخ','Dates')||esc(L==='ar'?x.dates.ar:x.dates.en)}${x.priceNote?` · ${esc(L==='ar'?x.priceNote.ar:x.priceNote.en)}`:''}</div>
     ${rows.length?`<div class="field"><div class="k">${L==='ar'?'اختر الغرف وعدد المسافرين':'Choose rooms & travellers'}</div>
       <div class="rooms">${rows.map(([k,v])=>
       `<div class="room" data-k="${k}">
@@ -2245,6 +2257,13 @@ function mapOffer(o){
  };
 }
 
+const CO_COLS='id,slug,name_ar,name_en,license_no,etaa_verified,governorate,address_ar,address_en,hotline,whatsapp,email,website,about_ar,about_en';
+const mapCo=c=>({id:c.id, ar:c.name_ar, en:c.name_en||c.name_ar, lic:c.license_no||'—',
+   gov:c.governorate, govEn:c.governorate, addr:c.address_ar, addrEn:c.address_en||c.address_ar,
+   hotline:c.hotline||'—', wa:(c.whatsapp||'').replace(/\D/g,''), email:c.email, site:c.website,
+   verified:!!c.etaa_verified, rating:null, reviews:0,
+   aboutAr:c.about_ar||'', aboutEn:c.about_en||c.about_ar||'',
+   pay:DEMO_COS[0].pay, payEn:DEMO_COS[0].payEn});
 async function loadCatalogue(){
  const [offers,companies,hotels,scores,mentions,quotes]=await Promise.all([
   API.select('public_offers?select=*').then(async rows=>{
@@ -2253,19 +2272,14 @@ async function loadCatalogue(){
          const m={}; extra.forEach(e=>m[e.id]=e); rows.forEach(r=>Object.assign(r,m[r.id]||{})); }catch(e){}
     try{ const sm=await API.select('offers?select=id,is_sample&is_sample=eq.true'); const ids=new Set(sm.map(x=>x.id)); rows.forEach(r=>{r.is_sample=ids.has(r.id)}); }catch(e){}
     return rows; }),
-  API.select('companies?select=id,slug,name_ar,name_en,license_no,etaa_verified,governorate,address_ar,address_en,hotline,whatsapp,email,website,about_ar,about_en'),
+  API.select('companies?select='+CO_COLS),
   API.select('hotels?select=*').catch(()=>[]),
   API.select('hotel_scores?select=*').catch(()=>[]),
   API.select('hotel_mentions?select=*').catch(()=>[]),
   API.select('hotel_quotes?select=*').catch(()=>[])
  ]);
  COS.length=0;
- companies.forEach(c=>COS.push({id:c.id, ar:c.name_ar, en:c.name_en||c.name_ar, lic:c.license_no||'—',
-   gov:c.governorate, govEn:c.governorate, addr:c.address_ar, addrEn:c.address_en||c.address_ar,
-   hotline:c.hotline||'—', wa:(c.whatsapp||'').replace(/\D/g,''), email:c.email, site:c.website,
-   verified:!!c.etaa_verified, rating:null, reviews:0,
-   aboutAr:c.about_ar||'', aboutEn:c.about_en||c.about_ar||'',
-   pay:DEMO_COS[0].pay, payEn:DEMO_COS[0].payEn}));
+ companies.forEach(c=>COS.push(mapCo(c)));
  /* offers whose company row anon cannot read: rebuild a minimal entry from the public_offers columns (audit F1) */
  offers.forEach(o=>{ if(o.company_id && !COS.some(c=>c.id===o.company_id))
    COS.push({id:o.company_id, ar:o.company_ar||'—', en:o.company_en||o.company_ar||'—', lic:o.license_no||'—',
@@ -2292,19 +2306,20 @@ async function loadCatalogue(){
 }
 
 /* ── hydrate one offer with stages / items / notes / hotels ── */
-async function hydrate(x){
- if(x._hydrated||!API)return x;
+async function hydrate(x,sel){
+ if(x._hydrated||(!API&&!sel))return x;
+ const SEL=sel||(p=>API.select(p));  /* preview passes a reader that uses the signed-in user's token */
  const [stages,items,notes,ohotels,photos]=await Promise.all([
-  API.select(`offer_stages?offer_id=eq.${x.id}&select=id,sort_order,title_ar,title_en,day_label,description_ar,description_en,art_key,photo_url&order=sort_order`),
-  API.select(`offer_items?offer_id=eq.${x.id}&select=kind,item_cat,text_ar,text_en,price_text,sort_order&order=sort_order`),
-  API.select(`offer_notes?offer_id=eq.${x.id}&select=kind,label_ar,label_en,text_ar,text_en,sort_order&order=sort_order`).catch(()=>[]),
-  API.select(`offer_hotels?offer_id=eq.${x.id}&select=hotel_id,sort_order,city_ar,city_en,hotel_name,date_range,nights,note_ar,note_en&order=sort_order`),
-  API.select(`wijha_photos?offer_id=eq.${x.id}&select=external_url,caption_ar,caption_en,service_kind,sort_order&order=sort_order`).catch(()=>[])
+  SEL(`offer_stages?offer_id=eq.${x.id}&select=id,sort_order,title_ar,title_en,day_label,description_ar,description_en,art_key,photo_url&order=sort_order`),
+  SEL(`offer_items?offer_id=eq.${x.id}&select=kind,item_cat,text_ar,text_en,price_text,sort_order&order=sort_order`),
+  SEL(`offer_notes?offer_id=eq.${x.id}&select=kind,label_ar,label_en,text_ar,text_en,sort_order&order=sort_order`).catch(()=>[]),
+  SEL(`offer_hotels?offer_id=eq.${x.id}&select=hotel_id,sort_order,city_ar,city_en,hotel_name,date_range,nights,note_ar,note_en&order=sort_order`),
+  SEL(`wijha_photos?offer_id=eq.${x.id}&select=external_url,caption_ar,caption_en,service_kind,sort_order&order=sort_order`).catch(()=>[])
  ]);
  let blocks=[];
  if(stages.length){
   const ids=stages.map(s=>`"${s.id}"`).join(',');
-  blocks=await API.select(`offer_stage_items?stage_id=in.(${ids})&select=stage_id,block_ar,block_en,block_order,item_cat,text_ar,text_en,sort_order&order=block_order,sort_order`).catch(()=>[]);
+  blocks=await SEL(`offer_stage_items?stage_id=in.(${ids})&select=stage_id,block_ar,block_en,block_order,item_cat,text_ar,text_en,sort_order&order=block_order,sort_order`).catch(()=>[]);
  }
  x.itin=stages.map(s=>{
   const mine=blocks.filter(b=>b.stage_id===s.id);
@@ -2353,6 +2368,101 @@ detail=function(id){
    document.getElementById('app').innerHTML=`<div class="wrap"><div class="note-box" style="background:var(--red-soft);color:var(--red)">${esc(e.message)}</div></div>`;
  });
 };
+
+
+/* ══════════════ PREVIEW (blocks/preview.js) ══════════════
+   #/preview/<offer_id>: shows ANY offer of the signed-in user's own company (admins/scouts: any) exactly as the client page does,
+   by reading it from `offers` + children with the USER's token (RLS decides) and rendering it through the SAME mapOffer / hydrate / detailView.
+   Nothing here is stored (no localStorage, no cache), the id is the only thing in the URL, and the page is marked noindex while it is open. */
+const PV={seq:0,cur:null,addedCo:null,title:null};
+const PV_ID=/^[A-Za-z0-9_-]{1,64}$/;
+function jwtExp(tok){ try{ return JSON.parse(atob(String(tok).split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).exp||0; }catch(e){ return 0; } }
+/* who is reading: the public-site session, else the admin-console session (same browser origin). Never throws. */
+async function pvIdent(){
+ try{ if(authed()){ const tok=await vaultToken(); if(tok&&AU&&AU.user) return {tok,uid:AU.user.id}; } }catch(e){}
+ try{ const a=JSON.parse(localStorage.getItem('wijha_admin_tok')||'null');
+  if(a&&a.access_token&&a.user&&jwtExp(a.access_token)*1000>Date.now()+5000) return {tok:a.access_token,uid:a.user.id}; }catch(e){}
+ return null;
+}
+async function pvReq(idn,path,opt){
+ const r=await fetch(SBU().replace(/\/$/,'')+'/rest/v1/'+path,{...(opt||{}),cache:'no-store',headers:{apikey:SBK(),Authorization:'Bearer '+idn.tok,'Content-Type':'application/json',...((opt&&opt.headers)||{})}});
+ const tx=await r.text(); let b; try{b=tx?JSON.parse(tx):null}catch(e){b=tx}
+ if(!r.ok){ const er=new Error((b&&b.message)||String(tx).slice(0,160)||('HTTP '+r.status)); er.status=r.status; throw er; }
+ return b;
+}
+function pvNoindex(on){
+ let m=document.querySelector('meta[name="robots"][data-pv]');
+ if(on&&!m){ m=document.createElement('meta'); m.name='robots'; m.content='noindex,nofollow,noarchive'; m.setAttribute('data-pv','1'); document.head.appendChild(m); }
+ if(!on&&m) m.remove();
+}
+function pvLeave(){
+ if(!window.__preview) return;
+ window.__preview=false; PV.seq++; PV.cur=null; pvNoindex(false);
+ const b=document.getElementById('pvBar'); if(b) b.remove();
+ if(PV.addedCo){ const i=COS.findIndex(c=>c.id===PV.addedCo); if(i>-1) COS.splice(i,1); PV.addedCo=null; }
+ if(PV.title!=null){ document.title=PV.title; PV.title=null; }
+}
+/* read everything with the user's token. Returns {state:'ok'|'signin'|'denied'|'error', ...}. 'denied' is ONE answer for "not yours" and "does not exist". */
+async function pvLoad(id,retried){
+ const idn=await pvIdent(); if(!idn) return {state:'signin'};
+ try{
+  const pr=(await pvReq(idn,'profiles?select=id,role,company_id&id=eq.'+encodeURIComponent(idn.uid)))[0];
+  const staff=pr&&(isAdminRole(pr.role)||pr.role==='wijha_scout'||(isCoRole(pr.role)&&pr.company_id));
+  if(!staff) return {state:'denied'};
+  const o=((await pvReq(idn,'offers?select=*&id=eq.'+encodeURIComponent(id)))||[])[0];
+  if(!o) return {state:'denied'};
+  if(isCoRole(pr.role)&&!isAdminRole(pr.role)&&o.company_id!==pr.company_id) return {state:'denied'};
+  const sel=p=>pvReq(idn,p);
+  const [cos,imps]=await Promise.all([
+   sel('companies?select='+CO_COLS+'&id=eq.'+encodeURIComponent(o.company_id||'')).catch(()=>[]),
+   sel('wijha_imports?select=id,kind,file_path,payload,created_at&company_id=eq.'+encodeURIComponent(o.company_id||'')+'&order=created_at.desc&limit=60').catch(()=>[])]);
+  const x=mapOffer(o); await hydrate(x,sel);
+  let checks=[]; (Array.isArray(imps)?imps:[]).some(i=>{ const c=((i.payload&&i.payload.created)||[]).find(c=>c&&c.offer_id===o.id); if(c){ checks=Array.isArray(c.checks)?c.checks:[]; return true; } return false; });
+  return {state:'ok',offer:o,trip:x,checks,role:pr.role,co:(Array.isArray(cos)&&cos[0])||null,idn};
+ }catch(e){
+  if(e.status===401){ if(!retried&&authed()&&AU.refresh_token){ await arefresh(); return authed()?pvLoad(id,true):{state:'signin',expired:true}; } return {state:'signin',expired:true}; }
+  return {state:'error',msg:String(e.message||e).slice(0,160)};
+ }
+}
+function pvGate(state,id,msg,expired){
+ document.getElementById('mbar').classList.add('hidden');
+ const b=document.getElementById('pvBar'); if(b) b.remove();
+ Wijha.mount('preview.gate',document.getElementById('app'),{state,id,msg,expired});
+}
+async function previewRoute(id){
+ const app=document.getElementById('app'), my=++PV.seq;
+ window.__preview=true; pvNoindex(true);
+ if(PV.title==null) PV.title=document.title;
+ document.title=(L==='ar'?'معاينة — وجهة':'Preview — Wijha');
+ document.getElementById('mbar').classList.add('hidden');
+ const old=document.getElementById('pvBar'); if(old) old.remove();
+ if(!PV_ID.test(id||'')) return pvGate('denied');
+ app.innerHTML=`<div class="wrap"><p class="lead" style="padding:60px 0" role="status">${L==='ar'?'جارٍ تحميل المعاينة…':'Loading the preview…'}</p></div>`;
+ const out=await pvLoad(id);
+ if(my!==PV.seq||!window.__preview) return;          // the user went elsewhere meanwhile
+ if(out.state!=='ok') return pvGate(out.state,id,out.msg,out.expired);
+ if(PV.addedCo){ const i=COS.findIndex(c=>c.id===PV.addedCo); if(i>-1) COS.splice(i,1); PV.addedCo=null; }
+ if(!COS.some(c=>c.id===out.trip.co)){ COS.push(out.co?mapCo(out.co):{id:out.trip.co,ar:'—',en:'—',verified:false,lic:'—',hotline:'—',wa:'',aboutAr:'',aboutEn:''}); PV.addedCo=out.trip.co; }
+ PV.cur=out;
+ detailView(out.trip);
+ if(!priceRows(out.trip).length){ const mb=document.getElementById('mBtn'); if(mb) mb.onclick=()=>toast(L==='ar'?'غير متاح في المعاينة':'Not available in the preview'); }
+ const bar=document.createElement('div'); bar.id='pvBar'; bar.style.display='contents';
+ bar.innerHTML=Wijha.html('preview.banner',{offer:out.offer,trip:out.trip,checks:out.checks,role:out.role});
+ app.before(bar);
+ window.scrollTo(0,0);
+}
+const pvReload=()=>{ if(window.__preview&&PV.cur) return previewRoute(PV.cur.offer.id); };
+async function pvPatch(id,body){
+ const idn=await pvIdent(); if(!idn) throw new Error(L==='ar'?'انتهت الجلسة — سجّل الدخول من جديد':'Your session expired — sign in again');
+ const r=await pvReq(idn,'offers?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(body),headers:{Prefer:'return=representation'}});
+ if(!Array.isArray(r)||!r.length) throw new Error(L==='ar'?'لم يُحفظ التغيير — ليست لديك صلاحية على هذا العرض':'The change was not saved — you do not have permission for this offer');
+ return r[0];
+}
+/* preview-only: the buttons that would act on a real client account do nothing here */
+document.addEventListener('click',e=>{
+ if(!window.__preview) return; const el=e.target&&e.target.closest?e.target.closest('#app [onclick*="toggleSave"],#app [onclick*="toggleCmp"],#app [onclick*="sendEnq"],#app [onclick*="share("],#app a[href^="#/chat"]'):null;
+ if(!el) return; e.preventDefault(); e.stopPropagation(); toast(L==='ar'?'غير متاح في المعاينة':'Not available in the preview');
+},true);
 
 /* ── log views / saves / enquiries / searches for the daily digest ── */
 const _sendEnq=sendEnq;
@@ -2591,7 +2701,9 @@ async function doLoginLive(eid,pid,errId){
   await finishPending();
   ME={name:PROF.name||PROF.email}; localStorage.setItem('wijha_me',JSON.stringify(ME));
   if(isCoRole(PROF.role)){ CO={id:PROF.company_id,name:coName(PROF.company_id),emp:PROF.name||PROF.email,role:PROF.role,lic:co(PROF.company_id)?.lic||'',verified:!!co(PROF.company_id)?.verified}; localStorage.setItem('wijha_co',JSON.stringify(CO)); }
-  syncNav(); startPoll(); go(isCoRole(PROF.role)?'#/company':'#/account');
+  syncNav(); startPoll();
+  let back=null; try{ const r=sessionStorage.getItem('wijha_return'); sessionStorage.removeItem('wijha_return'); if(/^#\/preview\/[A-Za-z0-9_-]{1,64}$/.test(r||'')) back=r; }catch(e){}
+  go(back&&isCoRole(PROF.role)?back:isCoRole(PROF.role)?'#/company':'#/account');
  }catch(e){showErr(errId,e.message)}
 }
 
@@ -2693,6 +2805,9 @@ dash=async function(){
  const cid=PROF.company_id; const c=co(cid)||{}; await loadThreads();
  let rev=null; try{ rev=(await aget('companies?select=wijha_review,wijha_review_note&id=eq.'+cid))[0]||null; }catch(e){}
  const mine=TRIPS.filter(x=>x.co===cid); let imports=[]; try{imports=await aget('wijha_imports?select=*&company_id=eq.'+cid+'&order=created_at.desc')}catch(e){}
+ let mineAll=[]; try{ const r=await aget('offers?select=id,title_ar,title_en,status,review_state,visibility&company_id=eq.'+cid+'&order=updated_at.desc.nullslast&limit=60'); if(Array.isArray(r)) mineAll=r; }catch(e){}
+ const pending=mineAll.filter(o=>!(o.status==='published'&&o.review_state==='approved'&&o.visibility!=='internal'));
+ const pvChip=o=>o.status==='draft'?(L==='ar'?'مسودة':'Draft'):o.status==='pending_review'?(L==='ar'?'بانتظار المراجعة':'Pending review'):(L==='ar'?'مخفي عن العملاء':'Hidden');
  document.getElementById('app').innerHTML=`<div class="wrap">
   <div class="head"><div class="crumbs"><span class="tag">🏢 ${esc(c.ar||CO?.name||'')}</span>${c.verified?`<span class="vf-pill">✓ ${t('verified')}${c.lic?' · '+esc(c.lic):''}</span>`:`<span class="tag warn">${rev?.wijha_review==='rejected'?(L==='ar'?'الطلب مرفوض':'Application rejected'):(L==='ar'?'الطلب قيد المراجعة — رحلاتك تظهر بعد الاعتماد':'Under review — your trips go live once approved')}</span>${rev?.wijha_review_note?`<span class="tag">${esc(rev.wijha_review_note)}</span>`:''}`}<span class="tag">${esc(PROF.name||PROF.email)}</span><button class="tag" onclick="signOutAll()">${t('signout')}</button></div><h1>${t('dash')}</h1></div>
   <div class="kpis"><div class="kpi"><b>${mine.length}</b><small>${L==='ar'?'رحلة منشورة':'live trips'}</small></div><div class="kpi"><b>${MYTHREADS.length}</b><small>${L==='ar'?'محادثة':'conversations'}</small></div><div class="kpi"><b>${MYTHREADS.reduce((a,x)=>a+(x.company_unread||0),0)}</b><small>${L==='ar'?'بانتظار ردّك':'awaiting your reply'}</small></div><div class="kpi"><b>${imports.filter(i=>i.status!=='imported').length}</b><small>${L==='ar'?'رابط قيد الاستيراد':'URLs importing'}</small></div></div>
@@ -2701,10 +2816,11 @@ dash=async function(){
    <div class="panel"><h3>${L==='ar'?'أضف رحلة من رابط':'Add a trip from a URL'}</h3><p class="lead" style="font-size:13px">${L==='ar'?'الصق رابط صفحة الرحلة على موقعك أو النشرة. تُستخرج البيانات وتُراجع ثم تُنشر باسمك.':'Paste the trip page or brochure link. We extract the data, review it, and publish under your name.'}</p>
     <input id="impUrl" placeholder="https://…" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:14px"><input id="impNote" placeholder="${L==='ar'?'ملاحظة (اختياري)':'Note (optional)'}" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:14px">
     <button class="btn btn-primary" onclick="submitImport('${cid}')">${L==='ar'?'إرسال الرابط':'Submit URL'}</button><div id="impErr"></div>
-    <div style="margin-top:14px">${imports.map(i=>`<div class="rowitem"><div><b class="mono" style="font-size:11px">${esc(String(i.url||i.file_path||i.kind||'').slice(0,48))}</b><small>${(i.created_at||'').slice(0,10)}</small></div><span class="tag ${i.status==='imported'?'ok':i.status==='failed'?'':'warn'}">${esc(i.status)}</span></div>`).join('')}</div>
+    <div style="margin-top:14px">${imports.map(i=>`<div class="rowitem"><div><b class="mono" style="font-size:11px">${esc(String(i.url||i.file_path||i.kind||'').slice(0,48))}</b><small>${(i.created_at||'').slice(0,10)}</small>${((i.payload&&i.payload.created)||[]).map(c=>c&&PV_ID.test(String(c.offer_id||''))?`<a class="btn btn-ghost" style="margin-top:4px;padding:4px 10px;font-size:12px" href="#/preview/${esc(c.offer_id)}" target="_blank" rel="noopener">${L==='ar'?'معاينة كما يراها العميل':'Preview as the client sees it'} ↗</a>`:'').join('')}</div><span class="tag ${i.status==='imported'?'ok':i.status==='failed'?'':'warn'}">${esc(i.status)}</span></div>`).join('')}</div>
     <p class="note" style="margin-top:12px"><a href="./admin.html" target="_blank" rel="noopener" style="text-decoration:underline">${L==='ar'?'تعديل رحلاتك يدوياً (لوحة الشركة) ↗':'Edit your trips manually (company console) ↗'}</a></p></div>
    <div class="panel"><h3>${t('dash_inbox')} <span class="pillnum">${MYTHREADS.reduce((a,x)=>a+(x.company_unread||0),0)}</span></h3>
     ${MYTHREADS.map(th=>{const x=trip(th.offer_id);return `<a class="rowitem" href="#/chat/${th.id}"><div><b>${esc(L==='ar'?'عميل':'Client')}</b><small>${x?esc(tripName(x,L)):'—'}</small><small class="dim">${(th.last_message_at||'').replace('T',' ').slice(0,16)}</small></div>${th.company_unread?`<span class="pillnum">${th.company_unread}</span>`:`<span class="tag">✓</span>`}</a>`}).join('')||(LOADERR?threadsErr():`<p class="lead">${L==='ar'?'لا استفسارات بعد.':'No enquiries yet.'}</p>`)}</div>
+   ${pending.length?`<div class="panel" data-pv-list><h3>${L==='ar'?'عروض غير ظاهرة للعملاء':'Offers not visible to clients'} <span class="pillnum">${pending.length}</span></h3>${pending.slice(0,12).map(o=>`<a class="rowitem" href="#/preview/${esc(o.id)}" target="_blank" rel="noopener"><div><b>${esc(o.title_ar||o.title_en||'—')}</b><small>${L==='ar'?'معاينة كما يراها العميل':'Preview as the client sees it'} ↗</small></div><span class="tag warn">${esc(pvChip(o))}</span></a>`).join('')}</div>`:''}
    <div class="panel"><h3>${t('dash_trips')} <span class="pillnum">${mine.length}</span></h3>${mine.slice(0,12).map(x=>`<a class="rowitem" href="#/trip/${x.id}"><div><b>${esc(tripName(x,L))}</b><small>${nf(egpOf(x,priceRows(x)[0]?.[0]))} ج.م · ${x.taken||0}/${x.seats||'—'}</small></div><span class="tag ${x.detail==='full'?'ok':'warn'}">${x.detail==='full'?(L==='ar'?'مكتملة':'Complete'):(L==='ar'?'ناقصة':'Pending')}</span></a>`).join('')||`<p class="lead">${L==='ar'?'لم تُنشر رحلات بعد.':'No trips published yet.'}</p>`}
     <a href="./emails.html" target="_blank" rel="noopener" class="note" style="display:block;margin-top:10px;text-decoration:underline">✉ ${t('dash_emails')} →</a></div>
   </div></div>`;
@@ -2798,7 +2914,7 @@ const TURNSTILE_SITE_KEY='';
 Wijha.host({
   lang:()=>L, esc, toast:m=>toast(m), go:h=>go(h), refresh:()=>route(),
   get:p=>API.select(p), post:(tb,row)=>API.insert(tb,row),
-  extras:{ bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
+  extras:{ previewHref:id=>'./index.html#/preview/'+encodeURIComponent(id), pvPatch, pvReload, bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
 });
 /* ── captcha (Cloudflare Turnstile): asked only when signing up, signing in or resetting a password ── */
 let _tsLoad=null;

@@ -210,7 +210,11 @@ async function boot(){
  if(!S.url||!S.key||!S.tok){render();return}
  try{ const p=await get('profiles?select=*&id=eq.'+S.tok.user.id); S.me=p[0]||null;
   if(!S.me||!(isAdminRole(S.me.role)||isCoRole(S.me.role)||isScout(S.me.role))){ render(`<div class="login"><h1>ليس حساب مدير أو شركة</h1><p class="sub">هذا الحساب (${esc(S.tok.user.email)}) دوره <b>${esc(S.me?.role||'—')}</b>. اطلب من مدير وجهة منحك الصلاحية المناسبة.</p><button class="btn" onclick="logout()">خروج</button></div>`); return; }
-  await loadAll(); render();
+   await loadAll(); render();
+  /* deep link from the preview page: admin.html?edit=<offer_id> opens that offer in the editor (id shape checked, param removed afterwards) */
+  try{ const q=new URLSearchParams(location.search).get('edit');
+   if(q){ const u=new URL(location.href); u.searchParams.delete('edit'); history.replaceState(null,'',u.pathname+u.search+u.hash);
+    if(/^[A-Za-z0-9_-]{1,64}$/.test(q)) await editOffer(q); } }catch(e){ console.warn('[admin] edit deep link',e.message); }
  }catch(e){ toast(e.message,true); render(); }
 }
 const LERR=[];
@@ -378,7 +382,7 @@ function offersV(){
   <td><span class="pill ${o.review_state==='approved'?'ok':o.review_state==='rejected'?'bad':'warn'}">${({draft:'مسودة',pending:'بانتظار المراجعة',approved:'معتمد',rejected:'مرفوض'})[o.review_state||'approved']}</span>${o.review_note?`<small>${esc(o.review_note)}</small>`:''}</td>
   <td class="acts"><button class="btn sm" onclick="editOffer('${o.id}')">تعديل</button>
    ${isAdminRole(S.me.role)?`<button class="btn sm" title="عرض تجريبي / حقيقي" onclick="toggleSample('${o.id}',${o.is_sample?'false':'true'})">${o.is_sample?'☑ تجريبي':'☐ تجريبي'}</button>`:''}
-   ${o.internal_only||o.visibility==='internal'?`<button class="btn sm" onclick="toast('هذه الرحلة داخلية — لا تظهر على الموقع العام',true)">معاينة (داخلية)</button>`:o.status!=='published'||o.review_state!=='approved'?`<button class="btn sm" title="الموقع العام يعرض المنشور والمعتمد فقط" onclick="toast('هذا العرض ${o.status!=='published'?'مسودة':'غير معتمد'} — لا يظهر على الموقع حتى ${o.review_state!=='approved'?'تعتمده ثم ':''}تنشره',true)">معاينة (غير منشور)</button>`:`<a class="btn sm" href="./index.html#/trip/${o.id}" target="_blank">معاينة ↗</a>`}
+   ${isLiveOffer(o)?`<a class="btn sm" href="./index.html#/trip/${esc(o.id)}" target="_blank" rel="noopener">معاينة ↗</a>`:`<a class="btn sm" data-preview="${esc(o.id)}" title="كما يراها العميل — هذا العرض غير ظاهر للعملاء بعد" href="${previewHref(o.id)}" target="_blank" rel="noopener">معاينة كما يراها العميل ↗</a>`}
    ${isAdminRole(S.me.role)&&o.review_state==='approved'&&!o.internal_only&&o.visibility!=='internal'?(o.status==='published'?`<button class="btn sm" title="إخفاء من الموقع" onclick="setPublished('${o.id}',false)">إخفاء</button>`:`<button class="btn sm ok" title="إظهار على الموقع" onclick="setPublished('${o.id}',true)">نشر</button>`):''}
    ${isAdminRole(S.me.role)&&o.review_state==='pending'?`<button class="btn sm ok" onclick="reviewOffer('${o.id}','approved')">اعتماد</button><button class="btn sm danger" onclick="reviewOffer('${o.id}','rejected')">رفض</button>`:''}
    <button class="btn sm danger" onclick="delOffer('${o.id}')">حذف</button></td></tr>`).join('')||'<tr><td colspan="13" class="dim">لا نتائج</td></tr>'}</tbody></table></div>
@@ -410,6 +414,10 @@ const OFFER_FIELDS=[
  ['sec','الأسعار — الأصلية بالعملة المعلنة'],['currency','العملة','select',['EGP','EUR','USD','GBP','SAR']],['price_quad','رباعية','number'],['price_triple','ثلاثية','number'],['price_double','ثنائية','number'],['price_single','فردية','number'],['price_child_bed','طفل بسرير','number'],['price_child_nobed','طفل بدون سرير','number'],['egp_addon','جزء محلي بالجنيه','number'],['deposit','عربون','number'],['hajj','ferry_fee','رسوم المعدية (الحج البري)','number'],['price_valid_until','السعر ساري حتى','date'],
  ['sec','التفاصيل'],['flights_included','الطيران مشمول','bool'],['hajj','arrival_city','مدينة الوصول','text'],['seats_total','إجمالي المقاعد','number'],['seats_taken','المحجوز','number'],['detail_level','مستوى التفاصيل','select',Object.entries(LBL.detail)],['art_key','صورة بديلة تلقائية (تُستخدم فقط لو لا توجد صورة غلاف)','select',['fjord','aurora','medcity','alpine','metro','baltic','tropic','cruise','castle','haram','madinah','plane'],'w2'],['cover_url','رابط صورة الغلاف','text','w2'],
  ['hajj','meals_ar','الوجبات','text'],['hajj','mina_ar','الإقامة في منى','text'],['flight_out_ar','رحلة الذهاب','text','w2'],['flight_back_ar','رحلة العودة','text','w2'],['note_ar','ملاحظة','textarea','w3'],['source_url','رابط المصدر','text','w2'],['source_type','نوع المصدر','text']];
+/* the public site shows only published + approved + non-internal offers; everything else is previewed through #/preview/<id> (blocks/preview.js) */
+const S_=v=>v==null?'':String(v);
+const isLiveOffer=o=>!!o&&o.status==='published'&&o.review_state==='approved'&&o.visibility!=='internal'&&!o.internal_only;
+const previewHref=id=>'./index.html#/preview/'+encodeURIComponent(id);
 let ED=null;
 async function editOffer(id){
  const o=id?S.offers.find(x=>x.id===id):null;
@@ -474,7 +482,7 @@ function drawEditor(){
  let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
  ov.innerHTML=`<div class="md"><div class="hd"><b>${ED.id?'تعديل الرحلة':'رحلة جديدة'}</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
   <div class="bd"><div class="tabs">${tabs.map(([k,l])=>`<button class="${ED.tab===k?'on':''}" onclick="readMain();ED.tab='${k}';drawEditor()">${l}</button>`).join('')}</div>${body}<div id="ederr"></div></div>
-  <div class="ft">${ED.id?`<a class="btn" href="./index.html#/trip/${ED.id}" target="_blank">معاينة ↗</a>`:''}<button class="btn pri" onclick="saveOffer()">حفظ</button>${!isAdminRole(S.me.role)&&ED.id&&['draft','rejected'].includes(ED.full.status)?`<button class="btn ok" onclick="saveOffer(true)">حفظ وإرسال للمراجعة ✓</button>`:''}</div></div>`;
+  <div class="ft">${ED.id?(isLiveOffer(ED.full)?`<a class="btn" href="./index.html#/trip/${esc(ED.id)}" target="_blank" rel="noopener">معاينة ↗</a>`:`<a class="btn" data-preview="${esc(ED.id)}" href="${previewHref(ED.id)}" target="_blank" rel="noopener">معاينة كما يراها العميل ↗</a>`):''}<button class="btn pri" onclick="saveOffer()">حفظ</button>${!isAdminRole(S.me.role)&&ED.id&&['draft','rejected'].includes(ED.full.status)?`<button class="btn ok" onclick="saveOffer(true)">حفظ وإرسال للمراجعة ✓</button>`:''}</div></div>`;
 }
 
 /* resize + crop in the browser: unified 4:3 covers, compressed gallery photos, location data (EXIF) removed because the picture is redrawn */
@@ -817,7 +825,7 @@ function intakeV(){
   <td>${esc(coN(i.company_id))}</td>
   <td><span class="pill ${s[1]}">${s[0]}</span>${made.length>1?`<small>${made.length} عروض</small>`:''}</td>
   <td class="num">${(i.created_at||'').slice(0,10)}</td>
-  <td class="acts">${made.map(c=>`<button class="btn sm ok" onclick="editOffer('${c.offer_id}')">راجع: ${esc(c.title_ar.slice(0,28))}${c.checks?.length?` <b>(${c.checks.length} ⚠)</b>`:''}</button>`).join('')}
+  <td class="acts">${made.map(c=>`<button class="btn sm ok" onclick="editOffer('${esc(c.offer_id)}')">راجع: ${esc(S_(c.title_ar).slice(0,28))}${c.checks?.length?` <b>(${c.checks.length} ⚠)</b>`:''}</button><a class="btn sm pri" data-preview="${esc(c.offer_id)}" href="${previewHref(c.offer_id)}" target="_blank" rel="noopener">معاينة كما يراها العميل ↗</a>`).join('')}
    ${!made.length&&i.status!=='processing'?`<button class="btn sm pri" onclick="processImport('${i.id}',true)">✨ حوّل الآن</button>`:''}
    ${isAdminRole(S.me.role)&&!made.length?`<button class="btn sm" onclick="reviewIntake('${i.id}')">يدوياً</button>`:''}</td></tr>`}).join('')||'<tr><td colspan="5" class="dim">لا شيء بعد</td></tr>'}
  </tbody></table></div>`;
@@ -1124,7 +1132,7 @@ function insights(){
 Wijha.host({
   lang:()=>'ar', esc, toast:(m,bad)=>toast(m,bad), get, post, patch, del, rpc,
   refresh:(name,scope)=>scope==='editor'?drawEditor():render(),
-  extras:{ prepImage, putPhoto, me:()=>S.me,
+  extras:{ prepImage, putPhoto, me:()=>S.me, previewHref,
     bridge:bridgeCall, extract:extractCall, review:id=>editOffer(id), reloadList:async()=>{ await loadAll(); render(); },
     removeFile:async path=>{ try{ await fetch(S.url+'/storage/v1/object/offer-photos/'+path,{method:'DELETE',headers:{apikey:S.key,Authorization:'Bearer '+await freshToken()}}); }catch(e){} } }
 });
