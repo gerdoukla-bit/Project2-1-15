@@ -9,21 +9,21 @@
 const LEGAL_UPDATED={ar:'آخر تحديث: ٢٥ أكتوبر ٢٠٢٦',en:'Last updated: 25 October 2026'};
 const LEGAL={
 terms:{ar:['الشروط والأحكام',[
- ['من نحن','وجهة منصة إلكترونية تجمع عروض رحلات الحج والعمرة والرحلات الخارجية من شركات سياحة مصرية مرخّصة، وتتيح لك المقارنة والتواصل مع الشركة. وجهة ليست شركة سياحة ولا وكيل سفر، ولا تبيع الرحلات بنفسها.'],
+ ['من نحن','وجهة منصة إلكترونية تعرض رحلات الحج والعمرة والرحلات الخارجية التي ينشرها أطراف ثالثة، مثل شركات السياحة والوكلاء والمنظّمين، وتتيح لك المقارنة والتواصل مع الجهة الناشرة. تظهر شارة «موثّقة» فقط على صفحات الجهات التي تحققنا من بياناتها، ولا يعني غياب الشارة أو وجودها ضماناً لتنفيذ الرحلة. وجهة ليست شركة سياحة ولا وكيل سفر، ولا تبيع الرحلات بنفسها.'],
  ['العلاقة التعاقدية','عقد الرحلة يكون بينك وبين الشركة المنظِّمة مباشرة وفق شروطها المعلنة في العرض. وجهة ليست طرفاً في هذا العقد ولا تتقاضى أي نسبة من سعر الرحلة، ولا تستلم أموال الحجز.'],
  ['دقة العروض','الأسعار والبرامج والتواريخ كما نشرتها الشركات. قد تعرض وجهة عروضاً جمعتها من المواد المنشورة علناً للشركة، وتُعلَّم بوضوح بعبارة "جمعته وجهة" إلى أن تتبناها الشركة. تأكّد دائماً من التفاصيل ومن توفر المقاعد مع الشركة قبل الدفع.'],
  ['حسابك','أنت مسؤول عن صحة بياناتك وعن سرية كلمة المرور. يجوز لنا إيقاف أي حساب يسيء استخدام المنصة أو يرسل محتوى مخالفاً أو مضللاً.'],
  ['المراسلات','تُحجب أرقام الهواتف والبريد الإلكتروني تلقائياً داخل المحادثة بين العميل والشركة. لا تُرسل عبر المحادثة صور جواز السفر أو بيانات البطاقات المصرفية.'],
- ['حدود المسؤولية','لا تتحمل وجهة مسؤولية التزام الشركة بتنفيذ الرحلة أو الاسترداد؛ تواصل مع الشركة أولاً عبر المحادثة في صفحة عرضها. وصفة التحقق المعروضة على صفحة الشركة تعكس بيانات الترخيص المتوفرة لدينا.'],
+ ['حدود المسؤولية','لا تتحمل وجهة مسؤولية التزام الشركة بتنفيذ الرحلة أو الاسترداد؛ تواصل مع الشركة أولاً عبر المحادثة في صفحة عرضها. وشارة «موثّقة» تظهر فقط عند تحققنا من بيانات الجهة، وهي تعكس المعلومات المتوفرة لدينا وقت التحقق ولا تُعد ضماناً.'],
  ['القانون واختصاص القضاء','تخضع هذه الشروط لقوانين جمهورية مصر العربية، وتختص محاكم القاهرة بالنظر في أي نزاع، مع عدم الإخلال بحقوقك كمستهلك.'],
  ['التعديل','قد نحدّث هذه الشروط، وتاريخ آخر تحديث مذكور أعلاه. استمرار استخدامك للموقع بعد التحديث يعني قبوله.']]],
  en:['Terms of use',[
- ['Who we are','Wijha is an online platform that lists Hajj, Umrah and outbound trip offers from licensed Egyptian travel companies so you can compare them and contact the company. Wijha is not a travel agency and does not sell trips itself.'],
+ ['Who we are','Wijha is an online platform that lists Hajj, Umrah and outbound trip offers published by third parties, such as travel companies, agents and organisers, so you can compare them and contact the publisher. A "Verified" badge is shown only on the pages of publishers whose details we have checked; the presence or absence of the badge is not a guarantee that a trip will run. Wijha is not a travel agency and does not sell trips itself.'],
  ['The contract','Your trip contract is directly between you and the organising company, on the terms shown in the offer. Wijha is not a party to it, takes no percentage of the trip price and does not receive booking money.'],
  ['Accuracy of offers','Prices, programmes and dates are as published by the companies. Wijha may list offers it collected from a company\'s public material; these are clearly labelled "collected by Wijha" until the company adopts them. Always confirm details and availability with the company before paying.'],
  ['Your account','You are responsible for the accuracy of your details and the secrecy of your password. We may suspend accounts that abuse the platform or post misleading or unlawful content.'],
  ['Messages','Phone numbers and emails are blocked automatically in the chat between a client and a company. Do not send passport images or bank-card details through chat.'],
- ['Limits of responsibility','Wijha is not responsible for a company delivering the trip or issuing refunds; raise any problem with the company first, through the chat on its offer page. The verification badge shown on a company page reflects the licence information we hold.'],
+ ['Limits of responsibility','Wijha is not responsible for a company delivering the trip or issuing refunds; raise any problem with the company first, through the chat on its offer page. The "Verified" badge is shown only where we have verified the publisher\'s details; it reflects the information we held at the time of checking and is not a guarantee.'],
  ['Governing law','These terms are governed by the laws of the Arab Republic of Egypt and the Cairo courts have jurisdiction, without affecting your rights as a consumer.'],
  ['Changes','We may update these terms; the date of the latest update is shown above. Continuing to use the site after an update means you accept it.']]]},
 privacy:{ar:['سياسة الخصوصية',[
@@ -89,7 +89,7 @@ function resetConsent(api){ try{localStorage.removeItem('wijha_consent');}catch(
 
 let API_=null;
 Wijha.block('legal',{
-  version:'1.0.0',
+  version:'1.1.0',
   slots:{ 'page.legal':(ctx,api)=>page(ctx.k,api) },
   actions:{ reset:(arg,el,ev,api)=>resetConsent(api) },
   expose:{ resetConsent:()=>resetConsent(API_) },
