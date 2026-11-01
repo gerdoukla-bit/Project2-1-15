@@ -480,6 +480,7 @@ footer h4{font-size:14px;margin-bottom:10px}
 <script defer src="blocks/vault-intake.js"></script>
 <script defer src="blocks/preview.js"></script>
 <script defer src="blocks/chat.js"></script>
+<script defer src="blocks/trip-request.js"></script>
 </head>
 <body>
 <header class="nav"><div class="wrap">
@@ -1354,6 +1355,7 @@ function route(){
  if(h.startsWith('#/hotel/')) return hotelPage(h.slice(8));
  if(h.startsWith('#/trips')) { const c=(h.split('/')[2]||'').split('?')[0]; list(c);
    const n=document.querySelector(`[data-nav="${c||'trips'}"]`); if(n)n.classList.add('on'); return; }
+ if(h==='#/request') return Wijha.mount('page.request',app,{});
  if(h==='#/compare') return compareView();
  if(h==='#/signup') return signupClient();
  if(h==='#/account') return account();
@@ -1499,7 +1501,7 @@ function home(){
      <span class="h-cat-art" aria-hidden="true">${art(ak,as)}</span>
      <span class="h-cat-body"><b>${ar?c.ar:c.en}</b>
       <small>${rows.length?`${tn(rows.length)}${m?` · ${t('h_from')} ${nf(m)} ${t('h_egp')}`:''}`:t('h_nocat')}</small></span>
-     <span class="h-cat-go" aria-hidden="true">${HI.arr}</span></a>`;}).join('')}</div></section>
+     <span class="h-cat-go" aria-hidden="true">${HI.arr}</span></a>`;}).join('')}</div><div style="text-align:center;margin-top:16px">${Wijha.html('trips.request-cta',{},{quiet:true})}</div></section>
 
   <section class="h-sec" aria-labelledby="hFeat">
    <div class="h-head"><div><h2 id="hFeat" class="h-h2">${t('featured')}</h2><p class="h-lead">${t('h_feat_sub')}</p></div><a class="h-more" href="#/trips">${t('viewall')} ${HI.arr}</a></div>
@@ -1535,7 +1537,7 @@ function list(cat){
  document.getElementById('app').innerHTML=`<div class="wrap">
   <div class="head"><h1>${F.cat?(L==='ar'?CATS[F.cat].ar:CATS[F.cat].en):t('nav_offers')}</h1></div>
   <div class="filters">
-   ${['','abroad','umrah','hajj'].map(c=>`<button class="chip ${F.cat===c?'on':''}" onclick="go('#/trips${c?'/'+c:''}')">${c?(L==='ar'?CATS[c].ar:CATS[c].en):t('all')}</button>`).join('')}
+   ${['','abroad','umrah','hajj'].map(c=>`<button class="chip ${F.cat===c?'on':''}" onclick="go('#/trips${c?'/'+c:''}')">${c?(L==='ar'?CATS[c].ar:CATS[c].en):t('all')}</button>`).join('')}${Wijha.html('trips.request-cta',{},{quiet:true})}
    <span class="divider"></span>
    <select onchange="F.co=this.value;draw()"><option value="">${t('company')}: ${t('all')}</option>${COS.map(c=>`<option value="${c.id}" ${F.co===c.id?'selected':''}>${esc(L==='ar'?c.ar:c.en)}</option>`).join('')}</select>
    <select onchange="F.sort=this.value;draw()"><option value="asc">${t('sort_low')}</option><option value="desc">${t('sort_high')}</option><option value="soon">${t('sort_soon')}</option></select>
@@ -2732,6 +2734,7 @@ account=async function(){
    <div class="panel"><h3>${t('acc_chats')} <span class="pillnum">${MYTHREADS.reduce((a,x)=>a+(x.client_unread||0),0)}</span></h3>
     ${MYTHREADS.map(th=>{const x=trip(th.offer_id);return `<a class="rowitem" href="#/chat/${th.id}"><div><b>${esc(coName(th.company_id))}</b><small>${x?esc(tripName(x,L)):'—'}</small><small class="dim">${th.last_message_from==='client'?(L==='ar'?'بانتظار رد الشركة':'Awaiting company reply'):(L==='ar'?'ردّت الشركة':'Company replied')} · ${(th.last_message_at||'').replace('T',' ').slice(0,16)}</small></div>${th.client_unread?`<span class="pillnum">${th.client_unread}</span>`:''}</a>`}).join('')||(LOADERR?threadsErr():`<p class="lead">${L==='ar'?'لا محادثات بعد — أرسل استفساراً من أي رحلة.':'No chats yet — send an enquiry from any trip.'}</p>`)}</div>
   </div>
+  ${Wijha.html('account.requests',{},{quiet:true})}
   <section class="sec"><h2>${t('acc_saved')} <span class="pillnum">${saved.length}</span></h2>${saved.length?`<div class="grid">${saved.map(card).join('')}</div>`:`<p class="lead">${L==='ar'?'لا توجد رحلات محفوظة بعد.':'Nothing saved yet.'}</p>`}</section></div>`;
 };
 
@@ -2813,6 +2816,7 @@ dash=async function(){
   <div class="head"><div class="crumbs"><span class="tag">🏢 ${esc(c.ar||CO?.name||'')}</span>${c.verified?`<span class="vf-pill">✓ ${t('verified')}${c.lic?' · '+esc(c.lic):''}</span>`:`<span class="tag warn">${rev?.wijha_review==='rejected'?(L==='ar'?'الطلب مرفوض':'Application rejected'):(L==='ar'?'الطلب قيد المراجعة — رحلاتك تظهر بعد الاعتماد':'Under review — your trips go live once approved')}</span>${rev?.wijha_review_note?`<span class="tag">${esc(rev.wijha_review_note)}</span>`:''}`}<span class="tag">${esc(PROF.name||PROF.email)}</span><button class="tag" onclick="signOutAll()">${t('signout')}</button></div><h1>${t('dash')}</h1></div>
   <div class="kpis"><div class="kpi"><b>${mine.length}</b><small>${L==='ar'?'رحلة منشورة':'live trips'}</small></div><div class="kpi"><b>${MYTHREADS.length}</b><small>${L==='ar'?'محادثة':'conversations'}</small></div><div class="kpi"><b>${MYTHREADS.reduce((a,x)=>a+(x.company_unread||0),0)}</b><small>${L==='ar'?'بانتظار ردّك':'awaiting your reply'}</small></div><div class="kpi"><b>${imports.filter(i=>i.status!=='imported').length}</b><small>${L==='ar'?'رابط قيد الاستيراد':'URLs importing'}</small></div></div>
   ${Wijha.html('dash.vault',{companyId:cid,staff:false})}
+  ${Wijha.html('dash.requests',{companyId:cid},{quiet:true})}
   <div class="acctgrid">
    <div class="panel"><h3>${L==='ar'?'أضف رحلة من رابط':'Add a trip from a URL'}</h3><p class="lead" style="font-size:13px">${L==='ar'?'الصق رابط صفحة الرحلة على موقعك أو النشرة. تُستخرج البيانات وتُراجع ثم تُنشر باسمك.':'Paste the trip page or brochure link. We extract the data, review it, and publish under your name.'}</p>
     <input id="impUrl" placeholder="https://…" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:14px"><input id="impNote" placeholder="${L==='ar'?'ملاحظة (اختياري)':'Note (optional)'}" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:14px">
@@ -2821,7 +2825,7 @@ dash=async function(){
     <p class="note" style="margin-top:12px"><a href="./admin.html" target="_blank" rel="noopener" style="text-decoration:underline">${L==='ar'?'تعديل رحلاتك يدوياً (لوحة الشركة) ↗':'Edit your trips manually (company console) ↗'}</a></p></div>
    <div class="panel"><h3>${t('dash_inbox')} <span class="pillnum">${MYTHREADS.reduce((a,x)=>a+(x.company_unread||0),0)}</span></h3>
     ${MYTHREADS.map(th=>{const x=trip(th.offer_id);return `<a class="rowitem" href="#/chat/${th.id}"><div><b>${esc(L==='ar'?'عميل':'Client')}</b><small>${x?esc(tripName(x,L)):'—'}</small><small class="dim">${(th.last_message_at||'').replace('T',' ').slice(0,16)}</small></div>${th.company_unread?`<span class="pillnum">${th.company_unread}</span>`:`<span class="tag">✓</span>`}</a>`}).join('')||(LOADERR?threadsErr():`<p class="lead">${L==='ar'?'لا استفسارات بعد.':'No enquiries yet.'}</p>`)}</div>
-   ${pending.length?`<div class="panel" data-pv-list><h3>${L==='ar'?'عروض غير ظاهرة للعملاء':'Offers not visible to clients'} <span class="pillnum">${pending.length}</span></h3>${pending.slice(0,12).map(o=>`<a class="rowitem" href="#/preview/${esc(o.id)}" target="_blank" rel="noopener"><div><b>${esc(o.title_ar||o.title_en||'—')}</b><small>${L==='ar'?'معاينة كما يراها العميل':'Preview as the client sees it'} ↗</small></div><span class="tag warn">${esc(pvChip(o))}</span></a>`).join('')}</div>`:''}
+   ${pending.length?`<div class="panel" data-pv-list><h3>${L==='ar'?'عروض غير ظاهرة للعملاء':'Offers not visible to clients'} <span class="pillnum">${pending.length}</span></h3>${pending.slice(0,12).map(o=>`<a class="rowitem" href="./admin.html?edit=${esc(o.id)}" target="_blank" rel="noopener"><div><b>${esc(o.title_ar||o.title_en||'—')}</b><small>${L==='ar'?'تعديل العرض ومعاينته':'Edit and preview'} ↗</small></div><span class="tag warn">${esc(pvChip(o))}</span></a>`).join('')}</div>`:''}
    <div class="panel"><h3>${t('dash_trips')} <span class="pillnum">${mine.length}</span></h3>${mine.slice(0,12).map(x=>`<a class="rowitem" href="#/trip/${x.id}"><div><b>${esc(tripName(x,L))}</b><small>${nf(egpOf(x,priceRows(x)[0]?.[0]))} ج.م · ${x.taken||0}/${x.seats||'—'}</small></div><span class="tag ${x.detail==='full'?'ok':'warn'}">${x.detail==='full'?(L==='ar'?'مكتملة':'Complete'):(L==='ar'?'ناقصة':'Pending')}</span></a>`).join('')||`<p class="lead">${L==='ar'?'لم تُنشر رحلات بعد.':'No trips published yet.'}</p>`}
     <a href="./emails.html" target="_blank" rel="noopener" class="note" style="display:block;margin-top:10px;text-decoration:underline">✉ ${t('dash_emails')} →</a></div>
   </div></div>`;
@@ -2972,10 +2976,25 @@ document.addEventListener('click',e=>{
    The matching secret key goes ONLY in Supabase → Authentication → Attack Protection (never in this file). */
 const TURNSTILE_SITE_KEY='';
 /* Legal pages and the cookie notice now live in blocks/legal.js. Everything blocks may use from this page is handed over here, once. */
+/* ── tailored trip requests (blocks/trip-request.js): data adapter, all calls use the signed-in user's own token; RLS decides ── */
+const TR_HOST={
+ authed:()=>authed(), signin:()=>go('#/signup'), currency:()=>'EGP', coName:id=>coName(id),
+ mine:()=>aget('trip_requests?select=*&order=created_at.desc&limit=30'),
+ quotesFor:ids=>aget('trip_quotes?select=*&request_id=in.('+ids.map(encodeURIComponent).join(',')+')&order=created_at.desc'),
+ submit:p=>arpc('wijha_submit_request',{p}),
+ cancel:id=>apatch('trip_requests?id=eq.'+encodeURIComponent(id),{status:'cancelled'}),
+ answer:(qid,st)=>apatch('trip_quotes?id=eq.'+encodeURIComponent(qid),{status:st}),
+ incoming:()=>arpc('wijha_company_requests',{}),
+ quote:a=>arpc('wijha_send_quote',{p_request:a.request,p_total:a.total,p_currency:a.currency,p_details:a.details||'',p_valid:a.valid||null,p_offer:null}),
+ decline:id=>arpc('wijha_decline_request',{p_request:id}),
+ openChat:async cid=>{ let th=(await aget('wijha_threads?select=id&client_id=eq.'+AU.user.id+'&company_id=eq.'+encodeURIComponent(cid)+'&order=created_at.desc&limit=1'))[0];
+   if(!th){ th=(await apost('wijha_threads',{client_id:AU.user.id,company_id:cid,status:'open'}))[0]; }
+   await loadThreads(); const c=Wijha.use('chat'); if(c&&c.open) c.open(th.id); else go('#/chat/'+th.id); }
+};
 Wijha.host({
   lang:()=>L, esc, toast:m=>toast(m), go:h=>go(h), refresh:()=>route(),
   get:p=>API.select(p), post:(tb,row)=>API.insert(tb,row),
-  extras:{ chat:CHAT_HOST, previewHref:id=>'./index.html#/preview/'+encodeURIComponent(id), pvPatch, pvReload, bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
+  extras:{ chat:CHAT_HOST, tr:TR_HOST, previewHref:id=>'./index.html#/preview/'+encodeURIComponent(id), pvPatch, pvReload, bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
 });
 /* ── captcha (Cloudflare Turnstile): asked only when signing up, signing in or resetting a password ── */
 let _tsLoad=null;
