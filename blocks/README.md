@@ -17,6 +17,10 @@ No build step, no framework, no new hosts. CSP stays `script-src 'self' 'unsafe-
 | `admin-faq.js` | admin | FAQ tab of the offer editor |
 | `admin-photos.js` | admin | Photos tab of the offer editor |
 | `admin-freshness.js` | admin | "Confirm still valid" button, bulk confirm, "needs update" list |
+| `preview.js` | index | Preview of a not-yet-published offer exactly as the client sees it (route `#/preview/<offer_id>`): sticky banner, sign-in / not-allowed page, dashed "not entered" placeholder. Slots `preview.banner`, `preview.gate`, `preview.ph`. |
+| `chat.js` | index | ONE inbox ("Messages / المحادثات") for clients and companies: floating button + docked panel (list -> thread -> composer). No slots; it mounts itself. See "chat (Run 13)" below. |
+| `trip-request.js` | index | Tailored trip request (task #31): button beside the category buttons, form at `#/request`, client's requests + quotes on the account page, company inbox + quote/decline on the company dashboard. Slots `trips.request-cta`, `page.request`, `account.requests`, `dash.requests`. Data adapter `extras.tr` (`TR_HOST` in index.html) calls RPCs `wijha_submit_request`, `wijha_company_requests`, `wijha_send_quote`, `wijha_decline_request`. Test: `node tests/trip-request-test.js`. |
+| `vault-intake.js` | both | "Secure file upload (new)" card (task #16): create/copy/revoke an upload link, list the files uploaded through it, convert to draft offers. Slots `dash.vault` (index `#/company`) and `intake.vault` (admin intake). One file serves both pages. |
 
 ## How a page loads them
 
@@ -60,6 +64,26 @@ Handlers run inside the same error boundary.
 `api.del(path)`, `api.rpc(fn,args)` (the page provides the ones that make sense for it; the public site only has `get` and `post`),
 `api.x` (page extras, e.g. the admin image helpers), `api.use(otherBlock)`, `api.log(...)`, `api.name`, `api.version`.
 
+## vault-intake (task #16) in short
+
+Sits beside the old upload, replaces nothing. It calls only the edge function `wijha-vault-bridge` (actions `issue_link`, `revoke_link`, `list`, `import`) and then the existing `wijha-extract`, through page helpers passed in `Wijha.host({extras:{bridge, extract, review, reloadList}})` (they never throw; `status:0` = no connection). Bridge errors stay inside the card (503 "vault not configured" -> "خدمة رفع الملفات الآمنة غير مفعّلة بعد — تواصل مع وجهة"). Polling the file list every 15 s runs only while the card is on screen and the tab is visible. The upload page is another domain and is only shown as text, so the CSP is unchanged. Test: `node tests/vault-intake-test.js`. Kill switch: `?blocks_off=vault-intake` or remove its `<script>` line.
+
+## preview (Run 12) in short
+
+`index.html` route `#/preview/<offer_id>` reads the offer with the signed-in user's own token (site session, else the admin-console session; RLS decides; a company user must also match `profiles.company_id`), maps it with the same `mapOffer` / `hydrate(x, sel)` and renders it with the same template `detailView(x)` as `#/trip/<id>` (`detail(id)` is now a thin wrapper). In preview mode only (`window.__preview`), `pvE/pvLi/pvS` in the template draw dashed placeholders for empty fields through the block slot `preview.ph`; on the public route they return `''`, so the public page is unchanged (byte-identical in the test). The block draws the banner (status chip, extractor checks from `wijha_imports.payload.created[].checks` + per-field "needs your attention", Edit -> `admin.html?edit=<id>`, Send for review = PATCH `offers` `{status:'pending_review', review_state:'pending'}` for company users with a title and a price) and the gate pages. Not stored anywhere (no localStorage; only `sessionStorage.wijha_return='#/preview/<id>'` after pressing Sign in), `<meta name=robots content=noindex,nofollow,noarchive>` only while on the route. Save / compare / share / enquire / chat buttons are inert in preview. Page extras: `previewHref`, `pvPatch`, `pvReload`. Other places link to it: company dashboard ("offers not visible to clients" + import rows), vault-intake result (`data-vi-preview`), admin offers list / editor / import list (public link only for published + approved). Test: `node tests/preview-test.js`. Kill switch: `?blocks_off=preview` (the route then shows the normal page without banner/placeholders: do not use it on a live preview).
+
+## chat (Run 13) in short
+
+`blocks/chat.js` v1.0.0 is the only inbox on the public site: it replaces "استفساراتي" + "محادثاتي" (client) and the separate enquiries list (company). Messenger-style: a round button on the **end side of the screen** (bottom-LEFT in Arabic, bottom-RIGHT in English; nothing else lives in the bottom corners, and it lifts itself above the cookie notice, the compare bar and the mobile price bar when they would overlap) with an unread badge; it opens a docked panel (360x520 on desktop, full-height sheet at <=600 px, button hidden while the sheet is open) with the conversation list -> thread -> composer.
+
+- **Data comes from the page, not from the block.** `Wijha.host({extras:{chat: CHAT_HOST}})` in `index.html` (adapter defined just above the "boot hook" of the live layer): `me() list() who() sub() tripId() unread() lastFrom() offer() messages() send() ensure() markRead() warn() showFab() signIn()`. It reuses the existing `wijha_threads` / `wijha_messages` tables, the RPC `wijha_mark_read` and the blocking message `t('warn')`. Demo mode (no Supabase) maps the same calls onto the local `THREADS`. No DB / edge change.
+- **Behaviour.** Enter sends (Shift+Enter = new line, IME-safe), Escape closes. Optimistic send: the message shows at once as "sending"; on failure it stays with "Retry" / "Remove" (nothing is duplicated; a poll never runs while a send is in flight). A thread for an offer is only created when the first message is sent (`ensure`), so opening "Chat with the company" never leaves empty threads. A message the server marks `blocked` is shown struck-through with the blocking notice and a toast. Auto-scroll to the newest message unless the reader scrolled up. Everything is escaped (`dir="auto"` on bodies).
+- **Polling.** 10 s only while the panel is open (current thread's messages, then the thread list; marks read when the thread is open and something new arrived), 45 s for the badge while it is closed, nothing while the tab is hidden, nothing for signed-out visitors (they get no button; "Chat with the company" on a trip page opens the panel with a sign-in prompt, no request is made).
+- **Routes kept.** Any `<a href="#/chat/<id>">` (trip page button, account / dashboard rows) is intercepted and opens the widget in place; typing `#/chat/<id>` or `#/chat/new-<offer>` opens the widget over the account / company page (unknown id -> list). If the block is off or broken (`?blocks_off=chat`, 404, init throws) the old full-page chat is used and the old bell + 8 s poll come back.
+- **Page hooks.** `startPoll()` / `stopPoll()` call `Wijha.use('chat').sync()` after sign-in / out, `applyLang()` calls `relang()`. Expose: `open(threadId) openOffer(offerId) close() sync() relang() unread() state()`.
+- Admin console "المحادثات" tab is unchanged (it is the staff view across all threads).
+- Test: `node tests/chat-test.js` (Playwright, mocked REST; also covers the Run 13 copy changes).
+
 ## Conventions
 
 - **Naming.** Block name = file name without `.js`. Slots are `<area>.<what>` (`detail.faq`, `trip.fresh`, `offers.fresh.panel`, `editor.faq`, `page.legal`).
@@ -96,6 +120,7 @@ Hard kill for everyone: delete its `<script defer ...>` line from the page (the 
 ```
 node tests/admin-tour.js /home/claude/wijha                  # 0 errors (also: ... company)
 node tests/blocks-test.js                                    # ALL PASS (failure isolation, disable switch, freshness, admin)
+node tests/chat-test.js                                      # ALL PASS (chat widget + Run 13 copy)
 ```
 plus the older scripts in `/tmp/claude-0/` (null-scan, legal-test, csp-test, faq-test, photo-test, up-test, home-func, audit-fixes-test, admin-audit-test).
 
