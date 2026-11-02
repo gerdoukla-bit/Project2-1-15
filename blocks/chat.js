@@ -52,7 +52,7 @@
     '.wc-panel{position:fixed;inset-inline-end:16px;bottom:calc(84px + var(--wc-b,0px));z-index:125;width:360px;max-width:calc(100vw - 24px);height:min(520px,calc(100vh - 110px - var(--wc-b,0px)));display:flex;flex-direction:column;background:var(--surface,#fff);color:var(--ink,#1b1b1f);border:1px solid var(--line,#e8e4dc);border-radius:16px;box-shadow:0 24px 60px -16px rgba(0,0,0,.45);overflow:hidden;font-size:14px}' +
     '.wc-head{display:flex;align-items:center;gap:10px;padding:12px 12px;background:var(--dark,#1f1e22);color:#fff;flex:none;min-height:56px}' +
     '.wc-head b{display:block;font-size:14.5px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .wc-head small{display:block;font-size:12px;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
-    '.wc-head .wc-ti{flex:1;min-width:0}' +
+    '.wc-head .wc-ti{flex:1;min-width:0}.wc-prev{width:auto!important;border-radius:999px!important;padding:0 12px 0 10px;gap:6px;display:inline-flex!important;align-items:center;font-size:12px;white-space:nowrap;flex:none}.wc-prevt{font-weight:700}' +
     '.wc-ib{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.12);color:#fff;border:0;cursor:pointer}' +
     '.wc-ib:hover{background:rgba(255,255,255,.22)} [dir=rtl] .wc-back svg{transform:scaleX(-1)}' +
     '.wc-av{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--amber-soft,#fff4dd);color:var(--amber-ink,#8a5a05);font-weight:800}' +
@@ -245,8 +245,9 @@
     var close_ = '<button class="wc-ib" data-wb-click="chat.close" aria-label="' + esc(t('إغلاق', 'Close')) + '">' + ICON.x + '</button>';
     if (S.view === 'thread') {
       var i = headInfo();
-      h.innerHTML = '<button class="wc-ib wc-back" data-wb-click="chat.back" aria-label="' + esc(t('رجوع', 'Back')) + '">' + ICON.back + '</button>' +
-        '<span class="wc-av" aria-hidden="true">' + esc(initial(i.who)) + '</span>' +
+      var nprev = arr(S.threads).length;
+      h.innerHTML = '<button class="wc-ib wc-back wc-prev" data-wb-click="chat.back" aria-label="' + esc(t('المحادثات السابقة', 'Previous chats')) + '">' + ICON.back +
+        '<span class="wc-prevt">' + esc(t('المحادثات السابقة', 'Previous chats')) + (nprev ? ' (' + nprev + ')' : '') + '</span></button>' +
         '<div class="wc-ti"><b>' + esc(i.who || '—') + '</b><small>' + esc(i.sub || '') + '</small></div>' +
         (i.trip ? '<a class="wc-tl" href="#/trip/' + encodeURIComponent(i.trip) + '" data-wc-trip>' + esc(t('الرحلة', 'Trip')) + '</a>' : '') + close_;
     } else {
@@ -342,7 +343,7 @@
 
   /* ───────── block ───────── */
   Wijha.block('chat', {
-    version: '1.0.0',
+    version: '1.1.0',
     expose: {
       open: function (id) { return id ? openThread(id) : openList(); },
       openOffer: function (id) { return openOffer(id); },

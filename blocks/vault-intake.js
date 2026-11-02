@@ -30,7 +30,7 @@
     if (s === 403) return { kind: 'auth', msg: t('ليس لديك صلاحية لهذا الإجراء، أو لم تُحدَّد الشركة', 'You are not allowed to do this, or no company is selected') };
     if (s === 404) return { kind: 'gone', msg: what === 'extract' ? t('القراءة التلقائية لم تُفعّل بعد — حُفظ الملف وسيراجعه فريق وجهة', 'Automatic reading is not enabled yet — the file is saved and the Wijha team will review it') : t('لم يُعثر على الملف أو انتهت صلاحيته', 'The file was not found or has expired') };
     if (s === 422) return { kind: 'rejected', msg: /flagged|security/i.test(e) ? t('رفض الفحص الأمني هذا الملف — لا يمكن تحويله', 'The security check flagged this file — it cannot be converted') : (e ? e.slice(0, 160) : t('تعذّرت معالجة الملف', 'The file could not be processed')) };
-    if (s === 502) return { kind: 'net', msg: t('تعذّر الاتصال بمخزن الملفات الآمن — حاول بعد قليل', 'The secure store is unreachable — try again shortly') };
+    if (s === 502) return { kind: 'net', msg: t('تعذّر الاتصال بمخزن الملفات الآمن — حاول بعد قليل', 'The secure store is unreachable — try again shortly') + (/^vault /.test(S(res && res.body && res.body.error)) ? ' [' + S(res.body.error).slice(0, 80) + ']' : '') };
     return { kind: 'other', msg: t('حدث خطأ غير متوقع — أعد المحاولة', 'Something went wrong — please retry') + (s ? ' (' + s + ')' : '') };
   }
   const IMP = {
