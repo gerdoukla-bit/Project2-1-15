@@ -5,7 +5,8 @@
  *          page.request       ctx {}                 - the request form (route #/request)
  *          account.requests   ctx {}                 - client: my requests and the quotes received
  *          dash.requests      ctx {}                 - company: incoming requests + quote / decline
- * Data:    only through api.x.tr (adapter given by index.html): authed() signin() currency() coName(id)
+ *          page.request-done  ctx {id}               - confirmation + closest ready-made offers (route #/request/<id>)
+ * Data:    only through api.x.tr (adapter given by index.html): authed() signin() currency() coName(id) matches(id) card(offerId)
  *          mine() quotesFor(ids) submit(p) cancel(id) answer(qid,status) incoming() quote(a) decline(id) openChat(companyId)
  * Privacy: the company never receives the client's name, phone or e-mail with the request (the database function omits them).
  */
@@ -35,7 +36,7 @@
   function tr(api) { return (api.x && api.x.tr) || null; }
 
   Wijha.block('trip-request', {
-    version: '1.0.0',
+    version: '1.1.0',
     slots: {
       /* button beside the category buttons */
       'trips.request-cta': function (ctx, api) {
@@ -69,24 +70,42 @@
           '<p class="lead">' + e(api.t('احكِ لنا عن رحلتك، وسنرسل طلبك إلى أنسب شركة أو اثنتين لتقديم أفضل سعر. بياناتك الشخصية لا تصل للشركة قبل أن تقبل عرضاً.',
             'Tell us about your trip. We send it to the one or two best-suited companies for their best price. Your personal details are not shared until you accept a quote.')) + '</p>' +
           '<div class="tr-kinds" role="radiogroup">' + kinds + '</div><div class="tr-f">' +
-          '<label>' + e(api.t('الوجهة', 'Destination')) + '<input name="destination" maxlength="120" placeholder="' + e(api.t('مثال: المالديف، تركيا، أوروبا', 'e.g. Maldives, Turkey, Europe')) + '" ' + inp + '></label>' +
-          '<div class="tr-g"><label>' + e(api.t('السفر من (دولة)', 'Departing from')) + '<select name="departure_country" ' + inp + '>' + cs + '</select></label>' +
-          '<label>' + e(api.t('مدينة السفر', 'Departure city')) + '<input name="departure_city" maxlength="60" ' + inp + '></label></div>' +
+          '<label>' + e(api.t('إلى أين؟', 'Where to?')) + '<input name="destination" maxlength="120" placeholder="' + e(api.t('مثال: المالديف، تركيا، أوروبا', 'e.g. Maldives, Turkey, Europe')) + '" ' + inp + '></label>' +
           '<div class="tr-g"><label>' + e(api.t('من تاريخ', 'From')) + '<input name="date_from" type="date" ' + inp + '></label>' +
           '<label>' + e(api.t('إلى تاريخ', 'To')) + '<input name="date_to" type="date" ' + inp + '></label></div>' +
-          '<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="flexible" checked> ' + e(api.t('مواعيدي مرنة', 'My dates are flexible')) + '</label>' +
           '<div class="tr-g"><label>' + e(api.t('بالغون', 'Adults')) + '<input name="adults" type="number" min="1" max="500" value="2" ' + inp + '></label>' +
           '<label>' + e(api.t('أطفال', 'Children')) + '<input name="children" type="number" min="0" max="500" value="0" ' + inp + '></label>' +
+          '<label>' + e(api.t('الميزانية التقريبية (اختياري)', 'Approx. budget (optional)')) + '<input name="budget_max" type="number" min="0" ' + inp + '></label></div>' +
+          '<label>' + e(api.t('ملاحظات (اختياري)', 'Notes (optional)')) + '<textarea name="notes" maxlength="1500" rows="3" ' + inp + '></textarea></label>' +
+          '<details style="margin-top:10px"><summary style="cursor:pointer;font-size:13px;font-weight:700;color:var(--muted)">' + e(api.t('خيارات إضافية', 'More options')) + '</summary>' +
+          '<div class="tr-g"><label>' + e(api.t('السفر من (دولة)', 'Departing from')) + '<select name="departure_country" ' + inp + '>' + cs + '</select></label>' +
+          '<label>' + e(api.t('مدينة السفر', 'Departure city')) + '<input name="departure_city" maxlength="60" ' + inp + '></label>' +
           '<label>' + e(api.t('غرف', 'Rooms')) + '<input name="rooms" type="number" min="1" max="250" ' + inp + '></label></div>' +
           '<div class="tr-g"><label>' + e(api.t('الميزانية من', 'Budget from')) + '<input name="budget_min" type="number" min="0" ' + inp + '></label>' +
-          '<label>' + e(api.t('إلى', 'to')) + '<input name="budget_max" type="number" min="0" ' + inp + '></label>' +
           '<label>' + e(api.t('العملة', 'Currency')) + '<select name="currency" ' + inp + '>' + cu + '</select></label></div>' +
-          '<label>' + e(api.t('تفاصيل أخرى (الفنادق، الاهتمامات، مناسبة خاصة…)', 'Anything else (hotels, interests, special occasion…)')) + '<textarea name="notes" maxlength="1500" rows="4" ' + inp + '></textarea></label></div>' +
+          '<label style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" name="flexible" checked> ' + e(api.t('مواعيدي مرنة', 'My dates are flexible')) + '</label></details></div>' +
           '<div data-tr-err role="alert" style="color:#b3261e;font-size:13px;min-height:18px;margin-top:8px"></div>' +
           '<div class="acts" style="margin-top:6px"><button class="btn btn-primary" data-wb-click="trip-request.submit">' + e(api.t('إرسال الطلب', 'Send request')) + '</button>' +
           '<a class="btn btn-ghost" href="#/trips">' + e(api.t('إلغاء', 'Cancel')) + '</a></div></div></div>';
       },
 
+
+      /* after sending: confirmation + the closest existing offers (computed by the database from this request) */
+      'page.request-done': function (ctx, api) {
+        var T = tr(api), e = api.esc, id = S(ctx.id);
+        if (!T || !T.authed() || !/^[A-Za-z0-9_-]{8,64}$/.test(id)) return '<div class="wrap narrow"><div class="panel"><a class="btn btn-primary" href="#/trips">' + e(api.t('تصفّح الرحلات', 'Browse trips')) + '</a></div></div>';
+        return T.matches(id).then(function (rows) {
+          rows = rows || [];
+          var cards = rows.map(function (r) { return T.card(r.offer_id); }).filter(Boolean).join('');
+          return '<div class="wrap" data-tr-done><div class="panel" style="text-align:center;padding:26px 18px"><h1>✅ ' + e(api.t('وصل طلبك', 'Your request is in')) + '</h1>' +
+            '<p class="lead">' + e(api.t('أرسلناه إلى شركتين تقدّمان رحلات مشابهة. ستظهر عروضهم في حسابك ويمكنك مقارنتها وقبول الأنسب.', 'We sent it to two companies that run similar trips. Their quotes will appear in your account for you to compare.')) + '</p>' +
+            '<div class="acts" style="justify-content:center"><a class="btn btn-primary" href="#/account">' + e(api.t('طلباتي', 'My requests')) + '</a></div></div>' +
+            (cards ? '<section class="sec"><h2>⭐ ' + e(api.t('الأقرب لطلبك — جاهزة للحجز الآن', 'Closest to your request — available now')) + '</h2><div class="grid" data-tr-matches>' + cards + '</div></section>'
+                   : '<p class="lead" style="text-align:center;margin-top:14px" data-tr-nomatch>' + e(api.t('لا توجد رحلة جاهزة مطابقة لطلبك حالياً — لذلك نطلب لك عروضاً مخصّصة.', 'No ready-made trip matches yet, so we are asking for custom quotes.')) + ' <a href="#/trips">' + e(api.t('تصفّح كل الرحلات', 'Browse all trips')) + '</a></p>') + '</div>';
+        }, function () {
+          return '<div class="wrap narrow"><div class="panel" style="text-align:center"><h1>✅ ' + e(api.t('وصل طلبك', 'Your request is in')) + '</h1><div class="acts" style="justify-content:center"><a class="btn btn-primary" href="#/account">' + e(api.t('طلباتي', 'My requests')) + '</a></div></div></div>';
+        });
+      },
       /* client: my requests + quotes */
       'account.requests': function (ctx, api) {
         var T = tr(api); if (!T || !T.authed()) return '';
@@ -176,10 +195,10 @@
         else if (!(Number(p.adults) >= 1)) bad = api.t('عدد البالغين غير صحيح', 'Invalid number of adults');
         if (bad) { if (err) err.textContent = bad; return; }
         if (err) err.textContent = ''; el.disabled = true;
-        try { await T.submit(p); cache.mine = null; api.toast(api.t('تم إرسال طلبك — سنوافيك بالعروض', 'Request sent — quotes will appear in your account')); api.go('#/account'); }
+        try { var rid = await T.submit(p); cache.mine = null; api.go('#/request/' + encodeURIComponent(S(rid))); }
         catch (e) {
           el.disabled = false; var m = S(e && e.message);
-          if (err) err.textContent = /daily limit/.test(m) ? api.t('وصلت للحد اليومي (٥ طلبات). حاول غداً.', 'Daily limit reached (5 requests). Try tomorrow.') : /sign in/.test(m) ? api.t('سجّل الدخول أولاً', 'Please sign in first') : api.t('تعذّر إرسال الطلب، حاول مرة أخرى', 'Could not send the request, please try again');
+          if (err) err.textContent = /daily limit/.test(m) ? api.t('وصلت للحد اليومي (٥ طلبات). حاول غداً.', 'Daily limit reached (5 requests). Try tomorrow.') : /sign in/.test(m) ? api.t('سجّل الدخول أولاً', 'Please sign in first') : api.t('تعذّر إرسال الطلب، حاول مرة أخرى', 'Could not send the request, please try again') + (m ? ' (' + m.slice(0, 80) + ')' : '');
         }
       },
 
