@@ -90,6 +90,7 @@ h3{font-size:15px;font-weight:700;margin-bottom:10px} h4{font-size:13px;font-wei
 .card:hover{transform:translateY(-2px);box-shadow:0 14px 32px -20px rgba(0,0,0,.35);border-color:#dad4c7}
 .card .img{aspect-ratio:4/3;height:auto;position:relative;overflow:hidden;background:#e9e4d8} .card .img>img,.card .img>svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block} .card .img::after{content:'';position:absolute;inset:auto 0 0 0;height:42%;background:linear-gradient(to top,rgba(0,0,0,.30),transparent);pointer-events:none} .card .img svg{width:100%;height:100%;display:block}
 .card .img .cat,.card .img .flag,.card .img .cmpbtn{z-index:2}
+.card .img .cityname{position:absolute;z-index:2;bottom:10px;inset-inline-start:10px;max-width:calc(100% - 20px);color:#fff;font-size:15px;font-weight:800;letter-spacing:-.01em;text-shadow:0 1px 6px rgba(0,0,0,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .img .cat{position:absolute;top:10px;inset-inline-start:10px;background:rgba(27,27,31,.82);color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px}
 .card .img .flag{position:absolute;top:10px;inset-inline-end:10px;color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px}
 .flag.soon{background:var(--red)} .flag.full{background:var(--amber-ink)}
@@ -371,6 +372,8 @@ main#app{min-height:calc(100vh - 60px)}
 .h-h2{font-size:clamp(22px,3.2vw,30px);font-weight:800;letter-spacing:-.015em;line-height:1.25;margin-bottom:16px}
 .h-lead{color:var(--muted);font-size:15px;margin:-10px 0 18px;max-width:560px}
 .h-sec{padding:44px 0 8px}
+.h-tailor-in{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;background:linear-gradient(135deg,#fff7e6,#fdeccb);border:1px solid #f0d9a8;border-radius:20px;padding:26px 28px} .h-tailor-k{font-size:12px;font-weight:800;color:#9a6200;letter-spacing:.02em} .h-tailor-in .h-h2{margin:6px 0 8px} .h-tailor-in p{margin:0 0 10px;color:#4a4437;line-height:1.7;max-width:60ch} .h-tailor-in ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:#6b5a33} .h-tailor-in li::before{content:'✓ ';color:#1d7a46;font-weight:800} .h-tailor-cta .tr-cta{font-size:16px;font-weight:800;padding:14px 26px;white-space:nowrap;border-radius:999px;cursor:pointer}
+@media(max-width:700px){.h-tailor-in{grid-template-columns:1fr;padding:20px}.h-tailor-cta .tr-cta{width:100%}}
 .h-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:4px}
 .h-head .h-h2{margin-bottom:10px}
 .h-more,.h-link{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:14px;color:var(--amber-ink);padding:8px 0;white-space:nowrap}
@@ -483,6 +486,8 @@ footer h4{font-size:14px;margin-bottom:10px}
 <script defer src="blocks/preview.js"></script>
 <script defer src="blocks/chat.js"></script>
 <script defer src="blocks/trip-request.js"></script>
+<script defer src="blocks/login-drop.js"></script>
+<script defer src="blocks/company-team.js"></script>
 </head>
 <body>
 <header class="nav"><div class="wrap">
@@ -1345,6 +1350,7 @@ function priceBlock(t,cls){
 function go(h){location.hash=h}
 window.addEventListener('hashchange',route);
 function route(){
+ if(typeof recoveryFromHash==='function'&&recoveryFromHash()) return;
  const h=location.hash||'#/'; setTimeout(drawCmpBar,0); const app=document.getElementById('app');
  if(window.__bootErr && !h.startsWith('#/legal/') && bootFail()) return;
  window.scrollTo(0,0); document.getElementById('mbar').classList.add('hidden'); document.body.style.overflow='';
@@ -1389,6 +1395,7 @@ function card(t_){
  return `<a class="card" href="#/trip/${t_.id}">
   <div class="img">${pic(t_.cover,t_.art,s)}
     <span class="cat">${CATS[t_.cat].icon} ${L==='ar'?CATS[t_.cat].ar:CATS[t_.cat].en}</span>
+    ${(L==='ar'?t_.destAr:t_.dest)?`<span class="cityname">📍 ${esc(L==='ar'?t_.destAr:t_.dest)}</span>`:''}
     ${t_.sample?`<span class="flag sample">${t_.expired?(L==='ar'?'تجريبي · منتهي':'Sample · expired'):(L==='ar'?'عرض تجريبي':'Sample offer')}</span>`:''}
     ${!t_.expired&&isSoon(t_)?`<span class="flag soon">${t('soon')}</span>`:isFull(t_)?`<span class="flag full">${t('full')}</span>`:''}
     <button class="cmpbtn ${inCmp(t_.id)?'on':''}" onclick="toggleCmp('${t_.id}',event)" title="${L==='ar'?'أضف للمقارنة':'Add to compare'}">${inCmp(t_.id)?'✓':'⇄'}</button></div>
@@ -1504,7 +1511,15 @@ function home(){
      <span class="h-cat-art" aria-hidden="true">${art(ak,as)}</span>
      <span class="h-cat-body"><b>${ar?c.ar:c.en}</b>
       <small>${rows.length?`${tn(rows.length)}${m?` · ${t('h_from')} ${nf(m)} ${t('h_egp')}`:''}`:t('h_nocat')}</small></span>
-     <span class="h-cat-go" aria-hidden="true">${HI.arr}</span></a>`;}).join('')}</div><div style="text-align:center;margin-top:16px">${Wijha.html('trips.request-cta',{},{quiet:true})}</div></section>
+     <span class="h-cat-go" aria-hidden="true">${HI.arr}</span></a>`;}).join('')}</div></section>
+
+  <section class="h-sec h-tailor" aria-labelledby="hTail"><div class="h-tailor-in">
+   <div><span class="h-tailor-k">✨ ${ar?'رحلات حسب الطلب':'Tailored trips'}</span>
+    <h2 id="hTail" class="h-h2">${ar?'لم تجد رحلتك؟ اطلبها كما تحلم بها':"Can't find your trip? Ask for it your way"}</h2>
+    <p>${ar?'اكتب الوجهة والتاريخ وعدد الأشخاص والميزانية في دقيقة، وسنعرض عليك أقرب الرحلات المناسبة، ثم تصلك عروض الشركات التي تنظّم رحلات مشابهة. تقارنها وتختار، بدون أي التزام.':'Tell us the destination, dates, travellers and budget in a minute. We show you the closest matching trips, then companies that run similar trips send you offers. Compare and choose — no commitment.'}</p>
+    <ul><li>${ar?'نموذج بسيط من خطوة واحدة':'One simple form'}</li><li>${ar?'أقرب رحلات متاحة فوراً':'Closest available trips straight away'}</li><li>${ar?'بياناتك لا تُشارَك إلا بموافقتك':'Your details are shared only with your consent'}</li></ul></div>
+   <div class="h-tailor-cta">${Wijha.html('trips.request-cta',{},{quiet:true})}</div>
+  </div></section>
 
   <section class="h-sec" aria-labelledby="hFeat">
    <div class="h-head"><div><h2 id="hFeat" class="h-h2">${t('featured')}</h2><p class="h-lead">${t('h_feat_sub')}</p></div><a class="h-more" href="#/trips">${t('viewall')} ${HI.arr}</a></div>
@@ -2278,6 +2293,9 @@ async function loadCatalogue(){
     // pull the extra Hajj/Umrah columns the view does not expose
     try{ const extra=await API.select('offers?select=id,arrival_city,track,season,registration_deadline,price_valid_until,price_basis,source_type,source_note_ar,meals_ar,meals_en,mina_ar,mina_en,note_ar,note_en,view_count,cover_url');
          const m={}; extra.forEach(e=>m[e.id]=e); rows.forEach(r=>Object.assign(r,m[r.id]||{})); }catch(e){}
+    try{ const ph=await API.select('wijha_photos?select=offer_id,external_url,service_kind,sort_order&order=sort_order&limit=2000'); const first={};
+         ph.forEach(p=>{ if(/^https:\/\//.test(p.external_url||'')&&!first[p.offer_id]) first[p.offer_id]=p.external_url; });
+         rows.forEach(r=>{ if(!r.cover_url&&first[r.id]) r.cover_url=first[r.id]; }); }catch(e){}
     try{ const sm=await API.select('offers?select=id,is_sample&is_sample=eq.true'); const ids=new Set(sm.map(x=>x.id)); rows.forEach(r=>{r.is_sample=ids.has(r.id)}); }catch(e){}
     return rows; }),
   API.select('companies?select='+CO_COLS),
@@ -2702,17 +2720,19 @@ async function finishPending(){
     toast(L==='ar'?'اكتمل تسجيل الشركة — أرفق السجل التجاري من لوحة الشركة (بيانات الشركة)':'Company registered — attach the commercial registry from the company console (company details)'); } }
  catch(e){ toast(e.message); }
 }
+async function loginWith(email,password){
+ await signIn(email,password); if(!PROF) throw new Error(L==='ar'?'تعذّر تحميل ملفك الشخصي، حاول مرة أخرى.':'Could not load your profile, please try again.');
+ /* staff accounts belong in the console, not on the public site (audit F19) */
+ if(isAdminRole(PROF.role)||PROF.role==='wijha_scout'){ location.href='./admin.html'; return; }
+ await finishPending();
+ ME={name:PROF.name||PROF.email}; localStorage.setItem('wijha_me',JSON.stringify(ME));
+ if(isCoRole(PROF.role)){ CO={id:PROF.company_id,name:coName(PROF.company_id),emp:PROF.name||PROF.email,role:PROF.role,lic:co(PROF.company_id)?.lic||'',verified:!!co(PROF.company_id)?.verified}; localStorage.setItem('wijha_co',JSON.stringify(CO)); }
+ syncNav(); startPoll();
+ let back=null; try{ const r=sessionStorage.getItem('wijha_return'); sessionStorage.removeItem('wijha_return'); if(/^#\/preview\/[A-Za-z0-9_-]{1,64}$/.test(r||'')) back=r; }catch(e){}
+ go(back&&isCoRole(PROF.role)?back:isCoRole(PROF.role)?'#/company':'#/account');
+}
 async function doLoginLive(eid,pid,errId){
- try{ await signIn(v(eid),v(pid)); if(!PROF) throw new Error(L==='ar'?'تعذّر تحميل ملفك الشخصي، حاول مرة أخرى.':'Could not load your profile, please try again.');
-  /* staff accounts belong in the console, not on the public site (audit F19) */
-  if(isAdminRole(PROF.role)||PROF.role==='wijha_scout'){ location.href='./admin.html'; return; }
-  await finishPending();
-  ME={name:PROF.name||PROF.email}; localStorage.setItem('wijha_me',JSON.stringify(ME));
-  if(isCoRole(PROF.role)){ CO={id:PROF.company_id,name:coName(PROF.company_id),emp:PROF.name||PROF.email,role:PROF.role,lic:co(PROF.company_id)?.lic||'',verified:!!co(PROF.company_id)?.verified}; localStorage.setItem('wijha_co',JSON.stringify(CO)); }
-  syncNav(); startPoll();
-  let back=null; try{ const r=sessionStorage.getItem('wijha_return'); sessionStorage.removeItem('wijha_return'); if(/^#\/preview\/[A-Za-z0-9_-]{1,64}$/.test(r||'')) back=r; }catch(e){}
-  go(back&&isCoRole(PROF.role)?back:isCoRole(PROF.role)?'#/company':'#/account');
- }catch(e){showErr(errId,e.message)}
+ try{ await loginWith(v(eid),v(pid)); }catch(e){showErr(errId,e.message)}
 }
 
 /* ══════════════ CLIENT: account ══════════════ */
@@ -2831,6 +2851,7 @@ dash=async function(){
    <div class="panel"><h3>${t('dash_inbox')} <span class="pillnum">${MYTHREADS.reduce((a,x)=>a+(x.company_unread||0),0)}</span></h3>
     ${MYTHREADS.map(th=>{const x=trip(th.offer_id);return `<a class="rowitem" href="#/chat/${th.id}"><div><b>${esc(L==='ar'?'عميل':'Client')}</b><small>${x?esc(tripName(x,L)):'—'}</small><small class="dim">${(th.last_message_at||'').replace('T',' ').slice(0,16)}</small></div>${th.company_unread?`<span class="pillnum">${th.company_unread}</span>`:`<span class="tag">✓</span>`}</a>`}).join('')||(LOADERR?threadsErr():`<p class="lead">${L==='ar'?'لا استفسارات بعد.':'No enquiries yet.'}</p>`)}</div>
    ${Wijha.html('dash.requests',{companyId:cid},{quiet:true})}
+   ${Wijha.html('dash.team',{role:PROF.role,companyId:cid},{quiet:true})}
    ${Wijha.html('dash.vault',{companyId:cid,staff:false})}
   </div></div>
   </div></div>`;
@@ -2983,6 +3004,22 @@ document.addEventListener('click',e=>{
 const TURNSTILE_SITE_KEY='';
 /* Legal pages and the cookie notice now live in blocks/legal.js. Everything blocks may use from this page is handed over here, once. */
 /* ── tailored trip requests (blocks/trip-request.js): data adapter, all calls use the signed-in user's own token; RLS decides ── */
+/* ── sign-in panel from the top (blocks/login-drop.js) + password reset ── */
+const AUTH_HOST={ signedIn:()=>!!(authed()&&PROF)||!!ME, login:(e,p)=>loginWith(e,p), recover:e=>authCall('recover',{email:e}) };
+/* the e-mail reset link lands here with #access_token=...&type=recovery: ask for the new password, then sign in */
+function recoveryFromHash(){
+ const h=location.hash||''; if(!/type=recovery/.test(h)||!/access_token=/.test(h)) return false;
+ const q=new URLSearchParams(h.replace(/^#\/?/,'').replace(/^[^?]*\?/,'')); const tok=q.get('access_token'); if(!tok) return false;
+ history.replaceState(null,'',location.pathname+location.search+'#/');
+ document.getElementById('app').innerHTML=`<div class="wrap narrow"><div class="panel"><h1>${L==='ar'?'كلمة مرور جديدة':'Set a new password'}</h1>
+  <div class="form2">${inp('npPass',L==='ar'?'كلمة المرور الجديدة':'New password','password','••••••••')}</div>
+  <div class="acts"><button class="btn btn-primary" id="npGo">${L==='ar'?'حفظ':'Save'}</button></div>${errBox('npErr')}</div></div>`;
+ document.getElementById('npGo').onclick=async()=>{ const pw=v('npPass'); if(pw.length<6){showErr('npErr',L==='ar'?'٦ أحرف على الأقل.':'At least 6 characters.');return}
+  try{ const r=await fetch((SBU()).replace(/\/$/,'')+'/auth/v1/user',{method:'PUT',headers:{apikey:SBK(),Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+   if(!r.ok){ const b=await r.json().catch(()=>({})); throw new Error(authMsg(b.msg||b.message||b.error_description||'HTTP '+r.status)); }
+   toast(L==='ar'?'تم تغيير كلمة المرور — سجّل الدخول':'Password changed — please sign in'); go('#/'); }catch(e){ showErr('npErr',e.message); } };
+ return true;
+}
 const TR_HOST={
  authed:()=>authed(), signin:()=>go('#/signup'), currency:()=>'EGP', coName:id=>coName(id),
  mine:()=>aget('trip_requests?select=*&order=created_at.desc&limit=30'),
@@ -3002,7 +3039,7 @@ const TR_HOST={
 Wijha.host({
   lang:()=>L, esc, toast:m=>toast(m), go:h=>go(h), refresh:()=>route(),
   get:p=>API.select(p), post:(tb,row)=>API.insert(tb,row),
-  extras:{ chat:CHAT_HOST, tr:TR_HOST, previewHref:id=>'./index.html#/preview/'+encodeURIComponent(id), pvPatch, pvReload, bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
+  extras:{ chat:CHAT_HOST, tr:TR_HOST, auth:AUTH_HOST, team:{call:body=>vaultFn('wijha-team',body)}, previewHref:id=>'./index.html#/preview/'+encodeURIComponent(id), pvPatch, pvReload, bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
 });
 /* ── captcha (Cloudflare Turnstile): asked only when signing up, signing in or resetting a password ── */
 let _tsLoad=null;
