@@ -1,0 +1,9 @@
+/* companies */
+.cos{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.co-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;gap:10px;align-items:center}
+.co-card .lg,.co-box .lg,.chead .lg{width:42px;height:42px;border-radius:11px;background:var(--amber-soft);color:var(--amber-ink);display:grid;place-items:center;font-weight:800;flex:0 0 auto}
+.co-card b{font-size:14px;display:block} .co-card small{font-size:12px;color:var(--muted)}
+.how{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.how div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.how .num{font-family:var(--mono);font-size:12px;color:var(--amber-ink)}
+.how b{display:block;margin:4px 0} .how small{color:var(--muted);font-size:13px}

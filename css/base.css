@@ -1,0 +1,33 @@
+:root{
+ --bg:#fbfaf7;--surface:#fff;--line:#e8e4dc;--ink:#1b1b1f;--muted:#6b6a72;--dim:#95939c;
+ --amber:#e0961d;--amber-ink:#8a5a05;--amber-soft:#fff4dd;
+ --green:#1f8a5b;--green-soft:#e6f5ec;--red:#c23b3b;--red-soft:#fdeaea;--dark:#1f1e22;
+ --r:14px;--sans:'DM Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace;--ar:'Cairo',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html[lang=ar] body{font-family:var(--ar)} html[lang=en] body{font-family:var(--sans)}
+body{background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none} button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select{font:inherit;color:inherit}
+.hidden{display:none!important}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px} .wrap.narrow{max-width:820px}
+.mono{font-family:var(--mono);font-size:12px;direction:ltr;unicode-bidi:isolate}
+.lead{color:var(--muted);font-size:15px} .dim{color:var(--dim)!important}
+h2{font-size:22px;font-weight:800;letter-spacing:-.01em;margin-bottom:14px}
+h3{font-size:15px;font-weight:700;margin-bottom:10px} h4{font-size:13px;font-weight:700}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber-ink);margin-bottom:8px;direction:ltr;text-align:start}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:10px;font-weight:700;font-size:14px;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--amber);color:#1b1b1f} .btn-primary:hover{background:#c8850f}
+.btn-ghost{border:1px solid var(--line);background:var(--surface)} .btn-ghost:hover{border-color:var(--ink)}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600;color:var(--muted)}
+.tag.sm{font-size:11px;padding:2px 8px} .tag.ok{color:var(--green);background:var(--green-soft);border-color:transparent}
+.tag.warn{color:var(--amber-ink);background:var(--amber-soft);border-color:transparent}
+.tag.t-hajj,.tag.t-umrah{color:#1f6f5b;background:#e6f2ee;border-color:transparent}
+.tag.t-abroad{color:#4a6fa5;background:#eaf0f8;border-color:transparent}
+.vf,.vf-pill{color:var(--green)} .vf-pill{display:inline-block;font-size:11px;font-weight:700;background:var(--green-soft);padding:2px 8px;border-radius:999px;margin-inline-start:6px}
+.pillnum{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--amber);color:#1b1b1f;font-size:12px;font-weight:800}
+.note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+.note-box{background:var(--amber-soft);color:var(--amber-ink);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:12px}
+.badge-note{background:var(--green-soft);color:var(--green);padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;margin:12px 0}
+.back{display:inline-block;font-size:13px;font-weight:700;color:var(--muted);padding:16px 0 0}
+.divider{width:1px;height:22px;background:var(--line)}

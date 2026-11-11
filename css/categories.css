@@ -1,0 +1,8 @@
+/* category cards */
+.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.catcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;transition:.15s}
+.catcard:hover{border-color:var(--amber);transform:translateY(-2px)}
+.catcard .ic{font-size:26px} .catcard b{display:block;font-size:17px;margin-top:6px}
+.catcard small{color:var(--muted);font-size:13px}
+.catcard .subs{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.catcard .subs span{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted)}

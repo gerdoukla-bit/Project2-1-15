@@ -1,0 +1,23 @@
+/* ── premium polish ── */
+.by-w{font-size:11px;color:var(--muted);font-weight:600}.by-w-box{background:#eef2f7;color:#3d4f66}
+.card .img .flag.sample{background:#2b2a30;color:#f3efe6;top:auto;bottom:10px;inset-inline-end:auto;inset-inline-start:10px}
+:root{--bg:#faf8f3;--line:#e7e1d3;--gold:#b98a2e;--shadow-lg:0 30px 60px -34px rgba(60,40,10,.35)}
+body{letter-spacing:.005em}
+.nav{backdrop-filter:saturate(1.4) blur(12px);background:rgba(250,248,243,.9)!important}
+body{overflow-x:clip}
+@media(max-width:600px){.nav-right{gap:5px}.nav-right .btn,.nav-right .lang{padding:7px 10px;font-size:12px}.nav-right .btn-ghost{display:inline-flex}#connPill{display:none}h1{font-size:25px}}
+h1{font-weight:800;letter-spacing:-.02em;line-height:1.25}
+.gallery{gap:10px!important} .gallery>div{border-radius:18px;overflow:hidden}
+.gallery>div>*{transition:transform .6s ease} .gallery>div:hover>*{transform:scale(1.04)}
+.fact{box-shadow:0 1px 0 rgba(0,0,0,.02),0 10px 24px -20px rgba(60,40,10,.25);border-radius:14px}
+.bcard{border-radius:20px;box-shadow:var(--shadow-lg);border-top:3px solid var(--gold)}
+.bcard .pl .pr-egp{letter-spacing:-.02em}
+.total .v{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.btn{border-radius:12px} .btn-primary{background:linear-gradient(180deg,#e8a62a,#d38d14);box-shadow:0 8px 18px -10px rgba(190,120,10,.7)}
+.btn-primary:hover{transform:translateY(-1px);background:linear-gradient(180deg,#eeb03a,#c8850f)}
+.card{border-radius:18px;transition:transform .2s,box-shadow .2s} .card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+section{scroll-margin-top:90px}
+.room.on{box-shadow:0 0 0 3px rgba(224,150,29,.14)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--amber-ink);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(max-width:1000px){.mbar{box-shadow:0 -10px 30px -18px rgba(0,0,0,.35);padding-bottom:max(12px,env(safe-area-inset-bottom))}.mbar .btn{padding:12px 22px}}

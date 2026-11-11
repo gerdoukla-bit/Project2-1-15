@@ -1,0 +1,21 @@
+/* panels / forms */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;margin:22px 0}
+.panel h1{font-size:26px;font-weight:800;margin-bottom:6px}
+.form2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.fl-lbl{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.fl-lbl input,.fl-lbl select{display:block;width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:5px;font-size:14px;font-weight:400;color:var(--ink);background:var(--bg);outline:none}
+.fl-lbl input:focus,.fl-lbl select:focus{border-color:var(--amber);background:var(--surface)}
+.pickers{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pick{border:1.5px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.pick.on{border-color:var(--amber);background:var(--amber-soft);color:var(--amber-ink)}
+.acts{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+.acctgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:start}
+.acctgrid .panel{margin:0}
+.acc-hero{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.acc-hero h1{margin:0 0 4px;font-size:26px}.acc-hero .lead{margin:0}.acc-me summary{cursor:pointer;font-weight:800}.acc-me .kv{margin-top:8px}.wrap>.panel,.wrap>section.sec{margin-top:16px}
+.cocols{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:14px}.cocol{display:flex;flex-direction:column;gap:16px;min-width:0}.cocol>.panel,.cocol>section,.cocol>div{margin:0!important;width:auto}.cocol .rowitem{align-items:center}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13.5px;color:var(--muted)}
+.kv:last-child{border:0} .kv b{color:var(--ink);text-align:end}
+.rowitem{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.rowitem:last-child{border:0} .rowitem b{font-size:13.5px;display:block}
+.rowitem small{font-size:12px;color:var(--muted);display:block}
+.rowitem.on{background:var(--amber-soft);border-radius:8px;padding:10px}

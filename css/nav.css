@@ -1,0 +1,9 @@
+/* nav */
+.nav{position:sticky;top:0;z-index:50;background:rgba(251,250,247,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;gap:14px}
+.brand{display:flex;align-items:baseline;gap:8px;font-weight:800;font-size:22px}
+.brand span{color:var(--amber);font-size:14px;font-family:var(--sans);font-weight:700}
+.nav-links{display:flex;gap:20px;font-size:14px;font-weight:600;color:var(--muted)}
+.nav-links a.on,.nav-links a:hover{color:var(--ink)}
+.nav-right{display:flex;gap:8px;align-items:center}
+.lang{border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:800;background:var(--surface)}

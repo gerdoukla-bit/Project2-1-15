@@ -1,0 +1,15 @@
+/* chat */
+.chatwrap{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:18px 0}
+.chead{display:flex;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.chead b{font-size:14px;display:block} .chead small{font-size:12px;color:var(--muted)}
+.chead .tag{margin-inline-start:auto}
+.cbody{padding:16px;display:flex;flex-direction:column;gap:8px;max-height:460px;overflow:auto;background:var(--bg)}
+.msg{max-width:76%;padding:9px 13px;border-radius:14px;font-size:13.5px;position:relative}
+.msg p{margin-bottom:2px} .msg time{font-size:10px;color:var(--dim);font-family:var(--mono)}
+.msg.them{background:var(--surface);border:1px solid var(--line);align-self:flex-start;border-start-start-radius:4px}
+.msg.me{background:var(--amber-soft);align-self:flex-end;border-start-end-radius:4px}
+.msg.blocked{opacity:.55;text-decoration:line-through;text-decoration-color:var(--red)}
+.sys{align-self:center;background:var(--red-soft);color:var(--red);font-size:12px;font-weight:700;padding:7px 12px;border-radius:10px;text-align:center;max-width:88%}
+.cfoot{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
+.cfoot input{flex:1;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;background:var(--bg);outline:none}
+.chatlist{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 14px}

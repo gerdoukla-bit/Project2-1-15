@@ -1,0 +1,19 @@
+/* card grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:.15s}
+.card:hover{transform:translateY(-2px);box-shadow:0 14px 32px -20px rgba(0,0,0,.35);border-color:#dad4c7}
+.card .img{aspect-ratio:4/3;height:auto;position:relative;overflow:hidden;background:#e9e4d8} .card .img>img,.card .img>svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block} .card .img::after{content:'';position:absolute;inset:auto 0 0 0;height:42%;background:linear-gradient(to top,rgba(0,0,0,.30),transparent);pointer-events:none} .card .img svg{width:100%;height:100%;display:block}
+.card .img .cat,.card .img .flag,.card .img .cmpbtn{z-index:2}
+.card .img .cityname{position:absolute;z-index:2;bottom:10px;inset-inline-start:10px;max-width:calc(100% - 20px);color:#fff;font-size:15px;font-weight:800;letter-spacing:-.01em;text-shadow:0 1px 6px rgba(0,0,0,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .img .cat{position:absolute;top:10px;inset-inline-start:10px;background:rgba(27,27,31,.82);color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px}
+.card .img .flag{position:absolute;top:10px;inset-inline-end:10px;color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px}
+.flag.soon{background:var(--red)} .flag.full{background:var(--amber-ink)}
+.card .body{padding:14px;display:flex;flex-direction:column;gap:5px;flex:1}
+.card .ttl{font-weight:800;font-size:14px;line-height:1.35}
+.card .co{font-size:12px;color:var(--muted)}
+.card .meta{display:flex;gap:9px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:auto;padding-top:8px}
+.card .pr{display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.card .cta{font-size:12.5px;font-weight:700;color:var(--amber-ink)}
+.pr-egp{font-size:18px;font-weight:800;font-family:var(--sans);line-height:1.1}
+.pr-egp span{font-size:11px;font-weight:600;color:var(--muted);font-family:var(--ar)}
+.pr-org{font-family:var(--mono);font-size:11px;color:var(--dim);direction:ltr;text-align:start}

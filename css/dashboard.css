@@ -1,0 +1,12 @@
+/* dashboard */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:6px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;position:relative}
+.kpi b{font-size:26px;font-weight:800;font-family:var(--sans);display:block}
+.kpi small{color:var(--muted);font-size:12px}
+.kpi .up{position:absolute;top:14px;inset-inline-end:14px}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
+.tbl th{text-align:start;padding:10px 12px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0} .tbl tbody tr{cursor:pointer} .tbl tbody tr:hover{background:var(--amber-soft)}
+.tbl td small{display:block;color:var(--muted);font-size:11.5px}

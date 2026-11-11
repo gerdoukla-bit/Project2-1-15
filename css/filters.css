@@ -1,0 +1,9 @@
+/* filters */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 14px}
+.filters.subrow{margin-top:-6px;margin-bottom:16px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;color:var(--muted)}
+.chip.sm{padding:5px 12px;font-size:12px}
+.chip.on{border-color:var(--amber);background:var(--amber-soft);color:var(--amber-ink)}
+.filters select,.filters input{border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px;background:var(--surface);outline:none}
+.filters input{min-width:190px}
+.count{font-size:13px;color:var(--muted);margin-inline-start:auto}
