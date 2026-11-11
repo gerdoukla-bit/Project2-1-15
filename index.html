@@ -37,6 +37,7 @@
 <script defer src="blocks/login-drop.js"></script>
 <script defer src="blocks/company-team.js"></script>
 <script defer src="blocks/home.js"></script>
+<script defer src="blocks/trips-list.js"></script>
 </head>
 <body>
 <header class="nav"><div class="wrap">
@@ -939,22 +940,9 @@ function syncNav(){
 const pic=(url,kind,seed)=>url?`<img src="${esc(url)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">`:art(kind,seed);
 
 /* ══════════════ CARD ══════════════ */
-function card(t_){
- const c=co(t_.co)||{ar:'—',en:'—',verified:false}; const s=nextSeed();
- return `<a class="card" href="#/trip/${t_.id}">
-  <div class="img">${pic(t_.cover,t_.art,s)}
-    <span class="cat">${CATS[t_.cat].icon} ${L==='ar'?CATS[t_.cat].ar:CATS[t_.cat].en}</span>
-    ${(L==='ar'?t_.destAr:t_.dest)?`<span class="cityname">📍 ${esc(L==='ar'?t_.destAr:t_.dest)}</span>`:''}
-    ${t_.sample?`<span class="flag sample">${t_.expired?(L==='ar'?'تجريبي · منتهي':'Sample · expired'):(L==='ar'?'عرض تجريبي':'Sample offer')}</span>`:''}
-    ${!t_.expired&&isSoon(t_)?`<span class="flag soon">${t('soon')}</span>`:isFull(t_)?`<span class="flag full">${t('full')}</span>`:''}
-    <button class="cmpbtn ${inCmp(t_.id)?'on':''}" onclick="toggleCmp('${t_.id}',event)" title="${L==='ar'?'أضف للمقارنة':'Add to compare'}">${inCmp(t_.id)?'✓':'⇄'}</button></div>
-  <div class="body">
-    <div class="ttl">${esc(tripName(t_,L))}</div>
-    <div class="co">${esc(L==='ar'?c.ar:c.en)}${c.verified?' <span class="vf">✓</span>':''}${byWijha(t_)?` <span class="by-w" title="${esc(LISTED_TXT())}">${L==='ar'?'· جمعته وجهة':'· listed by Wijha'}</span>`:''}</div>
-    <div class="meta">${durTxt(t_)[0]?`<span>🗓 ${durTxt(t_)[0]}</span>`:''}<span>📍 ${esc(L==='ar'?t_.regionAr:t_.region)}</span>${t_.flightsIncluded?`<span>✈ ${t('inc_yes')}</span>`:''}</div>
-    <div class="pr">${priceBlock(t_)}<span class="cta">${t('view')} →</span></div>${Wijha.html('trip.fresh',{trip:t_,variant:'card',hasPrice:!!priceRows(t_)[0]},{quiet:true})}
-  </div></a>`;
-}
+/* the trip card lives in blocks/trips-list.js (slot trips.card). Plain fallback if that block is off or broken: */
+function cardFallback(t_){ const c=co(t_.co)||{ar:'—',en:'—'}; return `<a class="card" href="#/trip/${t_.id}"><div class="body"><div class="ttl">${esc(tripName(t_,L))}</div><div class="co">${esc(L==='ar'?c.ar:c.en)}</div><div class="pr">${priceBlock(t_)}</div></div></a>`; }
+function card(t_){ return Wijha.html('trips.card',{trip:t_},{quiet:true})||cardFallback(t_); }
 
 /* pick 4 featured trips from whatever is loaded — never hardcoded ids */
 function pickFeatured(){
@@ -1000,33 +988,11 @@ function home(){
 
 /* ══════════════ LIST ══════════════ */
 let F={cat:'',sub:'',co:'',sort:'asc',q:''};
+/* the list page (filters, sort, search, grid) lives in blocks/trips-list.js (slot page.trips) */
 function list(cat){
  F.cat=cat||''; F.sub=''; const m=location.hash.match(/co=([0-9a-zA-Z_-]{3,})/); F.co=m?m[1]:'';
- const subs=F.cat?CATS[F.cat].subs:null;
- document.getElementById('app').innerHTML=`<div class="wrap">
-  <div class="head"><h1>${F.cat?(L==='ar'?CATS[F.cat].ar:CATS[F.cat].en):t('nav_offers')}</h1></div>
-  <div class="filters">
-   ${['','abroad','umrah','hajj'].map(c=>`<button class="chip ${F.cat===c?'on':''}" onclick="go('#/trips${c?'/'+c:''}')">${c?(L==='ar'?CATS[c].ar:CATS[c].en):t('all')}</button>`).join('')}${Wijha.html('trips.request-cta',{},{quiet:true})}
-   <span class="divider"></span>
-   <select onchange="F.co=this.value;draw()"><option value="">${t('company')}: ${t('all')}</option>${COS.map(c=>`<option value="${c.id}" ${F.co===c.id?'selected':''}>${esc(L==='ar'?c.ar:c.en)}</option>`).join('')}</select>
-   <select onchange="F.sort=this.value;draw()"><option value="asc">${t('sort_low')}</option><option value="desc">${t('sort_high')}</option><option value="soon">${t('sort_soon')}</option></select>
-   <input value="${esc(F.q)}" placeholder="${t('search')}" oninput="F.q=this.value;draw();logSearch()">
-   <span class="count" id="cnt"></span>
-  </div>
-  ${subs?`<div class="filters subrow"><button class="chip sm ${!F.sub?'on':''}" onclick="F.sub='';draw();document.querySelectorAll('.chip.sm').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${t('all')}</button>
-   ${Object.entries(subs).map(([k,v])=>`<button class="chip sm" onclick="F.sub='${k}';draw();document.querySelectorAll('.chip.sm').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${L==='ar'?v.ar:v.en}</button>`).join('')}</div>`:''}
-  <div class="grid" id="grid"></div></div>`;
- draw();
-}
-function draw(){
- const norm=s=>String(s||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).toLowerCase();
- let rows=TRIPS.filter(x=>(!F.cat||x.cat===F.cat)&&(!F.sub||x.sub===F.sub)&&(!F.co||x.co===F.co));
- if(F.q){const q=norm(F.q);rows=rows.filter(x=>norm(tripName(x,'ar')+tripName(x,'en')+x.dest+x.destAr+co(x.co).ar+co(x.co).en).includes(q));}
- rows.sort((a,b)=>(!!a.expired-!!b.expired)||(F.sort==='soon'?soonDays(a)-soonDays(b):
-   F.sort==='asc'?(egpOf(a,priceRows(a)[0]?.[0])??9e9)-(egpOf(b,priceRows(b)[0]?.[0])??9e9)
-                 :(egpOf(b,priceRows(b)[0]?.[0])??0)-(egpOf(a,priceRows(a)[0]?.[0])??0)));
- document.getElementById('grid').innerHTML=rows.map(card).join('')||`<p class="lead">${t('nores')}</p>`;
- document.getElementById('cnt').textContent=rows.length+' '+t('results'); window.__rowsN=rows.length;
+ const h=Wijha.html('page.trips',{cat:F.cat},{quiet:true});
+ document.getElementById('app').innerHTML=h||`<div class="wrap"><div class="head"><h1>${t('nav_offers')}</h1></div><div class="grid">${TRIPS.map(cardFallback).join('')}</div></div>`;
 }
 
 function allDays(open){ document.querySelectorAll('.day').forEach(d=>d.classList.toggle('open',open)); }
@@ -2490,7 +2456,7 @@ const TR_HOST={
 Wijha.host({
   lang:()=>L, esc, toast:m=>toast(m), go:h=>go(h), refresh:()=>route(),
   get:p=>API.select(p), post:(tb,row)=>API.insert(tb,row),
-  extras:{ chat:CHAT_HOST, tr:TR_HOST, auth:AUTH_HOST, home:{ search:(q,c)=>homeSearchGo(q,c), q:q=>homeQ(q) }, team:{call:body=>vaultFn('wijha-team',body)}, previewHref:id=>'./index.html#/preview/'+encodeURIComponent(id), pvPatch, pvReload, bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
+  extras:{ trips:{ L:()=>L, t:k=>t(k), esc, CATS, F, trips:()=>TRIPS, cos:()=>COS, co, nextSeed, pic, isSoon, isFull, soonDays, tripName, durTxt, priceBlock, priceRows, egpOf, inCmp, toggleCmp, byWijha, LISTED_TXT, go, logSearch }, chat:CHAT_HOST, tr:TR_HOST, auth:AUTH_HOST, home:{ search:(q,c)=>homeSearchGo(q,c), q:q=>homeQ(q) }, team:{call:body=>vaultFn('wijha-team',body)}, previewHref:id=>'./index.html#/preview/'+encodeURIComponent(id), pvPatch, pvReload, bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
 });
 /* ── captcha (Cloudflare Turnstile): asked only when signing up, signing in or resetting a password ── */
 let _tsLoad=null;
