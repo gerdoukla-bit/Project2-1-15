@@ -85,7 +85,7 @@
 
   <section class="h-sec" aria-labelledby="hCats"><h2 id="hCats" class="h-h2">${t('h_cats')}</h2>
    <div class="h-cats">${Object.entries(CATS).map(([k,c])=>{ const rows=live.filter(x=>x.cat===k), m=minEgp(rows), [ak,as]=kinds[k]||['metro',204];
-    return `<a class="h-cat" href="#/trips/${k}" onclick="F.q=''">
+    return `<a class="h-cat" href="#/trips/${k}" data-wb-click="home.clearq">
      <span class="h-cat-art" aria-hidden="true">${art(ak,as)}</span>
      <span class="h-cat-body"><b>${ar?c.ar:c.en}</b>
       <small>${rows.length?`${tn(rows.length)}${m?` · ${t('h_from')} ${nf(m)} ${t('h_egp')}`:''}`:t('h_nocat')}</small></span>
@@ -128,7 +128,7 @@
   Wijha.block('home', {
     version: '1.0.0',
     slots: { 'page.home': function (ctx) { return render(ctx || {}); } },
-    actions: { q: function (a, el, ev, api) { if (api.x && api.x.home) api.x.home.q(a); } },
+    actions: { clearq: function (a, el, ev, api) { if (api.x && api.x.home) api.x.home.clearQ(); }, q: function (a, el, ev, api) { if (api.x && api.x.home) api.x.home.q(a); } },
     init: function (api) {
       document.addEventListener('submit', function (ev) {
         var f = ev.target; if (!f || !f.hasAttribute || !f.hasAttribute('data-home-search')) return;
