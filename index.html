@@ -40,6 +40,7 @@
 <script defer src="blocks/trips-list.js"></script>
 <script defer src="blocks/trip-detail.js"></script>
 <script defer src="blocks/signup.js"></script>
+<script defer src="blocks/account.js"></script>
 </head>
 <body>
 <header class="nav"><div class="wrap">
@@ -1958,21 +1959,8 @@ account=async function(){
  if(!authed()){go('#/signup');return}
  if(!PROF) await loadProfile();
  await loadThreads();
- const saved=SAVED.map(trip).filter(Boolean);
- document.getElementById('app').innerHTML=`<div class="wrap">
-  <div class="panel acc-hero"><div><h1>${L==='ar'?'أهلاً':'Hello'} ${esc((PROF?.name||'').split(' ')[0]||'')} 👋</h1><p class="lead">${L==='ar'?'ماذا تريد أن تفعل اليوم؟':'What would you like to do today?'}</p></div>
-   <div class="acts"><a class="btn btn-primary" href="#/request">✨ ${L==='ar'?'اطلب رحلة مخصّصة':'Request a tailored trip'}</a><a class="btn btn-ghost" href="#/trips">${L==='ar'?'تصفّح الرحلات':'Browse trips'}</a><button class="btn btn-ghost" onclick="(Wijha.use('chat')||{open:function(){}}).open()">💬 ${L==='ar'?'رسائلي':'My messages'}${MYTHREADS.reduce((a,x)=>a+(x.client_unread||0),0)?` <span class="pillnum">${MYTHREADS.reduce((a,x)=>a+(x.client_unread||0),0)}</span>`:''}</button></div></div>
-  ${Wijha.html('account.requests',{},{quiet:true})}
-  <div class="panel"><h3>${t('acc_chats')} <span class="pillnum">${MYTHREADS.reduce((a,x)=>a+(x.client_unread||0),0)}</span></h3>
-   ${MYTHREADS.slice(0,5).map(th=>{const x=trip(th.offer_id);return `<a class="rowitem" href="#/chat/${th.id}"><div><b>${esc(coName(th.company_id))}</b><small>${x?esc(tripName(x,L)):'—'}</small><small class="dim">${th.last_message_from==='client'?(L==='ar'?'بانتظار رد الشركة':'Awaiting company reply'):(L==='ar'?'ردّت الشركة':'Company replied')} · ${(th.last_message_at||'').replace('T',' ').slice(0,16)}</small></div>${th.client_unread?`<span class="pillnum">${th.client_unread}</span>`:''}</a>`}).join('')||(LOADERR?threadsErr():`<p class="lead">${L==='ar'?'لا محادثات بعد — أرسل استفساراً من أي رحلة.':'No chats yet — send an enquiry from any trip.'}</p>`)}</div>
-  <section class="sec"><h2>${t('acc_saved')} <span class="pillnum">${saved.length}</span></h2>${saved.length?`<div class="grid">${saved.map(card).join('')}</div>`:`<p class="lead">${L==='ar'?'لا توجد رحلات محفوظة بعد — احفظ أي رحلة لتجدها هنا.':'Nothing saved yet — save any trip to find it here.'}</p>`}</section>
-  <details class="panel acc-me"><summary>${L==='ar'?'بياناتي':'My details'}</summary>
-   <div class="kv"><span>${t('f_name')}</span><b>${esc(PROF?.name||'—')}</b></div><div class="kv"><span>${t('f_email')}</span><b class="mono">${esc(PROF?.email||'')}</b></div>
-   <div class="kv"><span>${t('f_phone')}</span><b class="mono">${esc(PROF?.phone||'—')}</b></div>
-   <div class="kv"><span>${L==='ar'?'الجنسية':'Nationality'}</span><b>${esc(cName(PROF?.nationality,L))}</b></div>
-   <div class="kv"><span>${t('f_interests')}</span><b>${(PROF?.interests||[]).map(i=>`<span class="tag sm">${esc(CATS[i]?(L==='ar'?CATS[i].ar:CATS[i].en):i)}</span>`).join(' ')||'—'}</b></div>
-   <p class="note">${L==='ar'?'بياناتك لا تصل لأي شركة إلا بعد أن تقبل عرضها.':'Your details only reach a company after you accept its quote.'}</p>
-   <button class="btn btn-ghost" onclick="signOutAll()">${t('signout')}</button></details></div>`;
+ const html=Wijha.html('page.account',{prof:PROF,threads:MYTHREADS,saved:SAVED.slice(),loaderr:LOADERR},{quiet:true});
+ document.getElementById('app').innerHTML=html||`<div class="wrap narrow"><div class="panel"><h1>${L==='ar'?'حسابي':'My account'}</h1><div class="acts"><a class="btn btn-primary" href="#/request">${L==='ar'?'اطلب رحلة':'Request a trip'}</a><a class="btn btn-ghost" href="#/trips">${L==='ar'?'الرحلات':'Trips'}</a><button class="btn btn-ghost" onclick="signOutAll()">${t('signout')}</button></div></div></div>`;
 };
 
 /* ══════════════ COMPANY: signup + portal ══════════════ */
@@ -2222,7 +2210,8 @@ const TR_HOST={
 Wijha.host({
   lang:()=>L, esc, toast:m=>toast(m), go:h=>go(h), refresh:()=>route(),
   get:p=>API.select(p), post:(tb,row)=>API.insert(tb,row),
-  extras:{ detail:{ L:()=>L, t:k=>t(k), esc, nf, CATS, ITEM_CATS, HOTELS, SAWA_PAY, CURSYM, FX, co, nextSeed, pic, art, similar, priceRows, egpOf, priceBlock, durTxt, tripName, isSoon, soonDays, byWijha, LISTED_TXT, inCmp, saved:id=>SAVED.includes(id), threadFor, pvE, pvS, card, toggleCmp:(id,e)=>toggleCmp(id,e), toggleSave:id=>toggleSave(id), share:()=>share(), allDays:o=>allDays(o), sheet:o=>sheet(o), qty:(k,d)=>qty(k,d), sendEnq:()=>sendEnq(), after:x=>detailAfter(x) }, trips:{ L:()=>L, t:k=>t(k), esc, CATS, F, trips:()=>TRIPS, cos:()=>COS, co, nextSeed, pic, isSoon, isFull, soonDays, tripName, durTxt, priceBlock, priceRows, egpOf, inCmp, toggleCmp, byWijha, LISTED_TXT, go, logSearch }, chat:CHAT_HOST, tr:TR_HOST, auth:AUTH_HOST, home:{ search:(q,c)=>homeSearchGo(q,c), q:q=>homeQ(q), clearQ:()=>{ F.q=''; } }, team:{call:body=>vaultFn('wijha-team',body)}, previewHref:id=>'./index.html#/preview/'+encodeURIComponent(id), pvPatch, pvReload, bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
+  extras:{ account:{ L:()=>L, t:k=>t(k), esc, CATS, cName:(c,l)=>cName(c,l), coName:id=>coName(id), tripName:(x,l)=>tripName(x,l), trip:id=>trip(id), card:x=>card(x), threadsErr:()=>threadsErr(), unread:()=>MYTHREADS.reduce((a,x)=>a+(x.client_unread||0),0), signout:()=>signOutAll(), openMessages:()=>{ const c=Wijha.use('chat'); if(c&&c.open) c.open(); } },
+   detail:{ L:()=>L, t:k=>t(k), esc, nf, CATS, ITEM_CATS, HOTELS, SAWA_PAY, CURSYM, FX, co, nextSeed, pic, art, similar, priceRows, egpOf, priceBlock, durTxt, tripName, isSoon, soonDays, byWijha, LISTED_TXT, inCmp, saved:id=>SAVED.includes(id), threadFor, pvE, pvS, card, toggleCmp:(id,e)=>toggleCmp(id,e), toggleSave:id=>toggleSave(id), share:()=>share(), allDays:o=>allDays(o), sheet:o=>sheet(o), qty:(k,d)=>qty(k,d), sendEnq:()=>sendEnq(), after:x=>detailAfter(x) }, trips:{ L:()=>L, t:k=>t(k), esc, CATS, F, trips:()=>TRIPS, cos:()=>COS, co, nextSeed, pic, isSoon, isFull, soonDays, tripName, durTxt, priceBlock, priceRows, egpOf, inCmp, toggleCmp, byWijha, LISTED_TXT, go, logSearch }, chat:CHAT_HOST, tr:TR_HOST, auth:AUTH_HOST, home:{ search:(q,c)=>homeSearchGo(q,c), q:q=>homeQ(q), clearQ:()=>{ F.q=''; } }, team:{call:body=>vaultFn('wijha-team',body)}, previewHref:id=>'./index.html#/preview/'+encodeURIComponent(id), pvPatch, pvReload, bridge:vaultBridge, extract:vaultExtract, review:offerId=>{ window.open('./admin.html','_blank','noopener'); toast(L==='ar'?'افتح «رحلاتي» في لوحة الشركة وراجع المسودة قبل النشر':'Open "My trips" in the company console and review the draft before publishing'); } }
 });
 /* ── captcha (Cloudflare Turnstile): asked only when signing up, signing in or resetting a password ── */
 let _tsLoad=null;
