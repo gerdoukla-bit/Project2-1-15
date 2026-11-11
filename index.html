@@ -39,6 +39,7 @@
 <script defer src="blocks/home.js"></script>
 <script defer src="blocks/trips-list.js"></script>
 <script defer src="blocks/trip-detail.js"></script>
+<script defer src="blocks/signup.js"></script>
 </head>
 <body>
 <header class="nav"><div class="wrap">
@@ -1917,78 +1918,13 @@ const v=id=>document.getElementById(id)?.value?.trim()||'';
 
 /* ══════════════ CLIENT: signup / login ══════════════ */
 const _signupClient=signupClient;
+/* the sign-up forms + submit live in blocks/signup.js (slots page.signup-client / page.signup-company) */
+const signupDown=()=>`<div class="wrap narrow"><div class="panel"><h1>${L==='ar'?'التسجيل غير متاح الآن':'Sign-up is unavailable right now'}</h1><p class="lead">${L==='ar'?'حاول مرة أخرى بعد قليل، أو سجّل الدخول إن كان لديك حساب.':'Please try again shortly, or sign in if you already have an account.'}</p></div></div>`;
 signupClient=function(){
  if(!API) return _signupClient();
  if(authed()&&PROF){ go('#/account'); return; }
- const hasVisa=window.__hasVisa||false;
- const visas=window.__visas||[{country:'',expiry:''}];
- window.__visas=visas;
- const opt=(arr,sel,val,lab)=>arr.map(x=>`<option value="${x[val]}" ${sel===x[val]?'selected':''}>${L==='ar'?x[lab[0]]:x[lab[1]]}</option>`).join('');
- document.getElementById('app').innerHTML=`<div class="wrap narrow"><div class="panel">
-  <div class="eyebrow">👤 ${L==='ar'?'حساب مسافر':'Traveller account'}</div>
-  <h1>${t('su_client')}</h1><p class="lead">${t('su_client_p')}</p>
-  <div class="form2">
-   ${inp('cName',L==='ar'?'الاسم':'Name','text')}
-   ${inp('cEmail',L==='ar'?'البريد الإلكتروني':'Email','email','name@example.com')}
-   <label class="fl-lbl">${L==='ar'?'رقم الهاتف':'Phone number'}
-     <div style="display:flex;gap:6px">
-       <select id="cDial" style="flex:0 0 130px;border:1px solid var(--line);border-radius:10px;padding:10px 8px;background:var(--bg);font-size:13px">
-         ${COUNTRIES.map(c=>`<option value="${c[3]}" ${c[0]==='EG'?'selected':''}>${c[3]} ${L==='ar'?c[1]:c[2]}</option>`).join('')}
-       </select>
-       <input id="cPhone" type="tel" placeholder="1xxxxxxxxx" style="flex:1;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg);font-size:14px">
-     </div></label>
-   <label class="fl-lbl">${L==='ar'?'الفئة العمرية':'Age range'}<select id="cAge"><option value="">—</option>${opt(AGE_RANGES,'',0,[1,2])}</select></label>
-   <label class="fl-lbl">${L==='ar'?'الجنسية':'Nationality'}<select id="cNat">${opt(COUNTRIES,'EG',0,[1,2])}</select></label>
-   <label class="fl-lbl">${L==='ar'?'هل لديك تأشيرة سفر سارية؟':'Do you hold a current travel visa?'}
-     <select id="cHasVisa" onchange="window.__hasVisa=this.value==='yes';signupClient()">
-       <option value="no" ${hasVisa?'':'selected'}>${L==='ar'?'لا':'No'}</option>
-       <option value="yes" ${hasVisa?'selected':''}>${L==='ar'?'نعم':'Yes'}</option></select></label>
-  </div>
-  ${hasVisa?`<div class="panel" style="margin:12px 0;padding:14px;background:var(--bg)">
-    <h3 style="margin-bottom:8px">${L==='ar'?'التأشيرات السارية':'Current visas'}</h3>
-    ${visas.map((v,i)=>`<div class="form2" style="margin-bottom:8px">
-      <label class="fl-lbl">${L==='ar'?'الدولة':'Country'}<select onchange="window.__visas[${i}].country=this.value">
-        <option value="">—</option>${VISA_TARGETS.map(x=>`<option value="${x[0]}" ${v.country===x[0]?'selected':''}>${L==='ar'?x[1]:x[2]}</option>`).join('')}</select></label>
-      <label class="fl-lbl">${L==='ar'?'تاريخ انتهاء التأشيرة':'Visa expiry date'}
-        <div style="display:flex;gap:6px"><input type="date" value="${esc(v.expiry||'')}" onchange="window.__visas[${i}].expiry=this.value" style="flex:1;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface);font-size:14px">
-        ${visas.length>1?`<button class="btn btn-ghost" onclick="window.__visas.splice(${i},1);signupClient()">×</button>`:''}</div></label>
-    </div>`).join('')}
-    <button class="btn btn-ghost" onclick="window.__visas.push({country:'',expiry:''});signupClient()">+ ${L==='ar'?'تأشيرة أخرى':'Another visa'}</button>
-   </div>`:''}
-  <div class="form2">${inp('cPass',L==='ar'?'كلمة المرور':'Password','password','••••••••')}</div>
-  <div class="acts"><button class="btn btn-primary" onclick="doClientSignupLive()">${t('create')}</button></div>${errBox('cErr')}
-  <p class="note">${L==='ar'?'بياناتك تُستخدم لترشيح رحلات تناسبك فقط. لا تُشارك مع الشركات إلا عند إرسال استفسار.':'Your details are used only to suggest suitable trips. They are shared with a company only when you send an enquiry.'}</p>
-  <div class="sec" style="border-top:1px solid var(--line);margin-top:22px;padding-top:18px"><h3>${t('haveacc')}</h3>
-   <div class="form2">${inp('lEmail',t('f_email'),'email')}${inp('lPass',t('f_pass'),'password')}</div>
-   <div class="acts"><button class="btn btn-ghost" onclick="doLoginLive('lEmail','lPass','lErr')">${L==='ar'?'دخول':'Sign in'}</button></div>${errBox('lErr')}</div>
- </div></div>`;
+ document.getElementById('app').innerHTML=Wijha.html('page.signup-client',{},{quiet:true})||signupDown();
 };
-async function doClientSignupLive(){
- const email=v('cEmail'),pass=v('cPass');
- if(!email||!pass){showErr('cErr',L==='ar'?'البريد وكلمة المرور مطلوبان.':'Email and password are required.');return}
- if(!/^\S+@\S+\.\S+$/.test(email)){showErr('cErr',L==='ar'?'صيغة البريد الإلكتروني غير صحيحة.':'The email address looks wrong.');return}
- if(pass.length<6){showErr('cErr',L==='ar'?'كلمة المرور يجب ألا تقل عن ٦ أحرف.':'The password must be at least 6 characters.');return}
- const dial=document.getElementById('cDial')?.value||'';
- const localNum=v('cPhone').replace(/^0+/,'');
- const hasVisa=document.getElementById('cHasVisa')?.value==='yes';
- const visas=hasVisa?(window.__visas||[]).filter(x=>x.country&&x.expiry):[];
- try{
-  const pdata={ name:v('cName')||null, dial_code:dial||null, phone:localNum?dial+localNum:null,
-    age_range:document.getElementById('cAge')?.value||null,
-    nationality:document.getElementById('cNat')?.value||null,
-    has_visa:hasVisa, travel_visas:visas };
-  /* every profile field travels in the signup metadata, so nothing is lost when email confirmation delays the session (audit F5) */
-  const r=await signUp(email,pass,{name:v('cName'),phone:dial+localNum,dial_code:dial,age_range:pdata.age_range,nationality:pdata.nationality,has_visa:hasVisa,travel_visas:visas});
-  if(!r.session){
-    try{ localStorage.setItem('wijha_pending_profile',JSON.stringify({email:email.toLowerCase(),data:pdata})); }catch(e){}
-    document.getElementById('cErr').innerHTML=`<div class="note-box">${L==='ar'?'تم إنشاء الحساب — افتح بريدك وأكّد الرابط ثم سجّل الدخول.':'Account created — confirm the link in your email, then sign in.'}</div>`; return; }
-  await apatch('profiles?id=eq.'+AU.user.id,pdata);
-  await loadProfile();
-  ME={name:PROF?.name||email}; localStorage.setItem('wijha_me',JSON.stringify(ME));
-  window.__visas=null; window.__hasVisa=false;
-  syncNav(); startPoll(); go('#/account');
- }catch(e){showErr('cErr',e.message)}
-}
 const slugOf=name=>name.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF]+/g,'-').replace(/^-|-$/g,'')||('co-'+Date.now());
 /* first sign-in after email confirmation: finish what signup could not (audit F4, F5) */
 async function finishPending(){
@@ -2013,9 +1949,6 @@ async function loginWith(email,password){
  syncNav(); startPoll();
  let back=null; try{ const r=sessionStorage.getItem('wijha_return'); sessionStorage.removeItem('wijha_return'); if(/^#\/preview\/[A-Za-z0-9_-]{1,64}$/.test(r||'')) back=r; }catch(e){}
  go(back&&isCoRole(PROF.role)?back:isCoRole(PROF.role)?'#/company':'#/account');
-}
-async function doLoginLive(eid,pid,errId){
- try{ await loginWith(v(eid),v(pid)); }catch(e){showErr(errId,e.message)}
 }
 
 /* ══════════════ CLIENT: account ══════════════ */
@@ -2047,26 +1980,7 @@ const _signupCo=signupCo;
 signupCo=function(){
  if(!API) return _signupCo();
  if(authed()&&PROF&&isCoRole(PROF.role)){go('#/company');return}
- const iata=window.__iata||false;
- document.getElementById('app').innerHTML=`<div class="wrap narrow"><div class="panel">
-  <div class="eyebrow">🏢 ${L==='ar'?'بوابة الشركات':'Company portal'}</div><h1>${t('su_co')}</h1><p class="lead">${t('su_co_p')}</p>
-  <div class="form2">
-   ${inp('oName',L==='ar'?'اسم الشركة':'Company name','text')}
-   ${inp('oEmail',L==='ar'?'البريد الإلكتروني':'Email','email','name@example.com')}
-   ${inp('oPhone',L==='ar'?'رقم الهاتف':'Phone number','tel','01xxxxxxxxx')}
-   <label class="fl-lbl">${L==='ar'?'عضوية IATA':'IATA membership'}<select id="oIata" onchange="window.__iata=this.value==='yes';signupCo()">
-     <option value="no" ${iata?'':'selected'}>${L==='ar'?'لا':'No'}</option>
-     <option value="yes" ${iata?'selected':''}>${L==='ar'?'نعم':'Yes'}</option></select></label>
-   ${iata?inp('oLic',L==='ar'?'رقم الترخيص':'Registration number','text','ETAA-A-0000'):''}
-   ${iata?`<label class="fl-lbl">${L==='ar'?'الفئة':'Category'}<select id="oCat"><option value="">—</option>${['أ','ب','ج','د','هـ'].map(x=>`<option>${x}</option>`).join('')}</select></label>`:''}
-  </div>
-  <label class="fl-lbl">${L==='ar'?'السجل التجاري':'Commercial registry'}<input id="oDoc" type="file" accept="application/pdf,image/*"></label>
-  <p class="note">${L==='ar'?'PDF أو صورة حتى ١٠ ميجابايت. يُحفظ في مخزن خاص ولا يظهر للعملاء.':'PDF or image up to 10 MB. Stored privately, never shown to travellers.'}</p>
-  ${inp('oPass',L==='ar'?'كلمة مرور الحساب':'Account password','password','••••••••')}
-  <div class="acts"><button class="btn btn-primary" onclick="doCoSignupLive()">${t('create')}</button></div>${errBox('oErr')}
-  <p class="note">${L==='ar'?'تُراجع وجهة الطلب وتظهر رحلاتك بعد الاعتماد. تجد حالة الطلب في لوحة الشركة عند تسجيل الدخول.':'Wijha reviews your application; your trips go live once approved. You will see the status on your company dashboard when you sign in.'}</p>
-  <div class="sec" style="border-top:1px solid var(--line);margin-top:22px;padding-top:18px"><h3>${t('haveacc')}</h3><div class="form2">${inp('lEmail',t('f_email'),'email')}${inp('lPass',t('f_pass'),'password')}</div><div class="acts"><button class="btn btn-ghost" onclick="doLoginLive('lEmail','lPass','lErr')">${L==='ar'?'دخول':'Sign in'}</button></div>${errBox('lErr')}</div>
- </div></div>`;
+ document.getElementById('app').innerHTML=Wijha.html('page.signup-company',{},{quiet:true})||signupDown();
 };
 function checkRegistry(file){
  if(!file) return;
@@ -2083,26 +1997,6 @@ async function uploadRegistry(file){
    headers:{apikey:SBK(),Authorization:'Bearer '+AU.access_token,'Content-Type':file.type||'application/octet-stream'},body:file});
  if(!r.ok) throw new Error((L==='ar'?'رفع السجل التجاري فشل: ':'Registry upload failed: ')+(await r.text()).slice(0,140));
  return path;
-}
-async function doCoSignupLive(){
- const email=v('oEmail'),pass=v('oPass'),name=v('oName');
- if(!email||!pass||!name){showErr('oErr',L==='ar'?'اسم الشركة والبريد وكلمة المرور مطلوبة.':'Company name, email and password are required.');return}
- try{
-  const f=document.getElementById('oDoc')?.files?.[0]; checkRegistry(f);   /* validate before the account exists */
-  const iata=document.getElementById('oIata')?.value==='yes';
-  const r=await signUp(email,pass,{name});
-  if(!r.session){
-    try{ localStorage.setItem('wijha_pending_co',JSON.stringify({email:email.toLowerCase(),name,phone:v('oPhone'),iata,lic:v('oLic'),cat:document.getElementById('oCat')?.value||''})); }catch(e){}
-    document.getElementById('oErr').innerHTML=`<div class="note-box">${L==='ar'?'أكّد بريدك ثم سجّل الدخول — يكتمل تسجيل الشركة تلقائياً عند أول دخول.':'Confirm your email, then sign in — the company registration completes automatically on your first sign-in.'}</div>`; return; }
-  let doc=null; if(f) doc=await uploadRegistry(f);
-  const slug=slugOf(name);
-  /* the server creates the company as "pending" and links this user; role/status can't be chosen from the browser */
-  const cid=await apost('rpc/wijha_register_company',{p_name:name,p_slug:slug,p_email:email,p_phone:v('oPhone')||null,p_iata:iata,
-    p_license:iata?(v('oLic')||null):null,p_category:iata?(document.getElementById('oCat')?.value||null):null,p_registry_path:doc});
-  await loadProfile(); await loadCatalogue();
-  CO={id:cid,name,emp:name,role:'company',verified:false}; localStorage.setItem('wijha_co',JSON.stringify(CO));
-  syncNav(); startPoll(); go('#/company');
- }catch(e){showErr('oErr',e.message)}
 }
 const _dash=dash;
 dash=async function(){
@@ -2288,7 +2182,13 @@ const TURNSTILE_SITE_KEY='';
 /* Legal pages and the cookie notice now live in blocks/legal.js. Everything blocks may use from this page is handed over here, once. */
 /* ── tailored trip requests (blocks/trip-request.js): data adapter, all calls use the signed-in user's own token; RLS decides ── */
 /* ── sign-in panel from the top (blocks/login-drop.js) + password reset ── */
-const AUTH_HOST={ signedIn:()=>!!(authed()&&PROF)||!!ME, login:(e,p)=>loginWith(e,p), recover:e=>authCall('recover',{email:e}) };
+const AUTH_HOST={ signedIn:()=>!!(authed()&&PROF)||!!ME, login:(e,p)=>loginWith(e,p), recover:e=>authCall('recover',{email:e}),
+ /* used by blocks/signup.js */
+ L:()=>L, t:k=>t(k), esc, get COUNTRIES(){return COUNTRIES}, get AGE_RANGES(){return AGE_RANGES}, get VISA_TARGETS(){return VISA_TARGETS},
+ signUp:(e,p,m)=>signUp(e,p,m), apatch:(p,d)=>apatch(p,d), apost:(p,d)=>apost(p,d), loadProfile:()=>loadProfile(), prof:()=>PROF, userId:()=>AU&&AU.user&&AU.user.id,
+ setMe:o=>{ ME=o; localStorage.setItem('wijha_me',JSON.stringify(o)); }, setCo:o=>{ CO=o; localStorage.setItem('wijha_co',JSON.stringify(o)); },
+ syncNav:()=>syncNav(), startPoll:()=>startPoll(), go:h=>go(h), loadCatalogue:()=>loadCatalogue(), slugOf:n=>slugOf(n),
+ checkRegistry:f=>checkRegistry(f), uploadRegistry:f=>uploadRegistry(f), rerender:()=>route() };
 /* the e-mail reset link lands here with #access_token=...&type=recovery: ask for the new password, then sign in */
 function recoveryFromHash(){
  const h=location.hash||''; if(!/type=recovery/.test(h)||!/access_token=/.test(h)) return false;
