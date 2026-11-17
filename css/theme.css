@@ -1,0 +1,56 @@
+/* ═══ THEME — the whole look of the site in ONE file ═══
+   Change colours / fonts / roundness here and every page follows. Delete this file's <link> line to return to the old look.
+   Edit safely: only the values on the right of each ":" below. */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+:root{
+  /* page */
+  --bg:#f3f7f8;            /* page background */
+  --surface:#ffffff;       /* cards and panels */
+  --line:#dbe5e8;          /* thin borders */
+  --ink:#0f2a3a;           /* main text (deep navy) */
+  --muted:#52697a;         /* secondary text */
+  --dim:#8a9dab;           /* faint text */
+  /* brand */
+  --brand:#0b7a75;         /* main brand colour: buttons, links, highlights */
+  --brand-dark:#075e5a;    /* button hover */
+  --brand-soft:#e2f3f1;    /* light brand background */
+  --gold:#c9972b;          /* small accent: prices, stars, counters */
+  --gold-soft:#fbf3df;
+  /* the old names still used across the site now point at the new colours */
+  --amber:var(--brand); --amber-ink:var(--brand-dark); --amber-soft:var(--brand-soft);
+  --dark:#0f2a3a;
+  /* shape + type */
+  --r:18px;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+  --ar:'IBM Plex Sans Arabic','Cairo',sans-serif;
+  --shadow:0 1px 2px rgba(15,42,58,.05),0 8px 24px rgba(15,42,58,.07);
+}
+body{background:var(--bg)}
+/* top bar */
+.nav{background:rgba(255,255,255,.92)!important;border-bottom:1px solid var(--line)}
+.brand{color:var(--ink)} .brand span{color:var(--brand)}
+.nav-links a.on{color:var(--brand)}
+/* buttons */
+.btn{border-radius:999px;padding:11px 22px}
+.btn-primary,.btn-primary:hover{background:var(--brand);color:#fff;box-shadow:0 6px 16px rgba(11,122,117,.25)}
+.btn-primary:hover{background:var(--brand-dark)}
+.btn-ghost{background:var(--surface);border-color:var(--line)} .btn-ghost:hover{border-color:var(--brand);color:var(--brand)}
+.lang{border-radius:999px}
+/* small counters + notes */
+.pillnum{background:var(--gold);color:#fff}
+.note-box{background:var(--gold-soft);color:#7a5a10}
+.tag.warn{background:var(--gold-soft);color:#7a5a10}
+.eyebrow{color:var(--brand)}
+/* headline */
+.hero h1{color:var(--ink)} .hero h1 em{color:var(--brand)}
+.drop i{background:var(--gold)}
+.hero-art{border-radius:28px;box-shadow:var(--shadow)}
+/* cards + panels */
+.card,.panel,.kpi{border-radius:var(--r);border-color:var(--line);box-shadow:var(--shadow)}
+.card:hover{box-shadow:0 2px 4px rgba(15,42,58,.06),0 16px 36px rgba(15,42,58,.12)}
+.pr-egp{color:var(--ink)}
+/* forms */
+input,select,textarea{border-radius:12px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand-soft);border-color:var(--brand)}
+/* footer */
+body>footer{background:var(--ink);color:#d6e2e8} body>footer a{color:#d6e2e8} body>footer h4{color:#fff}
