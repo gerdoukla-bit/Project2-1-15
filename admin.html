@@ -96,6 +96,7 @@ body.focus .side{display:none}body.focus .shell{grid-template-columns:1fr}body.f
 <script defer src="blocks/admin-photos.js"></script>
 <script defer src="blocks/admin-freshness.js"></script>
 <script defer src="blocks/vault-intake.js"></script>
+<script defer src="blocks/offer-review.js"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -459,10 +460,11 @@ function checksBox(){
   ${imp.file_path?` <button class="btn sm" data-p="${esc(imp.file_path)}" onclick="openIntakeFile(this.dataset.p)">📎 افتح الأصل للمقارنة</button>`:''}
   ${c.length?`<ul style="margin:8px 18px 0">${c.map(x=>`<li>${esc(x.problem_ar)}</li>`).join('')}</ul>`:'<div class="note">لم يُبلّغ عن نقاط غير واضحة.</div>'}</div>`;
 }
+function reviewCtx(){return {offer:ED.full,imp:(S.imports||[]).find(i=>i.id===ED.full.intake_id||(i.payload?.created||[]).some(c=>c.offer_id===ED.id)),esc,field:fld,fields:OFFER_FIELDS,base:S.url,key:S.key,token:freshToken};}
 function drawEditor(){
- const tabs=[['main','البيانات'],['stages',`المراحل (${ED.stages.length})`],['items',`يشمل / لا يشمل (${ED.items.length})`],['hotels',`الفنادق (${ED.hotels.length})`],['notes',`تأشيرة وملاحظات (${ED.notes.filter(n=>n.kind!=='faq').length})`],['faq',`أسئلة شائعة (${ED.notes.filter(n=>n.kind==='faq').length})`],['photos',`صور (${(ED.photos||[]).length})`]];
+ const tabs=[...(ED.id?[['review','📄 مراجعة المستند']]:[]),['main','البيانات'],['stages',`المراحل (${ED.stages.length})`],['items',`يشمل / لا يشمل (${ED.items.length})`],['hotels',`الفنادق (${ED.hotels.length})`],['notes',`تأشيرة وملاحظات (${ED.notes.filter(n=>n.kind!=='faq').length})`],['faq',`أسئلة شائعة (${ED.notes.filter(n=>n.kind==='faq').length})`],['photos',`صور (${(ED.photos||[]).length})`]];
  const isRites = ['hajj','umrah'].includes(ED.full.category);
- const body= ED.tab==='main' ? `${checksBox()}<div class="form">${OFFER_FIELDS
+ const body= ED.tab==='review' && window.WijhaOfferReview ? WijhaOfferReview.render(reviewCtx()) : ED.tab==='main' ? `${checksBox()}<div class="form">${OFFER_FIELDS
    .filter(f=>f[0]!=='hajj'||isRites)
    .map(f=>{ const g = f[0]==='hajj' ? f.slice(1) : f;
      return g[0]==='sec'?`<div class="sec">${g[1]}</div>`:fld(g[0],g[1],g[2],g[3]) }).join('')}
@@ -482,9 +484,11 @@ function drawEditor(){
   : `<div class="bar"><button class="btn sm" onclick="ED.notes.push({kind:'visa_doc',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ مستند تأشيرة</button><button class="btn sm" onclick="ED.notes.push({kind:'note',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ ملاحظة</button><button class="btn sm" onclick="ED.notes.push({kind:'cancel',label_ar:'',text_ar:'',sort_order:ED.notes.length,_new:1});drawEditor()">+ شرط إلغاء</button></div>
      <div class="tw"><table style="min-width:0"><thead><tr><th>النوع</th><th>العنوان/المهلة</th><th>النص/الغرامة</th><th></th></tr></thead><tbody>${ED.notes.map((n,i)=>n.kind==='faq'?'':`<tr><td><select onchange="ED.notes[${i}].kind=this.value">${optList(['visa_doc','note','cancel','payment'],n.kind,LBL.note)}</select></td><td><input value="${esc(n.label_ar||'')}" oninput="ED.notes[${i}].label_ar=this.value"></td><td><input style="width:100%" value="${esc(n.text_ar)}" oninput="ED.notes[${i}].text_ar=this.value"></td><td><button class="btn sm danger" onclick="ED.notes.splice(${i},1);drawEditor()">×</button></td></tr>`).join('')}</tbody></table></div>`;
  let ov=document.getElementById('ov'); if(!ov){ov=document.createElement('div');ov.id='ov';ov.className='ov';document.body.appendChild(ov)}
+ if(ED.tab!=='review')window.WijhaOfferReview?.clear();
  ov.innerHTML=`<div class="md"><div class="hd"><b>${ED.id?'تعديل الرحلة':'رحلة جديدة'}</b><button class="btn sm" onclick="closeEd()">إغلاق</button></div>
   <div class="bd"><div class="tabs">${tabs.map(([k,l])=>`<button class="${ED.tab===k?'on':''}" onclick="readMain();ED.tab='${k}';drawEditor()">${l}</button>`).join('')}</div>${body}<div id="ederr"></div></div>
   <div class="ft">${ED.id?(isLiveOffer(ED.full)?`<a class="btn" href="./index.html#/trip/${esc(ED.id)}" target="_blank" rel="noopener">معاينة ↗</a>`:`<a class="btn" data-preview="${esc(ED.id)}" href="${previewHref(ED.id)}" target="_blank" rel="noopener">معاينة كما يراها العميل ↗</a>`):''}<button class="btn pri" onclick="saveOffer()">حفظ</button>${!isAdminRole(S.me.role)&&ED.id&&['draft','rejected'].includes(ED.full.status)?`<button class="btn ok" onclick="saveOffer(true)">حفظ وإرسال للمراجعة ✓</button>`:''}</div></div>`;
+ if(ED.tab==='review')window.WijhaOfferReview?.load(reviewCtx());
 }
 
 /* resize + crop in the browser: unified 4:3 covers, compressed gallery photos, location data (EXIF) removed because the picture is redrawn */
@@ -513,7 +517,7 @@ async function uploadCover(file){
 }
 function readMain(){ if(ED.tab!=='main')return; if(!anyCo(S.me.role)) ED.full.company_id=S.me.company_id; document.querySelectorAll('#ov [data-k]').forEach(el=>{ const k=el.dataset.k; if(el.disabled)return; let v=el.value;
  if(el.dataset.bool) v=v==='true'; else if(el.type==='number') v=v===''?null:Number(v); else if(v==='') v=null; ED.full[k]=v; }); }
-function closeEd(){document.getElementById('ov')?.remove();ED=null; if(S.FOCUS){ location.href='./index.html#/company'; } }
+function closeEd(){window.WijhaOfferReview?.clear();document.getElementById('ov')?.remove();ED=null; if(S.FOCUS){ location.href='./index.html#/company'; } }
 async function saveOffer(submit){
  readMain(); const f={...ED.full}; if(submit) f.status='pending_review'; delete f.id; delete f.created_at; delete f.updated_at; delete f.ref_code;
  const bad=m=>{ document.getElementById('ederr').innerHTML='<div class="err">'+esc(m)+'</div>'; };
