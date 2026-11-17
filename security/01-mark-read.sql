@@ -35,7 +35,7 @@ begin
     where t.id = p_thread
       and (
         (v_is_client and t.client_id = v_uid)
-        or (not v_is_client and v_is_admin)
+        or (v_is_admin)
         or (not v_is_client and v_company is not null and t.company_id = v_company)
       )
   ) then
